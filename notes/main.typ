@@ -209,17 +209,68 @@
   grid(
     columns: (80pt, 1fr),
     align: (right, left),
-    grid.cell(align: horizon)[($delta$):],
+    grid.cell(align: horizon)[(#smallcaps[Var]):],
     one-line-grid(
       prooftree(
         rule(
-          name: [($delta$)],
+          name: [(#smallcaps[Var])],
           $Gamma, x: A tack.r x: A$,
           $Gamma tack.r A "type"$,
         ),
       ),
     )
   ),
+)
+
+#show: page
+== Derived rules
+
+*Changing and interchanging variables*:
+
+#padded-vertical-grid(
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [($x' slash x$)],
+          $Gamma, x': A, Delta[x' slash x] tack.r cal(J)[x' slash x]$,
+          $Gamma, x: A, Delta tack.r cal(J)$,
+        ),
+      ),
+      prooftree(
+        rule(
+          name: [(#smallcaps[Swap])],
+          $Gamma, y: B, x: A, Delta tack.r cal(J)$,
+          $Gamma, x: A, y: B, Delta tack.r cal(J)$,
+        ),
+      ),
+    )
+  ],
+)
+
+*Element conversion (#link(<element-conversion-rule-excercise>)[Excercise 1.1.a]) and its congruence (#link(<element-conversion-rule-congruence-excercise>)[Exercise 1.1.b])*:
+
+#padded-vertical-grid(
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [(#smallcaps[ConvElem])],
+          $Gamma tack.r a : A'$,
+          $Gamma tack.r jteq(A, A')$,
+          $Gamma tack.r a : A$,
+        ),
+      ),
+      prooftree(
+        rule(
+          name: [(#smallcaps[ConvElemCong])],
+          $Gamma tack.r a eqdot b : A'$,
+          $Gamma tack.r jteq(A, A')$,
+          $Gamma tack.r a eqdot b : A$,
+        ),
+      ),
+    )
+  ],
 )
 
 #show: page
@@ -237,7 +288,7 @@
         $Gamma tack.r a : A$,
       ))
     $
-  ]
+  ] <element-conversion-rule-excercise>
   - Answer:
     #pad(top: 1em, bottom: 2em)[
       #box(width: 100%)[
@@ -256,7 +307,7 @@
                 $Gamma tack.r jteq(A, A')$,
               ),
               rule(
-                name: [($delta$)],
+                name: [(#smallcaps[Var])],
                 $Gamma, x : A' tack.r x : A'$,
                 rule(
                   name: [(#smallcaps[Wf])],
@@ -280,7 +331,7 @@
         $Gamma tack.r a eqdot b : A$,
       ))
     $
-  ]
+  ] <element-conversion-rule-congruence-excercise>
   - Answer:
     #pad(top: 1em, bottom: 2em)[
       #box(width: 100%)[
@@ -299,7 +350,7 @@
                 $Gamma tack.r jteq(A, A')$,
               ),
               rule(
-                name: [($delta$)],
+                name: [(#smallcaps[Var])],
                 $Gamma, x : A' tack.r x : A'$,
                 rule(
                   name: [(#smallcaps[Wf])],
