@@ -12,5 +12,12 @@ jobs:
         with:
           source_file: notes/main.typ
       - run: |
-          ls -al ./notes
-          ls -al ./
+          mkdir -p ./_site
+          cp ./notes/main.pdf ./_site/notes.pdf
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+          retention-days: 30
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
