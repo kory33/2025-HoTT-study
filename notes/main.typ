@@ -232,7 +232,7 @@
     #one-line-grid(
       prooftree(
         rule(
-          name: [($x' slash x$)],
+          name: [(#smallcaps[Rename])],
           $Gamma, x': A, Delta[x' slash x] tack.r cal(J)[x' slash x]$,
           $Gamma, x: A, Delta tack.r cal(J)$,
         ),
