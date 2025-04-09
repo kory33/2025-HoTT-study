@@ -274,6 +274,85 @@
 )
 
 #show: page
+== $Pi$-types
+
+#padded-vertical-grid(
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-Form])],
+          $Gamma tack.r product_((x: A)) B(x) "type"$,
+          $Gamma, x: A tack.r B(x) "type"$,
+        ),
+      ),
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-FormCong])],
+          $Gamma tack.r product_((x: A)) B(x) eqdot product_((x: A')) B'(x) "type"$,
+          $Gamma tack.r jteq(A, A')$,
+          $Gamma, x: A tack.r B(x) eqdot B'(x) "type"$,
+        ),
+      ),
+    )
+  ],
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-Intro])],
+          $Gamma tack.r lambda x. b(x): product_((x: A)) B(x)$,
+          $Gamma, x: A tack.r b(x): B(x)$,
+        ),
+      ),
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-IntroCong])],
+          $Gamma tack.r lambda x. b(x) eqdot lambda x. b'(x): product_((x: A)) B(x)$,
+          $Gamma, x: A tack.r b(x) eqdot b'(x): B(x)$,
+        ),
+      ),
+    )
+  ],
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-Elim])],
+          $Gamma, x: A tack.r f(x): B(x)$,
+          $Gamma tack.r f : product_((x: A)) B(x)$,
+        ),
+      ),
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-ElimCong])],
+          $Gamma, x: A tack.r f(x) eqdot f'(x): B(x)$,
+          $Gamma tack.r f eqdot f' : product_((x: A)) B(x)$,
+        ),
+      ),
+    )
+  ],
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-Comp / $beta$])],
+          $Gamma, x: A tack.r (lambda y. b(y))(x) eqdot b(x): B(x)$,
+          $Gamma, x: A tack.r b(x) : B(x)$,
+        ),
+      ),
+      prooftree(
+        rule(
+          name: [(#smallcaps[$Pi$-CompCong / $eta$])],
+          $Gamma tack.r lambda x. f(x) eqdot f : product_((x: A)) B(x)$,
+          $Gamma tack.r f : product_((x: A)) B(x)$,
+        ),
+      ),
+    )
+  ],
+)
+
+#show: page
 = Answers to Exercises
 == Section 1. Dependent Type Theory
 === Excercise 1.1
