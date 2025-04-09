@@ -352,6 +352,52 @@
   ],
 )
 
+== Ordinary function types
+
+#padded-vertical-grid(
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [(#smallcaps[$arrow.r$-Defn])],
+          $Gamma tack.r A arrow.r B := product_((x: A)) B "type"$,
+          rule(
+            $...$,
+            $Gamma tack.r A "type"$,
+            $Gamma tack.r B "type"$,
+          ),
+        ),
+      ),
+    )
+  ],
+  box(width: 100%)[
+    #one-line-grid(
+      prooftree(
+        rule(
+          name: [(#smallcaps[$"id"_A$-Defn])],
+          $Gamma tack.r "id"_A := lambda x. x : A arrow.r A$,
+          rule(
+            $...$,
+            $Gamma tack.r A "type"$,
+          ),
+        ),
+      ),
+      prooftree(
+        rule(
+          name: [(#smallcaps[$"comp"$-Defn])],
+          $Gamma tack.r "comp" := lambda g. lambda f. lambda x. g(f(x)): C^B arrow.r B^A arrow.r C^A$,
+          rule(
+            $...$,
+            $Gamma tack.r A "type"$,
+            $Gamma tack.r B "type"$,
+            $Gamma tack.r C "type"$,
+          ),
+        ),
+      ),
+    )
+  ],
+)
+
 #show: page
 = Answers to Exercises
 == Section 1. Dependent Type Theory
