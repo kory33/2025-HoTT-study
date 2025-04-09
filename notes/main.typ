@@ -343,7 +343,7 @@
       ),
       prooftree(
         rule(
-          name: [(#smallcaps[$Pi$-CompCong / $eta$])],
+          name: [(#smallcaps[$Pi$-Uniq / $eta$])],
           $Gamma tack.r lambda x. f(x) eqdot f : product_((x: A)) B(x)$,
           $Gamma tack.r f : product_((x: A)) B(x)$,
         ),
