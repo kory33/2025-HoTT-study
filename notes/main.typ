@@ -374,8 +374,8 @@
     #one-line-grid(
       prooftree(
         rule(
-          name: [(#smallcaps[$"id"_A$-Defn])],
-          $Gamma tack.r "id"_A := lambda x. x : A arrow.r A$,
+          name: [(#smallcaps[$sans("id")_A$-Defn])],
+          $Gamma tack.r sans("id")_A := lambda x. x : A arrow.r A$,
           rule(
             $dots.v$,
             $Gamma tack.r A "type"$,
@@ -384,8 +384,8 @@
       ),
       prooftree(
         rule(
-          name: [(#smallcaps[$"comp"$-Defn])],
-          $Gamma tack.r "comp" := lambda g. lambda f. lambda x. g(f(x)): C^B arrow.r B^A arrow.r C^A$,
+          name: [(#smallcaps[$sans("comp")$-Defn])],
+          $Gamma tack.r sans("comp") := lambda g. lambda f. lambda x. g(f(x)): C^B arrow.r B^A arrow.r C^A$,
           rule(
             $dots.v$,
             $Gamma tack.r A "type"$,
