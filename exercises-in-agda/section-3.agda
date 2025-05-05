@@ -36,12 +36,15 @@ module _ where
     module Symbolic where
       _+_ : Nat → Nat → Nat
       _+_ = add
+      infixl 35 _+_
 
       _*_ : Nat → Nat → Nat
       _*_ = mul
+      infixl 40 _*_
 
       _**_ : Nat → Nat → Nat
       _**_ = pow
+      infixl 45 _**_
     open Symbolic
 
     -- exercise 3.2

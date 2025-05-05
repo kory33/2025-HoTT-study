@@ -39,28 +39,28 @@ module _ where
     contrapose f ¬b a = ¬b (f a)
 
   -- 4.4
-  data _+_ (A B : Set) : Set where
-    left : A → A + B
-    right : B → A + B
-  infixl 30 _+_
+  data _+₁_ (A B : Set) : Set where
+    left : A → A +₁ B
+    right : B → A +₁ B
+  infixl 30 _+₁_
 
-  ind-+ : {A B : Set} → {P : A + B → Set} → ((x : A) → P(left x)) → ((y : B) → P(right y)) → (z : A + B) → P z
-  ind-+ pL pR (left x) = pL x
-  ind-+ pL pR (right y) = pR y
+  ind-+₁ : {A B : Set} → {P : A +₁ B → Set} → ((x : A) → P(left x)) → ((y : B) → P(right y)) → (z : A +₁ B) → P z
+  ind-+₁ pL pR (left x) = pL x
+  ind-+₁ pL pR (right y) = pR y
 
-  module +-Basic where
+  module +₁-Basic where
     open EmptyBasic
 
-    <_+_> : {A B A' B' : Set} → (A → A') → (B → B') → (A + B) → (A' + B')
-    < f + g > = ind-+ (λ x → left (f x)) (λ y → right (g y))
+    <_+₁_> : {A B A' B' : Set} → (A → A') → (B → B') → (A +₁ B) → (A' +₁ B')
+    < f +₁ g > = ind-+₁ (λ x → left (f x)) (λ y → right (g y))
 
-    +-emptyRight : {A B : Set} → is-empty B → A + B → A
-    +-emptyRight ¬b (left x) = x
-    +-emptyRight ¬b (right y) = absurd (¬b y)
+    +₁-emptyRight : {A B : Set} → is-empty B → A +₁ B → A
+    +₁-emptyRight ¬b (left x) = x
+    +₁-emptyRight ¬b (right y) = absurd (¬b y)
 
-    +-emptyLeft : {A B : Set} → is-empty A → A + B → B
-    +-emptyLeft ¬a (left x) = absurd (¬a x)
-    +-emptyLeft ¬a (right y) = y
+    +₁-emptyLeft : {A B : Set} → is-empty A → A +₁ B → B
+    +₁-emptyLeft ¬a (left x) = absurd (¬a x)
+    +₁-emptyLeft ¬a (right y) = y
 
   -- 4.5
   data Int : Set where
@@ -120,10 +120,10 @@ module _ where
     mul : Int → Int → Int
     mul zeroInt m = zeroInt
     mul m zeroInt = zeroInt
-    mul (posSucc n) (posSucc m) = posSucc (NatBasic.predOrZero (NatBasic.mul (succ n) (succ m)))
-    mul (posSucc n) (negSucc m) = negSucc (NatBasic.predOrZero (NatBasic.mul (succ n) (succ m)))
-    mul (negSucc n) (posSucc m) = negSucc (NatBasic.predOrZero (NatBasic.mul (succ n) (succ m)))
-    mul (negSucc n) (negSucc m) = posSucc (NatBasic.predOrZero (NatBasic.mul (succ n) (succ m)))
+    mul (posSucc n) (posSucc m) = pred (posSucc (NatBasic.mul (succ n) (succ m)))
+    mul (posSucc n) (negSucc m) = Int-succ (negSucc (NatBasic.mul (succ n) (succ m)))
+    mul (negSucc n) (posSucc m) = Int-succ (negSucc (NatBasic.mul (succ n) (succ m)))
+    mul (negSucc n) (negSucc m) = pred (posSucc (NatBasic.mul (succ n) (succ m)))
 
   -- 4.6
   record Σ (A : Set) (B : A → Set) : Set where
@@ -255,11 +255,11 @@ module _ where
         )
       )
     
-    ex-c-iii : {P Q : Set} → ¬¬ ((P → Q) + (Q → P))
+    ex-c-iii : {P Q : Set} → ¬¬ ((P → Q) +₁ (Q → P))
     ex-c-iii not-dummett-law =
       not-dummett-law (left (λ p → absurd (not-dummett-law (right (λ _ → p)))))
 
-    ex-c-iv : {P : Set} → ¬¬ (P + ¬ P)
+    ex-c-iv : {P : Set} → ¬¬ (P +₁ ¬ P)
     ex-c-iv {P} = do
       p→¬p∨¬p→p ← ex-c-iii {P} {¬ P}
       case p→¬p∨¬p→p of λ
@@ -271,11 +271,11 @@ module _ where
             in map left ¬¬p
         }
 
-    ex-d-i : {P : Set} → (P + ¬ P) → (¬¬ P → P)
+    ex-d-i : {P : Set} → (P +₁ ¬ P) → (¬¬ P → P)
     ex-d-i (left p) ¬¬p = p
     ex-d-i (right ¬p) ¬¬p = absurd (¬¬p ¬p)
 
-    ex-d-ii : {P Q : Set} → (¬¬(Q → P)) ↔ ((P + ¬ P) → (Q → P))
+    ex-d-ii : {P Q : Set} → (¬¬(Q → P)) ↔ ((P +₁ ¬ P) → (Q → P))
     ex-d-ii = pair
       (λ ¬¬qp lem q → case lem of λ
         { (left p) → p
@@ -304,7 +304,7 @@ module _ where
         pure (pair p q)
       })
 
-    ex-f-ii' : {P Q : Set} → ¬ (P + Q) ↔ (¬ P × ¬ Q)
+    ex-f-ii' : {P Q : Set} → ¬ (P +₁ Q) ↔ (¬ P × ¬ Q)
     ex-f-ii' = pair
       (λ ¬p∨q → pair (λ p → ¬p∨q (left p)) (λ q → ¬p∨q (right q)))
       (λ { (pair ¬p _) (left p) → ¬p p ; (pair _ ¬q) (right q) → ¬q q })
@@ -312,7 +312,7 @@ module _ where
     ↔-neg-of-↔ : {P Q : Set} → (P ↔ Q) → (¬ P ↔ ¬ Q)
     ↔-neg-of-↔ (pair p→q q→p) = pair (contrapose q→p) (contrapose p→q)
 
-    ex-f-ii : {P Q : Set} → ¬¬(P + Q) ↔ ¬(¬ P × ¬ Q)
+    ex-f-ii : {P Q : Set} → ¬¬(P +₁ Q) ↔ ¬(¬ P × ¬ Q)
     ex-f-ii = ↔-neg-of-↔ ex-f-ii'
 
     ex-f-iii : {P Q : Set} → ¬¬(P → Q) ↔ (¬¬ P → ¬¬ Q)

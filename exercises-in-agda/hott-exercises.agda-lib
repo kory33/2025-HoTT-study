@@ -2,3 +2,5 @@ depend:
   standard-library
 include:
   .
+flags:
+  --cubical
