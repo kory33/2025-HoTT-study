@@ -96,19 +96,19 @@ module _ where
     negOrZeroOfNat (succ n) = negSucc n
 
     -- exercise 4.1.b
+    Nat-minus : Nat → Nat → Int
+    Nat-minus zero zero = zeroInt
+    Nat-minus zero (succ n) = negSucc n
+    Nat-minus (succ n) zero = posSucc n
+    Nat-minus (succ n) (succ m) = Nat-minus n m
+
     add : Int → Int → Int
     add zeroInt m = m
     add m zeroInt = m
     add (posSucc n) (posSucc m) = posSucc (succ (NatBasic.add n m))
-    add (posSucc zero) (negSucc zero) = zeroInt
-    add (posSucc zero) (negSucc (succ n)) = negSucc n
-    add (posSucc (succ n)) (negSucc zero) = posSucc n
-    add (posSucc (succ n)) (negSucc (succ m)) = add (posSucc n) (negSucc m)
-    add (negSucc zero) (posSucc zero) = zeroInt
-    add (negSucc zero) (posSucc (succ n)) = posSucc n
-    add (negSucc (succ n)) (posSucc zero) = negSucc n
-    add (negSucc (succ n)) (posSucc (succ m)) = add (negSucc n) (posSucc m)
     add (negSucc n) (negSucc m) = negSucc (succ (NatBasic.add n m))
+    add (posSucc n) (negSucc m) = Nat-minus n m
+    add (negSucc n) (posSucc m) = Nat-minus m n
 
     -- exercise 4.1.b
     neg : Int → Int
