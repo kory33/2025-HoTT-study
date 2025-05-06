@@ -1,9 +1,8 @@
-open import section-2
-open import section-3
-
 open import Function.Base using (case_of_)
 
 module _ where
+  open import section-3 public
+
   -- 4.2
   data Unit : Set where
     unit : Unit
@@ -62,6 +61,43 @@ module _ where
     +₁-emptyLeft ¬a (left x) = absurd (¬a x)
     +₁-emptyLeft ¬a (right y) = y
 
+  -- 4.6
+  record Σ (A : Set) (B : A → Set) : Set where
+    constructor pair
+    field
+      fst : A
+      snd : B fst
+  
+  ind-Σ : {A : Set} → {B : A → Set} → {P : (x : Σ A B) → Set} →
+          ((x : A) → (y : B x) → P (pair x y)) →
+          (z : Σ A B) → P z
+  ind-Σ pXY (pair x y) = pXY x y
+
+  module Σ-Basic where
+    pr₁ : {A : Set} → {B : A → Set} → Σ A B → A
+    pr₁ (pair x y) = x
+
+    pr₂ : {A : Set} → {B : A → Set} → (p : Σ A B) → B (pr₁ p)
+    pr₂ (pair x y) = y
+
+    curry : {A : Set} → {B : A → Set} → {P : Σ A B → Set} →
+            ((z : Σ A B) → P z) →
+            (x : A) → (y : B x) → P (pair x y)
+    curry p x y = p (pair x y)
+
+    uncurry : {A : Set} → {B : A → Set} → {P : Σ A B → Set} →
+              ((x : A) → (y : B x) → P (pair x y)) →
+              (z : Σ A B) → P z
+    uncurry = ind-Σ
+
+  _×_ : (A B : Set) → Set
+  A × B = Σ A (λ x → B)
+
+  ind-× : {A B : Set} → {P : A × B → Set} →
+          ((x : A) → (y : B) → P (pair x y)) →
+          (z : A × B) → P z
+  ind-× pXY (pair x y) = pXY x y
+
   -- 4.5
   data Int : Set where
     zeroInt : Int
@@ -102,13 +138,15 @@ module _ where
     Nat-minus (succ n) zero = posSucc n
     Nat-minus (succ n) (succ m) = Nat-minus n m
 
+    asNatDiff : Int → (Nat × Nat)
+    asNatDiff zeroInt = pair zero zero
+    asNatDiff (posSucc n) = pair (succ n) zero
+    asNatDiff (negSucc n) = pair zero (succ n)
+    
     add : Int → Int → Int
-    add zeroInt m = m
-    add m zeroInt = m
-    add (posSucc n) (posSucc m) = posSucc (succ (NatBasic.add n m))
-    add (negSucc n) (negSucc m) = negSucc (succ (NatBasic.add n m))
-    add (posSucc n) (negSucc m) = Nat-minus n m
-    add (negSucc n) (posSucc m) = Nat-minus m n
+    add n m = let (pair n₊ n₋) = asNatDiff n
+                  (pair m₊ m₋) = asNatDiff m
+              in Nat-minus (NatBasic.add n₊ m₊) (NatBasic.add n₋ m₋)
 
     -- exercise 4.1.b
     neg : Int → Int
@@ -118,49 +156,20 @@ module _ where
 
     -- exercise 4.1.c
     mul : Int → Int → Int
-    mul zeroInt m = zeroInt
-    mul m zeroInt = zeroInt
-    mul (posSucc n) (posSucc m) = pred (posSucc (NatBasic.mul (succ n) (succ m)))
-    mul (posSucc n) (negSucc m) = Int-succ (negSucc (NatBasic.mul (succ n) (succ m)))
-    mul (negSucc n) (posSucc m) = Int-succ (negSucc (NatBasic.mul (succ n) (succ m)))
-    mul (negSucc n) (negSucc m) = pred (posSucc (NatBasic.mul (succ n) (succ m)))
+    mul n m = let (pair n₊ n₋) = asNatDiff n
+                  (pair m₊ m₋) = asNatDiff m
+              in Nat-minus
+                (NatBasic.add (NatBasic.mul n₊ m₊) (NatBasic.mul n₋ m₋))
+                (NatBasic.add (NatBasic.mul n₊ m₋) (NatBasic.mul n₋ m₊))
 
-  -- 4.6
-  record Σ (A : Set) (B : A → Set) : Set where
-    constructor pair
-    field
-      fst : A
-      snd : B fst
-  
-  ind-Σ : {A : Set} → {B : A → Set} → {P : (x : Σ A B) → Set} →
-          ((x : A) → (y : B x) → P (pair x y)) →
-          (z : Σ A B) → P z
-  ind-Σ pXY (pair x y) = pXY x y
+    module Symbolic where
+      _+_ : Int → Int → Int
+      _+_ = add
+      infixl 35 _+_
 
-  module Σ-Basic where
-    pr₁ : {A : Set} → {B : A → Set} → Σ A B → A
-    pr₁ (pair x y) = x
-
-    pr₂ : {A : Set} → {B : A → Set} → (p : Σ A B) → B (pr₁ p)
-    pr₂ (pair x y) = y
-
-    curry : {A : Set} → {B : A → Set} → {P : Σ A B → Set} →
-            ((z : Σ A B) → P z) →
-            (x : A) → (y : B x) → P (pair x y)
-    curry p x y = p (pair x y)
-
-    uncurry : {A : Set} → {B : A → Set} → {P : Σ A B → Set} →
-              ((x : A) → (y : B x) → P (pair x y)) →
-              (z : Σ A B) → P z
-    uncurry = ind-Σ
-
-  _×_ : (A B : Set) → Set
-  A × B = Σ A (λ x → B)
-
-  ind-× : {A B : Set} → {P : A × B → Set} →
-          ((x : A) → (y : B) → P (pair x y)) →
-          (z : A × B) → P z
-  ind-× pXY (pair x y) = pXY x y
+      _*_ : Int → Int → Int
+      _*_ = mul
+      infixl 40 _*_
 
   data Bool : Set where
     true false : Bool

@@ -1,6 +1,6 @@
-open import section-2
-
 module _ where
+  open import section-2 public
+
   data Nat : Set where
     zero : Nat
     succ : Nat -> Nat

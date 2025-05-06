@@ -1,10 +1,8 @@
-open import section-2
-open import section-3
-open import section-4
-
 open import Function.Base using (case_of_)
 
 module _ where
+  open import section-4 public
+
   data _≡_ {A : Set} (a : A) : A → Set where
     refl : a ≡ a
 
@@ -60,6 +58,27 @@ module _ where
 
     ap : {A B : Set} → (f : A → B) → {x y : A} → (p : x ≡ y) → f x ≡ f y
     ap f refl = refl
+
+    ap2 : {A B C : Set} →
+         (f : A → B → C) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
+         {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+         f x₁ y₁ ≡ f x₂ y₂
+    ap2 f refl refl = refl
+
+    ap3 : {A B C D : Set} →
+         (f : A → B → C → D) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
+         {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+         {z₁ z₂ : C} → (r : z₁ ≡ z₂) →
+         f x₁ y₁ z₁ ≡ f x₂ y₂ z₂
+    ap3 f refl refl refl = refl
+
+    ap4 : {A B C D E : Set} →
+         (f : A → B → C → D → E) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
+         {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+         {z₁ z₂ : C} → (r : z₁ ≡ z₂) →
+         {w₁ w₂ : D} → (s : w₁ ≡ w₂) →
+         f x₁ y₁ z₁ w₁ ≡ f x₂ y₂ z₂ w₂
+    ap4 f refl refl refl refl = refl
 
     ap-refl : {A B : Set} → (f : A → B) → (x : A) → ap f {x} refl ≡ refl
     ap-refl f x = refl
@@ -427,13 +446,288 @@ module _ where
 
     -- exercise 5.6
     Int-succ-pred : (x : Int) → Int-succ (pred x) ≡ x
-    Int-succ-pred x = {!   !}
+    Int-succ-pred zeroInt = refl
+    Int-succ-pred (posSucc zero) = refl
+    Int-succ-pred (posSucc (succ n)) = refl
+    Int-succ-pred (negSucc n) = refl
 
     Int-pred-succ : (x : Int) → pred (Int-succ x) ≡ x
-    Int-pred-succ x = {!   !}
+    Int-pred-succ zeroInt = refl
+    Int-pred-succ (posSucc n) = refl
+    Int-pred-succ (negSucc zero) = refl
+    Int-pred-succ (negSucc (succ n)) = refl
 
     -- exercise 5.7
     module IntAddAbGroup where
+      open IntBasic public
+      open ≡-Basic public
+      open IntBasic.Symbolic
+      open ≡-Reasoning
+
+      -- exercise 5.7.a
+      add-lunit : (x : Int) → zeroInt + x ≡ x
+      add-lunit zeroInt = refl
+      add-lunit (posSucc n) =
+        begin
+          zeroInt + (posSucc n)
+        ≡⟨⟩
+          Nat-minus (NatBasic.add zero (succ n)) (NatBasic.add zero zero)
+        ≡⟨⟩
+          Nat-minus (NatBasic.add zero (succ n)) zero
+        ≡⟨ ap (λ e → Nat-minus e zero) (NatEquality.add-lunit (succ n)) ⟩
+          Nat-minus (succ n) zero
+        ≡⟨⟩
+          posSucc n
+        ∎
+      add-lunit (negSucc n) =
+        begin
+          zeroInt + (negSucc n)
+        ≡⟨⟩
+          Nat-minus (NatBasic.add zero zero) (NatBasic.add zero (succ n))
+        ≡⟨⟩
+          Nat-minus zero (NatBasic.add zero (succ n))
+        ≡⟨ ap (λ e → Nat-minus zero e) (NatEquality.add-lunit (succ n)) ⟩
+          Nat-minus zero (succ n)
+        ≡⟨⟩
+          negSucc n
+        ∎
+
+      add-runit : (x : Int) → x + zeroInt ≡ x
+      add-runit zeroInt = refl
+      add-runit (posSucc n) = refl
+      add-runit (negSucc n) = refl
+
+      Nat-minus-asNatDiff : (x : Int) → (let (pair x₊ x₋) = asNatDiff x in Nat-minus x₊ x₋) ≡ x
+      Nat-minus-asNatDiff zeroInt = refl
+      Nat-minus-asNatDiff (posSucc zero) = refl
+      Nat-minus-asNatDiff (posSucc (succ n)) = refl
+      Nat-minus-asNatDiff (negSucc zero) = refl
+      Nat-minus-asNatDiff (negSucc (succ n)) = refl
+
+      pred-Nat-minus : (n m : Nat) → pred (Nat-minus n m) ≡ Nat-minus n (succ m)
+      pred-Nat-minus zero zero = refl
+      pred-Nat-minus zero (succ m) = refl
+      pred-Nat-minus (succ zero) zero = refl
+      pred-Nat-minus (succ zero) (succ m) =
+        begin
+          pred (Nat-minus (succ zero) (succ m))
+        ≡⟨⟩
+          pred (Nat-minus zero m)
+        ≡⟨ pred-Nat-minus zero m ⟩
+          Nat-minus zero (succ m)
+        ≡⟨⟩
+          Nat-minus (succ zero) (succ (succ m))
+        ∎
+      pred-Nat-minus (succ (succ n)) zero = refl
+      pred-Nat-minus (succ (succ n)) (succ m) =
+        begin
+          pred (Nat-minus (succ (succ n)) (succ m))
+        ≡⟨⟩
+          pred (Nat-minus (succ n) m)
+        ≡⟨ pred-Nat-minus (succ n) m ⟩
+          Nat-minus (succ n) (succ m)
+        ≡⟨⟩
+          Nat-minus (succ (succ n)) (succ (succ m))
+        ∎
+
+      succ-Nat-minus : (n m : Nat) → Int-succ (Nat-minus n m) ≡ Nat-minus (succ n) m
+      succ-Nat-minus zero zero = refl
+      succ-Nat-minus (succ n) zero = refl
+      succ-Nat-minus zero (succ zero) = refl
+      succ-Nat-minus (succ n) (succ zero) =
+        begin
+          Int-succ (Nat-minus (succ n) (succ zero))
+        ≡⟨⟩
+          Int-succ (Nat-minus n zero)
+        ≡⟨ succ-Nat-minus n zero ⟩
+          Nat-minus (succ n) zero
+        ≡⟨⟩
+          Nat-minus (succ (succ n)) (succ zero)
+        ∎
+      succ-Nat-minus zero (succ (succ m)) = refl
+      succ-Nat-minus (succ n) (succ (succ m)) =
+        begin
+          Int-succ (Nat-minus (succ n) (succ (succ m)))
+        ≡⟨⟩
+          Int-succ (Nat-minus n (succ m))
+        ≡⟨ succ-Nat-minus n (succ m) ⟩
+          Nat-minus (succ n) (succ m)
+        ≡⟨⟩
+          Nat-minus (succ (succ n)) (succ (succ m))
+        ∎
+
+      asNatDiff-Nat-minus-normalization :
+        (x₊ x₋ : Nat) →
+        (let (pair x₊' x₋') = asNatDiff (Nat-minus x₊ x₋)
+         in Σ Nat (λ k → (x₊ ≡ NatBasic.add x₊' k) × (x₋ ≡ NatBasic.add x₋' k)))
+      asNatDiff-Nat-minus-normalization zero zero = pair zero (pair refl refl)
+      asNatDiff-Nat-minus-normalization (succ x₊) zero = pair zero (pair refl refl)
+      asNatDiff-Nat-minus-normalization zero (succ x₋) = pair zero (pair refl refl)
+      asNatDiff-Nat-minus-normalization (succ x₊) (succ x₋) =
+        let (pair k (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
+        in pair (succ k) (pair (ap succ nx₊) (ap succ nx₋))
+
+      Nat-minus-add-same :
+        (x y k : Nat) →
+        Nat-minus (NatBasic.add x k) (NatBasic.add y k) ≡ Nat-minus x y
+      Nat-minus-add-same x y zero = refl
+      Nat-minus-add-same x y (succ k) =
+        begin
+          Nat-minus (NatBasic.add x (succ k)) (NatBasic.add y (succ k))
+        ≡⟨⟩
+          Nat-minus (succ (NatBasic.add x k)) (succ (NatBasic.add y k))
+        ≡⟨⟩
+          Nat-minus (NatBasic.add x k) (NatBasic.add y k)
+        ≡⟨ Nat-minus-add-same x y k ⟩
+          Nat-minus x y
+        ∎
+
+      Nat-minus-add : (x₊ x₋ y₊ y₋ : Nat) →
+        Nat-minus x₊ x₋ + Nat-minus y₊ y₋ ≡ Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)
+      Nat-minus-add x₊ x₋ y₊ y₋ =
+        let (pair x₊' x₋') = asNatDiff (Nat-minus x₊ x₋)
+            (pair y₊' y₋') = asNatDiff (Nat-minus y₊ y₋)
+            (pair kx (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
+            (pair ky (pair ny₊ ny₋)) = asNatDiff-Nat-minus-normalization y₊ y₋
+        in
+          begin
+            Nat-minus x₊ x₋ + Nat-minus y₊ y₋
+          ≡⟨⟩
+            Nat-minus (NatBasic.add x₊' y₊') (NatBasic.add x₋' y₋')
+          ≡⟨ inverse (Nat-minus-add-same (NatBasic.add x₊' y₊') (NatBasic.add x₋' y₋') kx) ⟩
+            Nat-minus
+              (NatBasic.add (NatBasic.add x₊' y₊') kx)
+              (NatBasic.add (NatBasic.add x₋' y₋') kx)
+          ≡⟨ inverse (Nat-minus-add-same (NatBasic.add (NatBasic.add x₊' y₊') kx) (NatBasic.add (NatBasic.add x₋' y₋') kx) ky) ⟩
+            Nat-minus
+              (NatBasic.add (NatBasic.add (NatBasic.add x₊' y₊') kx) ky)
+              (NatBasic.add (NatBasic.add (NatBasic.add x₋' y₋') kx) ky)
+          ≡⟨ (
+            let
+              rearrange : (a b c d : Nat) →
+                (NatBasic.add (NatBasic.add (NatBasic.add a b) c) d) ≡
+                NatBasic.add (NatBasic.add a c) (NatBasic.add b d)
+              rearrange a b c d =
+                begin
+                  NatBasic.add (NatBasic.add (NatBasic.add a b) c) d
+                ≡⟨ ap (λ e → NatBasic.add e d) (NatEquality.add-assoc a b c) ⟩
+                  NatBasic.add (NatBasic.add a (NatBasic.add b c)) d
+                ≡⟨ ap (λ e → NatBasic.add (NatBasic.add a e) d) (NatEquality.add-comm b c) ⟩
+                  NatBasic.add (NatBasic.add a (NatBasic.add c b)) d
+                ≡⟨ ap (λ e → NatBasic.add e d) (inverse (NatEquality.add-assoc a c b) )⟩
+                  NatBasic.add (NatBasic.add (NatBasic.add a c) b) d
+                ≡⟨ NatEquality.add-assoc _ b d ⟩
+                  NatBasic.add (NatBasic.add a c) (NatBasic.add b d)
+                ∎
+            in
+              ap2 (λ e1 e2 → Nat-minus e1 e2) (rearrange x₊' y₊' kx ky) (rearrange x₋' y₋' kx ky)
+          ) ⟩
+            Nat-minus
+              (NatBasic.add (NatBasic.add x₊' kx) (NatBasic.add y₊' ky))
+              (NatBasic.add (NatBasic.add x₋' kx) (NatBasic.add y₋' ky))
+          ≡⟨ inverse (
+            ap4 (λ e1 e2 e3 e4 → Nat-minus (NatBasic.add e1 e2) (NatBasic.add e3 e4)) nx₊ ny₊ nx₋ ny₋
+          ) ⟩
+            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)
+          ∎
+
+      -- exercise 5.7.b
+      add-pred-left : (x y : Int) → pred x + y ≡ pred (x + y)
+      add-pred-left x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            pred x + y
+          ≡⟨ ap (λ e → pred e + y) (inverse (Nat-minus-asNatDiff x)) ⟩
+            pred (Nat-minus x₊ x₋) + y
+          ≡⟨ ap (λ e → e + y) (pred-Nat-minus x₊ x₋) ⟩
+            Nat-minus x₊ (succ x₋) + y
+          ≡⟨ ap (λ e → Nat-minus x₊ (succ x₋) + e) (inverse (Nat-minus-asNatDiff y)) ⟩
+            Nat-minus x₊ (succ x₋) + Nat-minus y₊ y₋
+          ≡⟨ Nat-minus-add x₊ (succ x₋) y₊ y₋ ⟩
+            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add (succ x₋) y₋)
+          ≡⟨ ap (λ e → Nat-minus (NatBasic.add x₊ y₊) e) (NatEquality.add-succ-left x₋ y₋) ⟩
+            Nat-minus (NatBasic.add x₊ y₊) (succ (NatBasic.add x₋ y₋))
+          ≡⟨ inverse (pred-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
+            pred (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+          ≡⟨⟩
+            pred (x + y)
+          ∎
+      
+      add-pred-right : (x y : Int) → x + pred y ≡ pred (x + y)
+      add-pred-right x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            x + pred y
+          ≡⟨ ap (λ e → e + pred y) (inverse (Nat-minus-asNatDiff x)) ⟩
+            Nat-minus x₊ x₋ + pred y
+          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + pred e) (inverse (Nat-minus-asNatDiff y)) ⟩
+            Nat-minus x₊ x₋ + pred (Nat-minus y₊ y₋)
+          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + e) (pred-Nat-minus y₊ y₋) ⟩
+            Nat-minus x₊ x₋ + Nat-minus y₊ (succ y₋)
+          ≡⟨ Nat-minus-add x₊ x₋ y₊ (succ y₋) ⟩
+            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ (succ y₋))
+          ≡⟨⟩
+            Nat-minus (NatBasic.add x₊ y₊) (succ (NatBasic.add x₋ y₋))
+          ≡⟨ inverse (pred-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
+            pred (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+          ≡⟨⟩
+            pred (x + y)
+          ∎
+
+      add-succ-left : (x y : Int) → Int-succ x + y ≡ Int-succ (x + y)
+      add-succ-left x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            Int-succ x + y
+          ≡⟨ ap (λ e → Int-succ e + y) (inverse (Nat-minus-asNatDiff x)) ⟩
+            Int-succ (Nat-minus x₊ x₋) + y
+          ≡⟨ ap (λ e → Int-succ (Nat-minus x₊ x₋) + e) (inverse (Nat-minus-asNatDiff y)) ⟩
+            Int-succ (Nat-minus x₊ x₋) + Nat-minus y₊ y₋
+          ≡⟨ ap (λ e → e + Nat-minus y₊ y₋) (succ-Nat-minus x₊ x₋) ⟩
+            Nat-minus (succ x₊) x₋ + Nat-minus y₊ y₋
+          ≡⟨ Nat-minus-add (succ x₊) x₋ y₊ y₋ ⟩
+            Nat-minus (NatBasic.add (succ x₊) y₊) (NatBasic.add x₋ y₋)
+          ≡⟨ ap (λ e → Nat-minus e (NatBasic.add x₋ y₋)) (NatEquality.add-succ-left x₊ y₊) ⟩
+            Nat-minus (succ (NatBasic.add x₊ y₊)) (NatBasic.add x₋ y₋)
+          ≡⟨ inverse (succ-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
+            Int-succ (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+          ≡⟨⟩
+            Int-succ (x + y)
+          ∎
+      
+      add-succ-right : (x y : Int) → x + Int-succ y ≡ Int-succ (x + y)
+      add-succ-right x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            x + Int-succ y
+          ≡⟨ ap (λ e → e + Int-succ y) (inverse (Nat-minus-asNatDiff x)) ⟩
+            Nat-minus x₊ x₋ + Int-succ y
+          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + Int-succ e) (inverse (Nat-minus-asNatDiff y)) ⟩
+            Nat-minus x₊ x₋ + Int-succ (Nat-minus y₊ y₋)
+          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + e) (succ-Nat-minus y₊ y₋) ⟩
+            Nat-minus x₊ x₋ + Nat-minus (succ y₊) y₋
+          ≡⟨ Nat-minus-add x₊ x₋ (succ y₊) y₋ ⟩
+            Nat-minus (NatBasic.add x₊ (succ y₊)) (NatBasic.add x₋ y₋)
+          ≡⟨⟩
+            Nat-minus (succ (NatBasic.add x₊ y₊)) (NatBasic.add x₋ y₋)
+          ≡⟨ inverse (succ-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
+            Int-succ (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+          ≡⟨⟩
+            Int-succ (x + y)
+          ∎
 
     -- exercise 5.8
     module IntCommRing where
+   
