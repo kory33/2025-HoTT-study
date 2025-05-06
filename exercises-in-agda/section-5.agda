@@ -728,6 +728,60 @@ module _ where
             Int-succ (x + y)
           ∎
 
+      -- exercise 5.7.c
+      add-assoc : (x y z : Int) → (x + y) + z ≡ x + (y + z)
+      add-assoc x y z =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+          (pair z₊ z₋) = asNatDiff z
+        in
+          begin
+            (x + y) + z
+          ≡⟨ ap (λ e → (x + y) + e) (inverse (Nat-minus-asNatDiff z)) ⟩
+            (x + y) + Nat-minus z₊ z₋
+          ≡⟨⟩
+            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋) + Nat-minus z₊ z₋
+          ≡⟨ Nat-minus-add (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋) z₊ z₋ ⟩
+            Nat-minus
+              (NatBasic.add (NatBasic.add x₊ y₊) z₊)
+              (NatBasic.add (NatBasic.add x₋ y₋) z₋)
+          ≡⟨ ap (λ e → Nat-minus e (NatBasic.add (NatBasic.add x₋ y₋) z₋)) (NatEquality.add-assoc x₊ y₊ z₊) ⟩
+            Nat-minus
+              (NatBasic.add x₊ (NatBasic.add y₊ z₊))
+              (NatBasic.add (NatBasic.add x₋ y₋) z₋)
+          ≡⟨ ap (λ e → Nat-minus (NatBasic.add x₊ (NatBasic.add y₊ z₊)) e) (NatEquality.add-assoc x₋ y₋ z₋) ⟩
+            Nat-minus
+              (NatBasic.add x₊ (NatBasic.add y₊ z₊))
+              (NatBasic.add x₋ (NatBasic.add y₋ z₋))
+          ≡⟨ inverse (Nat-minus-add x₊ x₋ (NatBasic.add y₊ z₊) (NatBasic.add y₋ z₋)) ⟩
+            Nat-minus x₊ x₋ + Nat-minus (NatBasic.add y₊ z₊) (NatBasic.add y₋ z₋)
+          ≡⟨⟩
+            Nat-minus x₊ x₋ + (y + z)
+          ≡⟨ ap (λ e → e + (y + z)) (Nat-minus-asNatDiff x) ⟩
+            x + (y + z)
+          ∎
+
+      add-comm : (x y : Int) → x + y ≡ y + x
+      add-comm x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            x + y
+          ≡⟨ ap2 (λ e1 e2 → e1 + e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
+            Nat-minus x₊ x₋ + Nat-minus y₊ y₋
+          ≡⟨ Nat-minus-add x₊ x₋ y₊ y₋ ⟩
+            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)
+          ≡⟨ ap2 (λ e1 e2 → Nat-minus e1 e2) (NatEquality.add-comm x₊ y₊) (NatEquality.add-comm x₋ y₋) ⟩
+            Nat-minus (NatBasic.add y₊ x₊) (NatBasic.add y₋ x₋)
+          ≡⟨ inverse (Nat-minus-add y₊ y₋ x₊ x₋) ⟩
+            Nat-minus y₊ y₋ + Nat-minus x₊ x₋
+          ≡⟨ ap2 (λ e1 e2 → e1 + e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
+            y + x
+          ∎
+
     -- exercise 5.8
     module IntCommRing where
    
