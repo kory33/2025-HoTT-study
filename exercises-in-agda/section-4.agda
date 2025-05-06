@@ -171,6 +171,10 @@ module _ where
       _*_ = mul
       infixl 40 _*_
 
+      -_ : Int → Int
+      -_ = neg
+      infixl 50 -_
+
   data Bool : Set where
     true false : Bool
   

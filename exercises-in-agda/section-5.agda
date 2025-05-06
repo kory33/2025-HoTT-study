@@ -770,6 +770,64 @@ module _ where
             y + x
           ∎
 
+      -- exercise 5.7.d
+      Nat-minus-eq-zero : (x : Nat) → Nat-minus x x ≡ zeroInt
+      Nat-minus-eq-zero zero = refl
+      Nat-minus-eq-zero (succ x) =
+        begin
+          Nat-minus (succ x) (succ x)
+        ≡⟨⟩
+          Nat-minus x x
+        ≡⟨ Nat-minus-eq-zero x ⟩
+          zeroInt
+        ∎
+
+      left-inverse : (x : Int) → (- x) + x ≡ zeroInt
+      left-inverse zeroInt = refl
+      left-inverse (posSucc n) =
+        begin
+          (- (posSucc n)) + (posSucc n)
+        ≡⟨⟩
+          Nat-minus (NatBasic.add zero n) n
+        ≡⟨ ap (λ e → Nat-minus e n) (NatEquality.add-lunit n) ⟩
+          Nat-minus n n
+        ≡⟨ Nat-minus-eq-zero n ⟩
+          zeroInt          
+        ∎
+      left-inverse (negSucc n) =
+        begin
+          (- (negSucc n)) + (negSucc n)
+        ≡⟨⟩
+          Nat-minus n (NatBasic.add zero n)
+        ≡⟨ ap (λ e → Nat-minus n e) (NatEquality.add-lunit n) ⟩
+          Nat-minus n n
+        ≡⟨ Nat-minus-eq-zero n ⟩
+          zeroInt          
+        ∎
+      
+      right-inverse : (x : Int) → x + (- x) ≡ zeroInt
+      right-inverse zeroInt = refl
+      right-inverse (posSucc n) =
+        begin
+          (posSucc n) + (- (posSucc n))
+        ≡⟨⟩
+          Nat-minus n (NatBasic.add zero n)
+        ≡⟨ ap (λ e → Nat-minus n e) (NatEquality.add-lunit n) ⟩
+          Nat-minus n n
+        ≡⟨ Nat-minus-eq-zero n ⟩
+          zeroInt
+        ∎
+      right-inverse (negSucc n) =
+        begin
+          (negSucc n) + (- (negSucc n))
+        ≡⟨⟩
+          Nat-minus (NatBasic.add zero n) n
+        ≡⟨ ap (λ e → Nat-minus e n) (NatEquality.add-lunit n) ⟩
+          Nat-minus n n
+        ≡⟨ Nat-minus-eq-zero n ⟩
+          zeroInt
+        ∎
+
     -- exercise 5.8
     module IntCommRing where
-   
+    
