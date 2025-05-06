@@ -640,11 +640,9 @@ module _ where
         in
           begin
             pred x + y
-          ≡⟨ ap (λ e → pred e + y) (inverse (Nat-minus-asNatDiff x)) ⟩
-            pred (Nat-minus x₊ x₋) + y
-          ≡⟨ ap (λ e → e + y) (pred-Nat-minus x₊ x₋) ⟩
-            Nat-minus x₊ (succ x₋) + y
-          ≡⟨ ap (λ e → Nat-minus x₊ (succ x₋) + e) (inverse (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨ ap2 (λ e1 e2 → pred e1 + e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
+            pred (Nat-minus x₊ x₋) + Nat-minus y₊ y₋
+          ≡⟨ ap (λ e → e + Nat-minus y₊ y₋) (pred-Nat-minus x₊ x₋) ⟩
             Nat-minus x₊ (succ x₋) + Nat-minus y₊ y₋
           ≡⟨ Nat-minus-add x₊ (succ x₋) y₊ y₋ ⟩
             Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add (succ x₋) y₋)
@@ -664,9 +662,7 @@ module _ where
         in
           begin
             x + pred y
-          ≡⟨ ap (λ e → e + pred y) (inverse (Nat-minus-asNatDiff x)) ⟩
-            Nat-minus x₊ x₋ + pred y
-          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + pred e) (inverse (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨ ap2 (λ e1 e2 → e1 + pred e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
             Nat-minus x₊ x₋ + pred (Nat-minus y₊ y₋)
           ≡⟨ ap (λ e → Nat-minus x₊ x₋ + e) (pred-Nat-minus y₊ y₋) ⟩
             Nat-minus x₊ x₋ + Nat-minus y₊ (succ y₋)
@@ -688,9 +684,7 @@ module _ where
         in
           begin
             Int-succ x + y
-          ≡⟨ ap (λ e → Int-succ e + y) (inverse (Nat-minus-asNatDiff x)) ⟩
-            Int-succ (Nat-minus x₊ x₋) + y
-          ≡⟨ ap (λ e → Int-succ (Nat-minus x₊ x₋) + e) (inverse (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨ ap2 (λ e1 e2 → Int-succ e1 + e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
             Int-succ (Nat-minus x₊ x₋) + Nat-minus y₊ y₋
           ≡⟨ ap (λ e → e + Nat-minus y₊ y₋) (succ-Nat-minus x₊ x₋) ⟩
             Nat-minus (succ x₊) x₋ + Nat-minus y₊ y₋
@@ -712,9 +706,7 @@ module _ where
         in
           begin
             x + Int-succ y
-          ≡⟨ ap (λ e → e + Int-succ y) (inverse (Nat-minus-asNatDiff x)) ⟩
-            Nat-minus x₊ x₋ + Int-succ y
-          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + Int-succ e) (inverse (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨ ap2 (λ e1 e2 → e1 + Int-succ e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
             Nat-minus x₊ x₋ + Int-succ (Nat-minus y₊ y₋)
           ≡⟨ ap (λ e → Nat-minus x₊ x₋ + e) (succ-Nat-minus y₊ y₋) ⟩
             Nat-minus x₊ x₋ + Nat-minus (succ y₊) y₋
@@ -746,11 +738,7 @@ module _ where
             Nat-minus
               (NatBasic.add (NatBasic.add x₊ y₊) z₊)
               (NatBasic.add (NatBasic.add x₋ y₋) z₋)
-          ≡⟨ ap (λ e → Nat-minus e (NatBasic.add (NatBasic.add x₋ y₋) z₋)) (NatEquality.add-assoc x₊ y₊ z₊) ⟩
-            Nat-minus
-              (NatBasic.add x₊ (NatBasic.add y₊ z₊))
-              (NatBasic.add (NatBasic.add x₋ y₋) z₋)
-          ≡⟨ ap (λ e → Nat-minus (NatBasic.add x₊ (NatBasic.add y₊ z₊)) e) (NatEquality.add-assoc x₋ y₋ z₋) ⟩
+          ≡⟨ ap2 (λ e1 e2 → Nat-minus e1 e2) (NatEquality.add-assoc x₊ y₊ z₊) (NatEquality.add-assoc x₋ y₋ z₋) ⟩
             Nat-minus
               (NatBasic.add x₊ (NatBasic.add y₊ z₊))
               (NatBasic.add x₋ (NatBasic.add y₋ z₋))
