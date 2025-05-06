@@ -277,8 +277,8 @@ module _ where
 
   -- exercise 5.5
   module NatCommSemiring where
+    open NatEquality public
     open NatBasic.Symbolic
-    open NatEquality
     open ≡-Reasoning
 
     mul-rzero : (n : Nat) → n * zero ≡ zero
@@ -461,7 +461,9 @@ module _ where
     module IntAddAbGroup where
       open IntBasic public
       open ≡-Basic public
+      open NatBasic.SymbolicQuantified
       open IntBasic.Symbolic
+      open IntBasic.SymbolicQuantified
       open ≡-Reasoning
 
       -- exercise 5.7.a
@@ -471,11 +473,11 @@ module _ where
         begin
           zeroInt + (posSucc n)
         ≡⟨⟩
-          Nat-minus (NatBasic.add zero (succ n)) (NatBasic.add zero zero)
+          (zero +ℕ (succ n)) -ℕ (zero +ℕ zero)
         ≡⟨⟩
-          Nat-minus (NatBasic.add zero (succ n)) zero
-        ≡⟨ ap (λ e → Nat-minus e zero) (NatEquality.add-lunit (succ n)) ⟩
-          Nat-minus (succ n) zero
+          (zero +ℕ (succ n)) -ℕ zero
+        ≡⟨ ap (λ e → e -ℕ zero) (NatEquality.add-lunit (succ n)) ⟩
+          (succ n) -ℕ zero
         ≡⟨⟩
           posSucc n
         ∎
@@ -483,11 +485,11 @@ module _ where
         begin
           zeroInt + (negSucc n)
         ≡⟨⟩
-          Nat-minus (NatBasic.add zero zero) (NatBasic.add zero (succ n))
+          (zero +ℕ zero) -ℕ (zero +ℕ (succ n))
         ≡⟨⟩
-          Nat-minus zero (NatBasic.add zero (succ n))
-        ≡⟨ ap (λ e → Nat-minus zero e) (NatEquality.add-lunit (succ n)) ⟩
-          Nat-minus zero (succ n)
+          zero -ℕ (zero +ℕ (succ n))
+        ≡⟨ ap (λ e → zero -ℕ e) (NatEquality.add-lunit (succ n)) ⟩
+          zero -ℕ (succ n)
         ≡⟨⟩
           negSucc n
         ∎
@@ -497,69 +499,69 @@ module _ where
       add-runit (posSucc n) = refl
       add-runit (negSucc n) = refl
 
-      Nat-minus-asNatDiff : (x : Int) → (let (pair x₊ x₋) = asNatDiff x in Nat-minus x₊ x₋) ≡ x
+      Nat-minus-asNatDiff : (x : Int) → (let (pair x₊ x₋) = asNatDiff x in x₊ -ℕ x₋) ≡ x
       Nat-minus-asNatDiff zeroInt = refl
       Nat-minus-asNatDiff (posSucc zero) = refl
       Nat-minus-asNatDiff (posSucc (succ n)) = refl
       Nat-minus-asNatDiff (negSucc zero) = refl
       Nat-minus-asNatDiff (negSucc (succ n)) = refl
 
-      pred-Nat-minus : (n m : Nat) → pred (Nat-minus n m) ≡ Nat-minus n (succ m)
+      pred-Nat-minus : (n m : Nat) → pred (n -ℕ m) ≡ n -ℕ (succ m)
       pred-Nat-minus zero zero = refl
       pred-Nat-minus zero (succ m) = refl
       pred-Nat-minus (succ zero) zero = refl
       pred-Nat-minus (succ zero) (succ m) =
         begin
-          pred (Nat-minus (succ zero) (succ m))
+          pred ((succ zero) -ℕ (succ m))
         ≡⟨⟩
-          pred (Nat-minus zero m)
+          pred (zero -ℕ m)
         ≡⟨ pred-Nat-minus zero m ⟩
-          Nat-minus zero (succ m)
+          zero -ℕ (succ m)
         ≡⟨⟩
-          Nat-minus (succ zero) (succ (succ m))
+          (succ zero) -ℕ (succ (succ m))
         ∎
       pred-Nat-minus (succ (succ n)) zero = refl
       pred-Nat-minus (succ (succ n)) (succ m) =
         begin
-          pred (Nat-minus (succ (succ n)) (succ m))
+          pred ((succ (succ n)) -ℕ (succ m))
         ≡⟨⟩
-          pred (Nat-minus (succ n) m)
+          pred ((succ n) -ℕ m)
         ≡⟨ pred-Nat-minus (succ n) m ⟩
-          Nat-minus (succ n) (succ m)
+          (succ n) -ℕ (succ m)
         ≡⟨⟩
-          Nat-minus (succ (succ n)) (succ (succ m))
+          (succ (succ n)) -ℕ (succ (succ m))
         ∎
 
-      succ-Nat-minus : (n m : Nat) → Int-succ (Nat-minus n m) ≡ Nat-minus (succ n) m
+      succ-Nat-minus : (n m : Nat) → Int-succ (n -ℕ m) ≡ (succ n) -ℕ m
       succ-Nat-minus zero zero = refl
       succ-Nat-minus (succ n) zero = refl
       succ-Nat-minus zero (succ zero) = refl
       succ-Nat-minus (succ n) (succ zero) =
         begin
-          Int-succ (Nat-minus (succ n) (succ zero))
+          Int-succ ((succ n) -ℕ (succ zero))
         ≡⟨⟩
-          Int-succ (Nat-minus n zero)
+          Int-succ (n -ℕ zero)
         ≡⟨ succ-Nat-minus n zero ⟩
-          Nat-minus (succ n) zero
+          (succ n) -ℕ zero
         ≡⟨⟩
-          Nat-minus (succ (succ n)) (succ zero)
+          (succ (succ n)) -ℕ (succ zero)
         ∎
       succ-Nat-minus zero (succ (succ m)) = refl
       succ-Nat-minus (succ n) (succ (succ m)) =
         begin
-          Int-succ (Nat-minus (succ n) (succ (succ m)))
+          Int-succ ((succ n) -ℕ (succ (succ m)))
         ≡⟨⟩
-          Int-succ (Nat-minus n (succ m))
+          Int-succ (n -ℕ (succ m))
         ≡⟨ succ-Nat-minus n (succ m) ⟩
-          Nat-minus (succ n) (succ m)
+          (succ n) -ℕ (succ m)
         ≡⟨⟩
-          Nat-minus (succ (succ n)) (succ (succ m))
+          (succ (succ n)) -ℕ (succ (succ m))
         ∎
 
       asNatDiff-Nat-minus-normalization :
         (x₊ x₋ : Nat) →
-        (let (pair x₊' x₋') = asNatDiff (Nat-minus x₊ x₋)
-         in Σ Nat (λ k → (x₊ ≡ NatBasic.add x₊' k) × (x₋ ≡ NatBasic.add x₋' k)))
+        (let (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
+         in Σ Nat (λ k → (x₊ ≡ x₊' +ℕ k) × (x₋ ≡ x₋' +ℕ k)))
       asNatDiff-Nat-minus-normalization zero zero = pair zero (pair refl refl)
       asNatDiff-Nat-minus-normalization (succ x₊) zero = pair zero (pair refl refl)
       asNatDiff-Nat-minus-normalization zero (succ x₋) = pair zero (pair refl refl)
@@ -569,66 +571,63 @@ module _ where
 
       Nat-minus-add-same :
         (x y k : Nat) →
-        Nat-minus (NatBasic.add x k) (NatBasic.add y k) ≡ Nat-minus x y
+        (x +ℕ k) -ℕ (y +ℕ k) ≡ x -ℕ y
       Nat-minus-add-same x y zero = refl
       Nat-minus-add-same x y (succ k) =
         begin
-          Nat-minus (NatBasic.add x (succ k)) (NatBasic.add y (succ k))
+          (x +ℕ (succ k)) -ℕ (y +ℕ (succ k))
         ≡⟨⟩
-          Nat-minus (succ (NatBasic.add x k)) (succ (NatBasic.add y k))
+          (succ (x +ℕ k)) -ℕ (succ (y +ℕ k))
         ≡⟨⟩
-          Nat-minus (NatBasic.add x k) (NatBasic.add y k)
+          (x +ℕ k) -ℕ (y +ℕ k)
         ≡⟨ Nat-minus-add-same x y k ⟩
-          Nat-minus x y
+          x -ℕ y
         ∎
 
       Nat-minus-add : (x₊ x₋ y₊ y₋ : Nat) →
-        Nat-minus x₊ x₋ + Nat-minus y₊ y₋ ≡ Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)
+        (x₊ -ℕ x₋) + (y₊ -ℕ y₋) ≡ (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
       Nat-minus-add x₊ x₋ y₊ y₋ =
-        let (pair x₊' x₋') = asNatDiff (Nat-minus x₊ x₋)
-            (pair y₊' y₋') = asNatDiff (Nat-minus y₊ y₋)
+        let (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
+            (pair y₊' y₋') = asNatDiff (y₊ -ℕ y₋)
             (pair kx (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
             (pair ky (pair ny₊ ny₋)) = asNatDiff-Nat-minus-normalization y₊ y₋
         in
           begin
-            Nat-minus x₊ x₋ + Nat-minus y₊ y₋
+            (x₊ -ℕ x₋) + (y₊ -ℕ y₋)
           ≡⟨⟩
-            Nat-minus (NatBasic.add x₊' y₊') (NatBasic.add x₋' y₋')
-          ≡⟨ inverse (Nat-minus-add-same (NatBasic.add x₊' y₊') (NatBasic.add x₋' y₋') kx) ⟩
-            Nat-minus
-              (NatBasic.add (NatBasic.add x₊' y₊') kx)
-              (NatBasic.add (NatBasic.add x₋' y₋') kx)
-          ≡⟨ inverse (Nat-minus-add-same (NatBasic.add (NatBasic.add x₊' y₊') kx) (NatBasic.add (NatBasic.add x₋' y₋') kx) ky) ⟩
-            Nat-minus
-              (NatBasic.add (NatBasic.add (NatBasic.add x₊' y₊') kx) ky)
-              (NatBasic.add (NatBasic.add (NatBasic.add x₋' y₋') kx) ky)
+            (x₊' +ℕ y₊') -ℕ (x₋' +ℕ y₋')
+          ≡⟨ inverse (Nat-minus-add-same (x₊' +ℕ y₊') (x₋' +ℕ y₋') kx) ⟩
+            ((x₊' +ℕ y₊') +ℕ kx) -ℕ
+            ((x₋' +ℕ y₋') +ℕ kx)
+          ≡⟨ inverse (Nat-minus-add-same ((x₊' +ℕ y₊') +ℕ kx) ((x₋' +ℕ y₋') +ℕ kx) ky) ⟩
+            (((x₊' +ℕ y₊') +ℕ kx) +ℕ ky) -ℕ
+            (((x₋' +ℕ y₋') +ℕ kx) +ℕ ky)
           ≡⟨ (
             let
               rearrange : (a b c d : Nat) →
-                (NatBasic.add (NatBasic.add (NatBasic.add a b) c) d) ≡
-                NatBasic.add (NatBasic.add a c) (NatBasic.add b d)
+                (((a +ℕ b) +ℕ c) +ℕ d) ≡
+                (a +ℕ c) +ℕ (b +ℕ d)
               rearrange a b c d =
                 begin
-                  NatBasic.add (NatBasic.add (NatBasic.add a b) c) d
-                ≡⟨ ap (λ e → NatBasic.add e d) (NatEquality.add-assoc a b c) ⟩
-                  NatBasic.add (NatBasic.add a (NatBasic.add b c)) d
-                ≡⟨ ap (λ e → NatBasic.add (NatBasic.add a e) d) (NatEquality.add-comm b c) ⟩
-                  NatBasic.add (NatBasic.add a (NatBasic.add c b)) d
-                ≡⟨ ap (λ e → NatBasic.add e d) (inverse (NatEquality.add-assoc a c b) )⟩
-                  NatBasic.add (NatBasic.add (NatBasic.add a c) b) d
+                  ((a +ℕ b) +ℕ c) +ℕ d
+                ≡⟨ ap (λ e → e +ℕ d) (NatEquality.add-assoc a b c) ⟩
+                  (a +ℕ (b +ℕ c)) +ℕ d
+                ≡⟨ ap (λ e → (a +ℕ e) +ℕ d) (NatEquality.add-comm b c) ⟩
+                  (a +ℕ (c +ℕ b)) +ℕ d
+                ≡⟨ ap (λ e → e +ℕ d) (inverse (NatEquality.add-assoc a c b) )⟩
+                  ((a +ℕ c) +ℕ b) +ℕ d
                 ≡⟨ NatEquality.add-assoc _ b d ⟩
-                  NatBasic.add (NatBasic.add a c) (NatBasic.add b d)
+                  (a +ℕ c) +ℕ (b +ℕ d)
                 ∎
             in
-              ap2 (λ e1 e2 → Nat-minus e1 e2) (rearrange x₊' y₊' kx ky) (rearrange x₋' y₋' kx ky)
+              ap2 (λ e1 e2 → e1 -ℕ e2) (rearrange x₊' y₊' kx ky) (rearrange x₋' y₋' kx ky)
           ) ⟩
-            Nat-minus
-              (NatBasic.add (NatBasic.add x₊' kx) (NatBasic.add y₊' ky))
-              (NatBasic.add (NatBasic.add x₋' kx) (NatBasic.add y₋' ky))
+            ((x₊' +ℕ kx) +ℕ (y₊' +ℕ ky)) -ℕ
+            ((x₋' +ℕ kx) +ℕ (y₋' +ℕ ky))
           ≡⟨ inverse (
-            ap4 (λ e1 e2 e3 e4 → Nat-minus (NatBasic.add e1 e2) (NatBasic.add e3 e4)) nx₊ ny₊ nx₋ ny₋
+            ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4)) nx₊ ny₊ nx₋ ny₋
           ) ⟩
-            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)
+            (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
           ∎
 
       -- exercise 5.7.b
@@ -641,15 +640,15 @@ module _ where
           begin
             pred x + y
           ≡⟨ ap2 (λ e1 e2 → pred e1 + e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
-            pred (Nat-minus x₊ x₋) + Nat-minus y₊ y₋
-          ≡⟨ ap (λ e → e + Nat-minus y₊ y₋) (pred-Nat-minus x₊ x₋) ⟩
-            Nat-minus x₊ (succ x₋) + Nat-minus y₊ y₋
+            pred (x₊ -ℕ x₋) + (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → e + (y₊ -ℕ y₋)) (pred-Nat-minus x₊ x₋) ⟩
+            (x₊ -ℕ (succ x₋)) + (y₊ -ℕ y₋)
           ≡⟨ Nat-minus-add x₊ (succ x₋) y₊ y₋ ⟩
-            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add (succ x₋) y₋)
-          ≡⟨ ap (λ e → Nat-minus (NatBasic.add x₊ y₊) e) (NatEquality.add-succ-left x₋ y₋) ⟩
-            Nat-minus (NatBasic.add x₊ y₊) (succ (NatBasic.add x₋ y₋))
-          ≡⟨ inverse (pred-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
-            pred (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+            (x₊ +ℕ y₊) -ℕ ((succ x₋) +ℕ y₋)
+          ≡⟨ ap (λ e → (x₊ +ℕ y₊) -ℕ e) (NatEquality.add-succ-left x₋ y₋) ⟩
+            (x₊ +ℕ y₊) -ℕ (succ (x₋ +ℕ y₋))
+          ≡⟨ inverse (pred-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+            pred ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             pred (x + y)
           ∎
@@ -663,15 +662,15 @@ module _ where
           begin
             x + pred y
           ≡⟨ ap2 (λ e1 e2 → e1 + pred e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
-            Nat-minus x₊ x₋ + pred (Nat-minus y₊ y₋)
-          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + e) (pred-Nat-minus y₊ y₋) ⟩
-            Nat-minus x₊ x₋ + Nat-minus y₊ (succ y₋)
+            (x₊ -ℕ x₋) + pred (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → (x₊ -ℕ x₋) + e) (pred-Nat-minus y₊ y₋) ⟩
+            (x₊ -ℕ x₋) + (y₊ -ℕ (succ y₋))
           ≡⟨ Nat-minus-add x₊ x₋ y₊ (succ y₋) ⟩
-            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ (succ y₋))
+            (x₊ +ℕ y₊) -ℕ (x₋ +ℕ (succ y₋))
           ≡⟨⟩
-            Nat-minus (NatBasic.add x₊ y₊) (succ (NatBasic.add x₋ y₋))
-          ≡⟨ inverse (pred-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
-            pred (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+            (x₊ +ℕ y₊) -ℕ (succ (x₋ +ℕ y₋))
+          ≡⟨ inverse (pred-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+            pred ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             pred (x + y)
           ∎
@@ -685,15 +684,15 @@ module _ where
           begin
             Int-succ x + y
           ≡⟨ ap2 (λ e1 e2 → Int-succ e1 + e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
-            Int-succ (Nat-minus x₊ x₋) + Nat-minus y₊ y₋
-          ≡⟨ ap (λ e → e + Nat-minus y₊ y₋) (succ-Nat-minus x₊ x₋) ⟩
-            Nat-minus (succ x₊) x₋ + Nat-minus y₊ y₋
+            Int-succ (x₊ -ℕ x₋) + (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → e + (y₊ -ℕ y₋)) (succ-Nat-minus x₊ x₋) ⟩
+            ((succ x₊) -ℕ x₋) + (y₊ -ℕ y₋)
           ≡⟨ Nat-minus-add (succ x₊) x₋ y₊ y₋ ⟩
-            Nat-minus (NatBasic.add (succ x₊) y₊) (NatBasic.add x₋ y₋)
-          ≡⟨ ap (λ e → Nat-minus e (NatBasic.add x₋ y₋)) (NatEquality.add-succ-left x₊ y₊) ⟩
-            Nat-minus (succ (NatBasic.add x₊ y₊)) (NatBasic.add x₋ y₋)
-          ≡⟨ inverse (succ-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
-            Int-succ (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+            ((succ x₊) +ℕ y₊) -ℕ (x₋ +ℕ y₋)
+          ≡⟨ ap (λ e → e -ℕ (x₋ +ℕ y₋)) (NatEquality.add-succ-left x₊ y₊) ⟩
+            (succ (x₊ +ℕ y₊)) -ℕ (x₋ +ℕ y₋)
+          ≡⟨ inverse (succ-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+            Int-succ ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             Int-succ (x + y)
           ∎
@@ -707,15 +706,15 @@ module _ where
           begin
             x + Int-succ y
           ≡⟨ ap2 (λ e1 e2 → e1 + Int-succ e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
-            Nat-minus x₊ x₋ + Int-succ (Nat-minus y₊ y₋)
-          ≡⟨ ap (λ e → Nat-minus x₊ x₋ + e) (succ-Nat-minus y₊ y₋) ⟩
-            Nat-minus x₊ x₋ + Nat-minus (succ y₊) y₋
+            (x₊ -ℕ x₋) + Int-succ (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → (x₊ -ℕ x₋) + e) (succ-Nat-minus y₊ y₋) ⟩
+            (x₊ -ℕ x₋) + ((succ y₊) -ℕ y₋)
           ≡⟨ Nat-minus-add x₊ x₋ (succ y₊) y₋ ⟩
-            Nat-minus (NatBasic.add x₊ (succ y₊)) (NatBasic.add x₋ y₋)
+            (x₊ +ℕ (succ y₊)) -ℕ (x₋ +ℕ y₋)
           ≡⟨⟩
-            Nat-minus (succ (NatBasic.add x₊ y₊)) (NatBasic.add x₋ y₋)
-          ≡⟨ inverse (succ-Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)) ⟩
-            Int-succ (Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋))
+            (succ (x₊ +ℕ y₊)) -ℕ (x₋ +ℕ y₋)
+          ≡⟨ inverse (succ-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+            Int-succ ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             Int-succ (x + y)
           ∎
@@ -731,21 +730,19 @@ module _ where
           begin
             (x + y) + z
           ≡⟨ ap (λ e → (x + y) + e) (inverse (Nat-minus-asNatDiff z)) ⟩
-            (x + y) + Nat-minus z₊ z₋
+            (x + y) + (z₊ -ℕ z₋)
           ≡⟨⟩
-            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋) + Nat-minus z₊ z₋
-          ≡⟨ Nat-minus-add (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋) z₊ z₋ ⟩
-            Nat-minus
-              (NatBasic.add (NatBasic.add x₊ y₊) z₊)
-              (NatBasic.add (NatBasic.add x₋ y₋) z₋)
-          ≡⟨ ap2 (λ e1 e2 → Nat-minus e1 e2) (NatEquality.add-assoc x₊ y₊ z₊) (NatEquality.add-assoc x₋ y₋ z₋) ⟩
-            Nat-minus
-              (NatBasic.add x₊ (NatBasic.add y₊ z₊))
-              (NatBasic.add x₋ (NatBasic.add y₋ z₋))
-          ≡⟨ inverse (Nat-minus-add x₊ x₋ (NatBasic.add y₊ z₊) (NatBasic.add y₋ z₋)) ⟩
-            Nat-minus x₊ x₋ + Nat-minus (NatBasic.add y₊ z₊) (NatBasic.add y₋ z₋)
+            ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)) + (z₊ -ℕ z₋)
+          ≡⟨ Nat-minus-add (x₊ +ℕ y₊) (x₋ +ℕ y₋) z₊ z₋ ⟩
+            ((x₊ +ℕ y₊) +ℕ z₊) -ℕ
+            ((x₋ +ℕ y₋) +ℕ z₋)
+          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatEquality.add-assoc x₊ y₊ z₊) (NatEquality.add-assoc x₋ y₋ z₋) ⟩
+            (x₊ +ℕ (y₊ +ℕ z₊)) -ℕ
+            (x₋ +ℕ (y₋ +ℕ z₋))
+          ≡⟨ inverse (Nat-minus-add x₊ x₋ (y₊ +ℕ z₊) (y₋ +ℕ z₋)) ⟩
+            (x₊ -ℕ x₋) + ((y₊ +ℕ z₊) -ℕ (y₋ +ℕ z₋))
           ≡⟨⟩
-            Nat-minus x₊ x₋ + (y + z)
+            (x₊ -ℕ x₋) + (y + z)
           ≡⟨ ap (λ e → e + (y + z)) (Nat-minus-asNatDiff x) ⟩
             x + (y + z)
           ∎
@@ -759,25 +756,25 @@ module _ where
           begin
             x + y
           ≡⟨ ap2 (λ e1 e2 → e1 + e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
-            Nat-minus x₊ x₋ + Nat-minus y₊ y₋
+            (x₊ -ℕ x₋) + (y₊ -ℕ y₋)
           ≡⟨ Nat-minus-add x₊ x₋ y₊ y₋ ⟩
-            Nat-minus (NatBasic.add x₊ y₊) (NatBasic.add x₋ y₋)
-          ≡⟨ ap2 (λ e1 e2 → Nat-minus e1 e2) (NatEquality.add-comm x₊ y₊) (NatEquality.add-comm x₋ y₋) ⟩
-            Nat-minus (NatBasic.add y₊ x₊) (NatBasic.add y₋ x₋)
+            (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
+          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatEquality.add-comm x₊ y₊) (NatEquality.add-comm x₋ y₋) ⟩
+            (y₊ +ℕ x₊) -ℕ (y₋ +ℕ x₋)
           ≡⟨ inverse (Nat-minus-add y₊ y₋ x₊ x₋) ⟩
-            Nat-minus y₊ y₋ + Nat-minus x₊ x₋
+            (y₊ -ℕ y₋) + (x₊ -ℕ x₋)
           ≡⟨ ap2 (λ e1 e2 → e1 + e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
             y + x
           ∎
 
       -- exercise 5.7.d
-      Nat-minus-eq-zero : (x : Nat) → Nat-minus x x ≡ zeroInt
+      Nat-minus-eq-zero : (x : Nat) → x -ℕ x ≡ zeroInt
       Nat-minus-eq-zero zero = refl
       Nat-minus-eq-zero (succ x) =
         begin
-          Nat-minus (succ x) (succ x)
+          (succ x) -ℕ (succ x)
         ≡⟨⟩
-          Nat-minus x x
+          x -ℕ x
         ≡⟨ Nat-minus-eq-zero x ⟩
           zeroInt
         ∎
@@ -788,9 +785,9 @@ module _ where
         begin
           (- (posSucc n)) + (posSucc n)
         ≡⟨⟩
-          Nat-minus (NatBasic.add zero n) n
-        ≡⟨ ap (λ e → Nat-minus e n) (NatEquality.add-lunit n) ⟩
-          Nat-minus n n
+          (zero +ℕ n) -ℕ n
+        ≡⟨ ap (λ e → e -ℕ n) (NatEquality.add-lunit n) ⟩
+          n -ℕ n
         ≡⟨ Nat-minus-eq-zero n ⟩
           zeroInt          
         ∎
@@ -798,9 +795,9 @@ module _ where
         begin
           (- (negSucc n)) + (negSucc n)
         ≡⟨⟩
-          Nat-minus n (NatBasic.add zero n)
-        ≡⟨ ap (λ e → Nat-minus n e) (NatEquality.add-lunit n) ⟩
-          Nat-minus n n
+          n -ℕ (zero +ℕ n)
+        ≡⟨ ap (λ e → n -ℕ e) (NatEquality.add-lunit n) ⟩
+          n -ℕ n
         ≡⟨ Nat-minus-eq-zero n ⟩
           zeroInt          
         ∎
@@ -811,9 +808,9 @@ module _ where
         begin
           (posSucc n) + (- (posSucc n))
         ≡⟨⟩
-          Nat-minus n (NatBasic.add zero n)
-        ≡⟨ ap (λ e → Nat-minus n e) (NatEquality.add-lunit n) ⟩
-          Nat-minus n n
+          n -ℕ (zero +ℕ n)
+        ≡⟨ ap (λ e → n -ℕ e) (NatEquality.add-lunit n) ⟩
+          n -ℕ n
         ≡⟨ Nat-minus-eq-zero n ⟩
           zeroInt
         ∎
@@ -821,13 +818,80 @@ module _ where
         begin
           (negSucc n) + (- (negSucc n))
         ≡⟨⟩
-          Nat-minus (NatBasic.add zero n) n
-        ≡⟨ ap (λ e → Nat-minus e n) (NatEquality.add-lunit n) ⟩
-          Nat-minus n n
+          (zero +ℕ n) -ℕ n
+        ≡⟨ ap (λ e → e -ℕ n) (NatEquality.add-lunit n) ⟩
+          n -ℕ n
         ≡⟨ Nat-minus-eq-zero n ⟩
           zeroInt
         ∎
 
     -- exercise 5.8
     module IntCommRing where
-    
+      open IntAddAbGroup public
+      open NatBasic.SymbolicQuantified
+      open IntBasic.Symbolic
+      open IntBasic.SymbolicQuantified
+      open ≡-Reasoning
+
+      -- exercise 5.8.a
+      mul-lzero : (x : Int) → zeroInt * x ≡ zeroInt
+      mul-lzero x =
+        let
+          (pair x₊ x₋) = asNatDiff x
+        in
+          begin
+            zeroInt * x
+          ≡⟨⟩
+            ((zero *ℕ x₊) +ℕ (zero *ℕ x₋)) -ℕ
+            ((zero *ℕ x₋) +ℕ (zero *ℕ x₊))
+          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
+              (NatCommSemiring.mul-lzero x₊)
+              (NatCommSemiring.mul-lzero x₋)
+              (NatCommSemiring.mul-lzero x₋)
+              (NatCommSemiring.mul-lzero x₊)
+          ⟩
+            (zero +ℕ zero) -ℕ (zero +ℕ zero)
+          ≡⟨⟩
+            zeroInt
+          ∎
+      
+      mul-rzero : (x : Int) → x * zeroInt ≡ zeroInt
+      mul-rzero x = refl
+
+      mul-lunit : (x : Int) → Int-one * x ≡ x
+      mul-lunit x =
+        let
+          (pair x₊ x₋) = asNatDiff x
+        in
+          begin
+            Int-one * x
+          ≡⟨⟩
+            (((succ zero) *ℕ x₊) +ℕ (zero *ℕ x₋)) -ℕ
+            (((succ zero) *ℕ x₋) +ℕ (zero *ℕ x₊))
+          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
+              (NatCommSemiring.mul-lunit x₊)
+              (NatCommSemiring.mul-lzero x₋)
+              (NatCommSemiring.mul-lunit x₋)
+              (NatCommSemiring.mul-lzero x₊)
+          ⟩
+            (x₊ +ℕ zero) -ℕ (x₋ +ℕ zero)
+          ≡⟨⟩
+            x₊ -ℕ x₋
+          ≡⟨ Nat-minus-asNatDiff x ⟩
+            x
+          ∎
+              
+      mul-runit : (x : Int) → x * Int-one ≡ x
+      mul-runit x =
+        let
+          (pair x₊ x₋) = asNatDiff x
+        in
+          begin
+            x * Int-one
+          ≡⟨⟩
+            x₊ -ℕ (zero +ℕ x₋)
+          ≡⟨ ap (λ e → x₊ -ℕ e) (NatEquality.add-lunit x₋) ⟩
+            x₊ -ℕ x₋
+          ≡⟨ Nat-minus-asNatDiff x ⟩
+            x
+          ∎

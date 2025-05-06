@@ -47,6 +47,19 @@ module _ where
       infixl 45 _**_
     open Symbolic
 
+    module SymbolicQuantified where
+      _+ℕ_ : Nat → Nat → Nat
+      _+ℕ_ = add
+      infixl 35 _+ℕ_
+
+      _*ℕ_ : Nat → Nat → Nat
+      _*ℕ_ = mul
+      infixl 40 _*ℕ_
+
+      _**ℕ_ : Nat → Nat → Nat
+      _**ℕ_ = pow
+      infixl 45 _**ℕ_
+
     -- exercise 3.2
     min : Nat → Nat → Nat
     min zero m = zero

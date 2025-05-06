@@ -111,6 +111,9 @@ module _ where
     Int-succ (negSucc zero) = zeroInt
     Int-succ (negSucc (succ n)) = negSucc n
 
+    Int-one : Int
+    Int-one = posSucc zero
+
     -- exercise 4.1.a
     pred : Int → Int
     pred zeroInt = negSucc zero
@@ -174,6 +177,23 @@ module _ where
       -_ : Int → Int
       -_ = neg
       infixl 50 -_
+
+    module SymbolicQuantified where
+      _-ℕ_ : Nat → Nat → Int
+      _-ℕ_ = Nat-minus
+      infixl 35 _-ℕ_
+
+      _+ℤ_ : Int → Int → Int
+      _+ℤ_ = add
+      infixl 35 _+ℤ_
+
+      _*ℤ_ : Int → Int → Int
+      _*ℤ_ = mul
+      infixl 40 _*ℤ_
+
+      -ℤ_ : Int → Int
+      -ℤ_ = neg
+      infixl 50 -ℤ_
 
   data Bool : Set where
     true false : Bool
