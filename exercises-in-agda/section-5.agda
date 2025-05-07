@@ -80,6 +80,19 @@ module _ where
          f x₁ y₁ z₁ w₁ ≡ f x₂ y₂ z₂ w₂
     ap4 f refl refl refl refl = refl
 
+    ap8 : {A1 A2 A3 A4 A5 A6 A7 A8 B : Set} →
+         (f : A1 → A2 → A3 → A4 → A5 → A6 → A7 → A8 → B) →
+         {x₁ x₂ : A1} → (p : x₁ ≡ x₂) →
+         {y₁ y₂ : A2} → (q : y₁ ≡ y₂) →
+         {z₁ z₂ : A3} → (r : z₁ ≡ z₂) →
+         {w₁ w₂ : A4} → (s : w₁ ≡ w₂) →
+         {v₁ v₂ : A5} → (t : v₁ ≡ v₂) →
+         {u₁ u₂ : A6} → (u : u₁ ≡ u₂) →
+         {a₁ a₂ : A7} → (v : a₁ ≡ a₂) →
+         {b₁ b₂ : A8} → (w : b₁ ≡ b₂) →
+         f x₁ y₁ z₁ w₁ v₁ u₁ a₁ b₁ ≡ f x₂ y₂ z₂ w₂ v₂ u₂ a₂ b₂
+    ap8 f refl refl refl refl refl refl refl refl = refl
+
     ap-refl : {A B : Set} → (f : A → B) → (x : A) → ap f {x} refl ≡ refl
     ap-refl f x = refl
 
@@ -260,6 +273,9 @@ module _ where
       ≡⟨⟩
         m + (n + (succ k))
       ∎
+
+    add-unassoc : (m n k : Nat) → m + (n + k) ≡ (m + n) + k
+    add-unassoc m n k = inverse (add-assoc m n k)
     
     -- 5.6.4
     add-comm : (m n : Nat) → m + n ≡ n + m
@@ -273,6 +289,18 @@ module _ where
         succ (n + m)
       ≡⟨⟩
         n + (succ m)
+      ∎
+
+    add-add-rcomm : (m n k : Nat) → m + n + k ≡ m + k + n
+    add-add-rcomm m n k =
+      begin
+        m + n + k
+      ≡⟨ add-assoc m n k ⟩
+        m + (n + k)
+      ≡⟨ ap (λ e → m + e) (add-comm n k) ⟩
+        m + (k + n)
+      ≡⟨ add-unassoc m k n ⟩
+        m + k + n
       ∎
 
   -- exercise 5.5
@@ -336,7 +364,7 @@ module _ where
         (succ m) + ((succ m) * n)
       ≡⟨ ap (λ e → (succ m) + e) (mul-succ-left m n) ⟩
         (succ m) + ((m * n) + n)
-      ≡⟨ inverse (add-assoc (succ m) (m * n) n) ⟩
+      ≡⟨ add-unassoc (succ m) (m * n) n ⟩
         ((succ m) + (m * n)) + n
       ≡⟨ ap (λ e → e + n) (add-succ-left _ _) ⟩
         succ (m + (m * n)) + n
@@ -390,7 +418,7 @@ module _ where
         m + (m * (n + k))
       ≡⟨ ap (λ e → m + e) (mul-ldistr m n k) ⟩
         m + ((m * n) + (m * k))
-      ≡⟨ inverse (add-assoc m (m * n) (m * k)) ⟩
+      ≡⟨ add-unassoc m (m * n) (m * k) ⟩
         (m + (m * n)) + (m * k)
       ≡⟨ ap (λ e → e + (m * k)) (add-comm m (m * n)) ⟩
         ((m * n) + m) + (m * k)
@@ -614,7 +642,7 @@ module _ where
                   (a +ℕ (b +ℕ c)) +ℕ d
                 ≡⟨ ap (λ e → (a +ℕ e) +ℕ d) (NatEquality.add-comm b c) ⟩
                   (a +ℕ (c +ℕ b)) +ℕ d
-                ≡⟨ ap (λ e → e +ℕ d) (inverse (NatEquality.add-assoc a c b) )⟩
+                ≡⟨ ap (λ e → e +ℕ d) (NatEquality.add-unassoc a c b)⟩
                   ((a +ℕ c) +ℕ b) +ℕ d
                 ≡⟨ NatEquality.add-assoc _ b d ⟩
                   (a +ℕ c) +ℕ (b +ℕ d)
@@ -894,4 +922,169 @@ module _ where
             x₊ -ℕ x₋
           ≡⟨ Nat-minus-asNatDiff x ⟩
             x
+          ∎
+
+      Nat-minus-mul : (x₊ x₋ y₊ y₋ : Nat) →
+        (x₊ -ℕ x₋) * (y₊ -ℕ y₋) ≡
+          ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ
+          ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
+      Nat-minus-mul x₊ x₋ y₊ y₋ =
+        let (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
+            (pair y₊' y₋') = asNatDiff (y₊ -ℕ y₋)
+            (pair kx (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
+            (pair ky (pair ny₊ ny₋)) = asNatDiff-Nat-minus-normalization y₊ y₋
+
+            expandCrossTerm : (a b c d : Nat) →
+              (a +ℕ b) *ℕ (c +ℕ d) ≡
+              (a *ℕ c) +ℕ (a *ℕ d) +ℕ (b *ℕ c) +ℕ (b *ℕ d)
+            expandCrossTerm a b c d =
+              begin
+                (a +ℕ b) *ℕ (c +ℕ d)
+              ≡⟨ NatCommSemiring.mul-ldistr (a +ℕ b) c d ⟩
+                (a +ℕ b) *ℕ c +ℕ (a +ℕ b) *ℕ d
+              ≡⟨ ap2 (λ e1 e2 → e1 +ℕ e2) (NatCommSemiring.mul-rdistr a b c) (NatCommSemiring.mul-rdistr a b d) ⟩
+                (a *ℕ c +ℕ b *ℕ c) +ℕ (a *ℕ d +ℕ b *ℕ d)
+              ≡⟨ (
+                let
+                  unassoc-lhs : (a *ℕ c +ℕ b *ℕ c) +ℕ (a *ℕ d +ℕ b *ℕ d) ≡ a *ℕ c +ℕ b *ℕ c +ℕ a *ℕ d +ℕ b *ℕ d
+                  unassoc-lhs = NatCommSemiring.add-unassoc (a *ℕ c +ℕ b *ℕ c) (a *ℕ d) (b *ℕ d)
+                  permute : a *ℕ c +ℕ b *ℕ c +ℕ a *ℕ d +ℕ b *ℕ d ≡ a *ℕ c +ℕ a *ℕ d +ℕ b *ℕ c +ℕ b *ℕ d
+                  permute = ap (λ e → e +ℕ b *ℕ d) (NatCommSemiring.add-add-rcomm (a *ℕ c) (b *ℕ c) (a *ℕ d))
+                in unassoc-lhs · permute
+              ) ⟩
+                (a *ℕ c) +ℕ (a *ℕ d) +ℕ (b *ℕ c) +ℕ (b *ℕ d)
+              ∎
+
+            rearrangeFirst : (t1 t2 t3 t4 t5 t6 t7 : Nat) →
+              t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡
+              (t1 +ℕ t3 +ℕ t4 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t7 +ℕ t5)
+            rearrangeFirst t1 t2 t3 t4 t5 t6 t7 =
+              let
+                unassoc-lhs : t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡ t1 +ℕ t2 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5
+                unassoc-lhs =
+                  NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7) t5
+                  · ap (λ e → e +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4 +ℕ t5 +ℕ t6) t7)
+                  · ap (λ e → e +ℕ t7 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4 +ℕ t5) t6)
+                  · ap (λ e → e +ℕ t6 +ℕ t7 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4) t5)
+                  · ap (λ e → e +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) t3 t4)
+
+                permute : t1 +ℕ t2 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5 ≡ t1 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t2 +ℕ t6 +ℕ t7 +ℕ t5
+                permute =
+                  ap (λ e → e +ℕ t6 +ℕ t7 +ℕ t5) (
+                    ap (λ e → e +ℕ t4 +ℕ t5) (NatCommSemiring.add-add-rcomm t1 t2 t3)
+                    · ap (λ e → e +ℕ t5) (NatCommSemiring.add-add-rcomm (t1 +ℕ t3) t2 t4)
+                    · NatCommSemiring.add-add-rcomm (t1 +ℕ t3 +ℕ t4) t2 t5
+                  )
+
+                unassoc-rhs : (t1 +ℕ t3 +ℕ t4 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t7 +ℕ t5) ≡ t1 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t2 +ℕ t6 +ℕ t7 +ℕ t5
+                unassoc-rhs =
+                  NatCommSemiring.add-unassoc (t1 +ℕ t3 +ℕ t4 +ℕ t5) (t2 +ℕ t6 +ℕ t7) t5
+                  · ap (λ e → e +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t3 +ℕ t4 +ℕ t5) (t2 +ℕ t6) t7)
+                  · ap (λ e → e +ℕ t7 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t3 +ℕ t4 +ℕ t5) t2 t6)
+              in unassoc-lhs · permute · (inverse unassoc-rhs)
+
+            rearrangeSecond : (t1 t2 t3 t4 t5 t6 t7 : Nat) →
+              t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡
+              (t1 +ℕ t3 +ℕ t7 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t4 +ℕ t5)
+            rearrangeSecond t1 t2 t3 t4 t5 t6 t7 =
+              let
+                unassoc-lhs : t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡ t1 +ℕ t2 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5
+                unassoc-lhs =
+                  NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7) t5
+                  · ap (λ e → e +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4 +ℕ t5 +ℕ t6) t7)
+                  · ap (λ e → e +ℕ t7 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4 +ℕ t5) t6)
+                  · ap (λ e → e +ℕ t6 +ℕ t7 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) (t3 +ℕ t4) t5)
+                  · ap (λ e → e +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t2) t3 t4)
+
+                permute : t1 +ℕ t2 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5 ≡ t1 +ℕ t3 +ℕ t7 +ℕ t5 +ℕ t2 +ℕ t6 +ℕ t4 +ℕ t5
+                permute =
+                  ap (λ e → e +ℕ t5) ( -- fix t5
+                    ap (λ e → e +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7) (NatCommSemiring.add-add-rcomm t1 t2 t3)     -- sink t3
+                    · NatCommSemiring.add-add-rcomm (t1 +ℕ t3 +ℕ t2 +ℕ t4 +ℕ t5) t6 t7                -- sink t7
+                    · ap (λ e → e +ℕ t6) (NatCommSemiring.add-add-rcomm (t1 +ℕ t3 +ℕ t2 +ℕ t4) t5 t7) -- sink t7
+                    · ap (λ e → e +ℕ t5 +ℕ t6) (NatCommSemiring.add-add-rcomm (t1 +ℕ t3 +ℕ t2) t4 t7) -- sink t7
+                    · ap (λ e → e +ℕ t4 +ℕ t5 +ℕ t6) (NatCommSemiring.add-add-rcomm (t1 +ℕ t3) t2 t7) -- sink t7
+                    · ap (λ e → e +ℕ t6) (NatCommSemiring.add-add-rcomm (t1 +ℕ t3 +ℕ t7 +ℕ t2) t4 t5) -- sink t5
+                    · ap (λ e → e +ℕ t4 +ℕ t6) (NatCommSemiring.add-add-rcomm (t1 +ℕ t3 +ℕ t7) t2 t5) -- sink t5
+                    · NatCommSemiring.add-add-rcomm (t1 +ℕ t3 +ℕ t7 +ℕ t5 +ℕ t2) t4 t6                -- sink t6
+                  )
+
+                unassoc-rhs : (t1 +ℕ t3 +ℕ t7 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t4 +ℕ t5) ≡ t1 +ℕ t3 +ℕ t7 +ℕ t5 +ℕ t2 +ℕ t6 +ℕ t4 +ℕ t5
+                unassoc-rhs =
+                  NatCommSemiring.add-unassoc (t1 +ℕ t3 +ℕ t7 +ℕ t5) (t2 +ℕ t6 +ℕ t4) t5
+                  · ap (λ e → e +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t3 +ℕ t7 +ℕ t5) (t2 +ℕ t6) t4)
+                  · ap (λ e → e +ℕ t4 +ℕ t5) (NatCommSemiring.add-unassoc (t1 +ℕ t3 +ℕ t7 +ℕ t5) t2 t6)
+              in unassoc-lhs · permute · (inverse unassoc-rhs)
+
+        in
+          begin
+            (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
+          ≡⟨⟩
+            ((x₊' *ℕ y₊') +ℕ (x₋' *ℕ y₋')) -ℕ
+            ((x₊' *ℕ y₋') +ℕ (x₋' *ℕ y₊'))
+          ≡⟨ inverse (Nat-minus-add-same ((x₊' *ℕ y₊') +ℕ (x₋' *ℕ y₋')) ((x₊' *ℕ y₋') +ℕ (x₋' *ℕ y₊')) (x₊' *ℕ ky +ℕ kx *ℕ y₊' +ℕ kx *ℕ ky +ℕ x₋' *ℕ ky +ℕ kx *ℕ y₋' +ℕ kx *ℕ ky)) ⟩
+            ((x₊' *ℕ y₊') +ℕ (x₋' *ℕ y₋') +ℕ (x₊' *ℕ ky +ℕ kx *ℕ y₊' +ℕ kx *ℕ ky +ℕ x₋' *ℕ ky +ℕ kx *ℕ y₋' +ℕ kx *ℕ ky)) -ℕ
+            ((x₊' *ℕ y₋') +ℕ (x₋' *ℕ y₊') +ℕ (x₊' *ℕ ky +ℕ kx *ℕ y₊' +ℕ kx *ℕ ky +ℕ x₋' *ℕ ky +ℕ kx *ℕ y₋' +ℕ kx *ℕ ky))
+          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2)
+              (rearrangeFirst (x₊' *ℕ y₊') (x₋' *ℕ y₋') (x₊' *ℕ ky) (kx *ℕ y₊') (kx *ℕ ky) (x₋' *ℕ ky) (kx *ℕ y₋'))
+              (rearrangeSecond (x₊' *ℕ y₋') (x₋' *ℕ y₊') (x₊' *ℕ ky) (kx *ℕ y₊') (kx *ℕ ky) (x₋' *ℕ ky) (kx *ℕ y₋'))
+          ⟩
+            (((x₊' *ℕ y₊') +ℕ (x₊' *ℕ ky) +ℕ (kx *ℕ y₊') +ℕ (kx *ℕ ky)) +ℕ ((x₋' *ℕ y₋') +ℕ (x₋' *ℕ ky) +ℕ (kx *ℕ y₋') +ℕ (kx *ℕ ky))) -ℕ
+            (((x₊' *ℕ y₋') +ℕ (x₊' *ℕ ky) +ℕ (kx *ℕ y₋') +ℕ (kx *ℕ ky)) +ℕ ((x₋' *ℕ y₊') +ℕ (x₋' *ℕ ky) +ℕ (kx *ℕ y₊') +ℕ (kx *ℕ ky)))
+          ≡⟨ inverse (ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4)) (expandCrossTerm x₊' kx y₊' ky) (expandCrossTerm x₋' kx y₋' ky) (expandCrossTerm x₊' kx y₋' ky) (expandCrossTerm x₋' kx y₊' ky)) ⟩
+            (((x₊' +ℕ kx) *ℕ (y₊' +ℕ ky)) +ℕ ((x₋' +ℕ kx) *ℕ (y₋' +ℕ ky))) -ℕ
+            (((x₊' +ℕ kx) *ℕ (y₋' +ℕ ky)) +ℕ ((x₋' +ℕ kx) *ℕ (y₊' +ℕ ky)))
+          ≡⟨ inverse (ap8 (λ e1 e2 e3 e4 e5 e6 e7 e8 → ((e1 *ℕ e2) +ℕ (e3 *ℕ e4)) -ℕ ((e5 *ℕ e6) +ℕ (e7 *ℕ e8))) nx₊ ny₊ nx₋ ny₋ nx₊ ny₋ nx₋ ny₊) ⟩
+            ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
+          ∎
+
+      -- exercise 5.8.c
+      mul-ldistr : (x y z : Int) → x * (y + z) ≡ (x * y) + (x * z)
+      mul-ldistr x y z =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+          (pair z₊ z₋) = asNatDiff z
+        in
+          begin
+            x * (y + z)
+          ≡⟨ ap (λ e → e * (y + z)) (inverse (Nat-minus-asNatDiff x)) ⟩
+            (x₊ -ℕ x₋) * ((y₊ +ℕ z₊) -ℕ (y₋ +ℕ z₋))
+          ≡⟨ Nat-minus-mul x₊ x₋ (y₊ +ℕ z₊) (y₋ +ℕ z₋) ⟩
+            ((x₊ *ℕ (y₊ +ℕ z₊)) +ℕ (x₋ *ℕ (y₋ +ℕ z₋))) -ℕ
+            ((x₊ *ℕ (y₋ +ℕ z₋)) +ℕ (x₋ *ℕ (y₊ +ℕ z₊)))
+          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
+              (NatCommSemiring.mul-ldistr x₊ y₊ z₊)
+              (NatCommSemiring.mul-ldistr x₋ y₋ z₋)
+              (NatCommSemiring.mul-ldistr x₊ y₋ z₋)
+              (NatCommSemiring.mul-ldistr x₋ y₊ z₊)
+          ⟩
+            ((x₊ *ℕ y₊ +ℕ x₊ *ℕ z₊) +ℕ (x₋ *ℕ y₋ +ℕ x₋ *ℕ z₋)) -ℕ
+            ((x₊ *ℕ y₋ +ℕ x₊ *ℕ z₋) +ℕ (x₋ *ℕ y₊ +ℕ x₋ *ℕ z₊))
+          ≡⟨ (
+            let
+              swap-middle : (a b c d : Nat) → (a +ℕ b) +ℕ (c +ℕ d) ≡ (a +ℕ c) +ℕ (b +ℕ d)
+              swap-middle a b c d =
+                let
+                  unassoc-lhs : (a +ℕ b) +ℕ (c +ℕ d) ≡ a +ℕ b +ℕ c +ℕ d
+                  unassoc-lhs = NatCommSemiring.add-unassoc (a +ℕ b) c d
+                  permute : a +ℕ b +ℕ c +ℕ d ≡ a +ℕ c +ℕ b +ℕ d
+                  permute = ap (λ e → e +ℕ d) (NatCommSemiring.add-add-rcomm a b c)
+                  unassoc-rhs : (a +ℕ c) +ℕ (b +ℕ d) ≡ a +ℕ c +ℕ b +ℕ d
+                  unassoc-rhs = NatCommSemiring.add-unassoc (a +ℕ c) b d
+                in unassoc-lhs · permute · (inverse unassoc-rhs)
+            in
+              ap2 (λ e1 e2 → e1 -ℕ e2)
+                (swap-middle (x₊ *ℕ y₊) (x₊ *ℕ z₊) (x₋ *ℕ y₋) (x₋ *ℕ z₋))
+                (swap-middle (x₊ *ℕ y₋) (x₊ *ℕ z₋) (x₋ *ℕ y₊) (x₋ *ℕ z₊))
+          ) ⟩
+            ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) +ℕ (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋)) -ℕ
+            ((x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) +ℕ (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊))
+          ≡⟨ inverse (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊)) ⟩
+            ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) +
+            ((x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) -ℕ (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊))
+          ≡⟨ inverse (ap2 (λ e1 e2 → e1 + e2) (Nat-minus-mul x₊ x₋ y₊ y₋) (Nat-minus-mul x₊ x₋ z₊ z₋)) ⟩
+            ((x₊ -ℕ x₋) * (y₊ -ℕ y₋)) + ((x₊ -ℕ x₋) * (z₊ -ℕ z₋))
+          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 * e2) + (e3 * e4)) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff z) ⟩
+            (x * y) + (x * z)
           ∎
