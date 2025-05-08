@@ -1,5 +1,3 @@
-open import Function.Base using (case_of_)
-
 module _ where
   open import section-4 public
 
@@ -1039,6 +1037,150 @@ module _ where
             (((x₊' +ℕ kx) *ℕ (y₋' +ℕ ky)) +ℕ ((x₋' +ℕ kx) *ℕ (y₊' +ℕ ky)))
           ≡⟨ inverse (ap8 (λ e1 e2 e3 e4 e5 e6 e7 e8 → ((e1 *ℕ e2) +ℕ (e3 *ℕ e4)) -ℕ ((e5 *ℕ e6) +ℕ (e7 *ℕ e8))) nx₊ ny₊ nx₋ ny₋ nx₊ ny₋ nx₋ ny₊) ⟩
             ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
+          ∎
+
+      neg-Nat-minus : (x₊ x₋ : Nat) → (- (x₊ -ℕ x₋)) ≡ (x₋ -ℕ x₊)
+      neg-Nat-minus x₊ x₋ =
+        let
+          (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
+          (pair kx (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
+        in
+          begin
+            - (x₊ -ℕ x₋)
+          ≡⟨⟩
+            (x₋' -ℕ x₊')
+          ≡⟨ inverse (Nat-minus-add-same x₋' x₊' kx) ⟩
+            (x₋' +ℕ kx) -ℕ (x₊' +ℕ kx)
+          ≡⟨ inverse (ap2 (λ e1 e2 → e1 -ℕ e2) nx₋ nx₊) ⟩
+            x₋ -ℕ x₊
+          ∎
+
+      Nat-minus-minus : (x₊ x₋ y₊ y₋ : Nat) → (x₊ -ℕ x₋) - (y₊ -ℕ y₋) ≡ (x₊ +ℕ y₋) -ℕ (x₋ +ℕ y₊)
+      Nat-minus-minus x₊ x₋ y₊ y₋ =
+        begin
+          (x₊ -ℕ x₋) - (y₊ -ℕ y₋)
+        ≡⟨⟩
+          (x₊ -ℕ x₋) + (- (y₊ -ℕ y₋))
+        ≡⟨ ap (λ e → (x₊ -ℕ x₋) + e) (neg-Nat-minus y₊ y₋) ⟩
+          (x₊ -ℕ x₋) + (y₋ -ℕ y₊)
+        ≡⟨ Nat-minus-add x₊ x₋ y₋ y₊ ⟩
+          (x₊ +ℕ y₋) -ℕ (x₋ +ℕ y₊)
+        ∎
+
+      -- exercise 5.8.b
+      pred-mul : (x y : Int) → pred x * y ≡ x * y - y
+      pred-mul x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            pred x * y
+          ≡⟨ inverse (ap2 (λ e1 e2 → pred e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+            pred (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → e * (y₊ -ℕ y₋)) (pred-Nat-minus x₊ x₋) ⟩
+            ((x₊ -ℕ (succ x₋)) * (y₊ -ℕ y₋))
+          ≡⟨ Nat-minus-mul x₊ (succ x₋) y₊ y₋ ⟩
+            ((x₊ *ℕ y₊) +ℕ (succ x₋ *ℕ y₋)) -ℕ
+            ((x₊ *ℕ y₋) +ℕ (succ x₋ *ℕ y₊))
+          ≡⟨ ap2 (λ e1 e2 → ((x₊ *ℕ y₊) +ℕ e1) -ℕ ((x₊ *ℕ y₋) +ℕ e2)) (NatCommSemiring.mul-succ-left x₋ y₋) (NatCommSemiring.mul-succ-left x₋ y₊) ⟩
+            ((x₊ *ℕ y₊) +ℕ ((x₋ *ℕ y₋) +ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ ((x₋ *ℕ y₊) +ℕ y₊))
+          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatCommSemiring.add-unassoc (x₊ *ℕ y₊) (x₋ *ℕ y₋) y₋) (NatCommSemiring.add-unassoc (x₊ *ℕ y₋) (x₋ *ℕ y₊) y₊) ⟩
+            ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋) +ℕ y₋) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊) +ℕ y₊)
+          ≡⟨ inverse (Nat-minus-minus ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊)) y₊ y₋) ⟩
+            (((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))) - (y₊ -ℕ y₋)
+          ≡⟨ inverse (ap (λ e → e - (y₊ -ℕ y₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+            (x₊ -ℕ x₋) * (y₊ -ℕ y₋) - (y₊ -ℕ y₋)
+          ≡⟨ ap2 (λ e1 e2 → e1 * e2 - e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) ⟩
+            x * y - y
+          ∎
+
+      mul-pred : (x y : Int) → x * pred y ≡ x * y - x
+      mul-pred x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            x * pred y
+          ≡⟨ inverse (ap2 (λ e1 e2 → e1 * pred e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+            (x₊ -ℕ x₋) * pred (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → (x₊ -ℕ x₋) * e) (pred-Nat-minus y₊ y₋) ⟩
+            ((x₊ -ℕ x₋) * (y₊ -ℕ (succ y₋)))
+          ≡⟨ Nat-minus-mul x₊ x₋ y₊ (succ y₋) ⟩
+            ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ (succ y₋))) -ℕ
+            ((x₊ *ℕ (succ y₋)) +ℕ (x₋ *ℕ y₊))
+          ≡⟨ ap2 (λ e1 e2 → ((x₊ *ℕ y₊) +ℕ e1) -ℕ (e2 +ℕ (x₋ *ℕ y₊))) (NatCommSemiring.mul-succ-right x₋ y₋) (NatCommSemiring.mul-succ-right x₊ y₋) ⟩
+            (x₊ *ℕ y₊ +ℕ (x₋ +ℕ x₋ *ℕ y₋)) -ℕ (x₊ +ℕ x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)
+          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2)
+              (NatCommSemiring.add-unassoc (x₊ *ℕ y₊) x₋ (x₋ *ℕ y₋) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₊) x₋ (x₋ *ℕ y₋))
+              (ap (λ e → e +ℕ (x₋ *ℕ y₊)) (NatCommSemiring.add-comm x₊ (x₊ *ℕ y₋)) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) x₊ (x₋ *ℕ y₊))
+          ⟩
+            (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ x₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ x₊)
+          ≡⟨ inverse (Nat-minus-minus (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
+            ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) - (x₊ -ℕ x₋)
+          ≡⟨ inverse (ap (λ e → e - (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+            (x₊ -ℕ x₋) * (y₊ -ℕ y₋) - (x₊ -ℕ x₋)
+          ≡⟨ ap2 (λ e1 e2 → e1 * e2 - e1) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) ⟩
+            x * y - x
+          ∎
+
+      succ-mul : (x y : Int) → Int-succ x * y ≡ x * y + y
+      succ-mul x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            Int-succ x * y
+          ≡⟨ inverse (ap2 (λ e1 e2 → Int-succ e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+            Int-succ (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → e * (y₊ -ℕ y₋)) (succ-Nat-minus x₊ x₋) ⟩
+            (succ x₊ -ℕ x₋) * (y₊ -ℕ y₋)
+          ≡⟨ Nat-minus-mul (succ x₊) x₋ y₊ y₋ ⟩
+            ((succ x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((succ x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
+          ≡⟨ ap2 (λ e1 e2 → (e1 +ℕ (x₋ *ℕ y₋)) -ℕ (e2 +ℕ (x₋ *ℕ y₊))) (NatCommSemiring.mul-succ-left x₊ y₊) (NatCommSemiring.mul-succ-left x₊ y₋) ⟩
+            (x₊ *ℕ y₊ +ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ y₋ +ℕ x₋ *ℕ y₊)
+          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatCommSemiring.add-add-rcomm (x₊ *ℕ y₊) y₊ (x₋ *ℕ y₋)) (NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) y₋ (x₋ *ℕ y₊)) ⟩
+            (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ y₊) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ y₋)
+          ≡⟨ inverse (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) y₊ y₋) ⟩
+            ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) + (y₊ -ℕ y₋)
+          ≡⟨ inverse (ap (λ e → e + (y₊ -ℕ y₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+            (x₊ -ℕ x₋) * (y₊ -ℕ y₋) + (y₊ -ℕ y₋)
+          ≡⟨ ap3 (λ e1 e2 e3 → e1 * e2 + e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff y) ⟩
+            x * y + y
+          ∎
+
+      mul-succ : (x y : Int) → x * Int-succ y ≡ x * y + x
+      mul-succ x y =
+        let
+          (pair x₊ x₋) = asNatDiff x
+          (pair y₊ y₋) = asNatDiff y
+        in
+          begin
+            x * Int-succ y
+          ≡⟨ inverse (ap2 (λ e1 e2 → e1 * Int-succ e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+            (x₊ -ℕ x₋) * Int-succ (y₊ -ℕ y₋)
+          ≡⟨ ap (λ e → (x₊ -ℕ x₋) * e) (succ-Nat-minus y₊ y₋) ⟩
+            (x₊ -ℕ x₋) * (succ y₊ -ℕ y₋)
+          ≡⟨ Nat-minus-mul x₊ x₋ (succ y₊) y₋ ⟩
+            ((x₊ *ℕ (succ y₊)) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ (succ y₊)))
+          ≡⟨ ap2 (λ e1 e2 → (e1 +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ e2))
+              (NatCommSemiring.mul-succ-right x₊ y₊)
+              (NatCommSemiring.mul-succ-right x₋ y₊)
+          ⟩
+            (x₊ +ℕ x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ (x₋ +ℕ x₋ *ℕ y₊))
+          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2)
+              (ap (λ e → e +ℕ (x₋ *ℕ y₋)) (NatCommSemiring.add-comm x₊ (x₊ *ℕ y₊)) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₊) x₊ (x₋ *ℕ y₋))
+              (NatCommSemiring.add-unassoc (x₊ *ℕ y₋) x₋ (x₋ *ℕ y₊) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) x₋ (x₋ *ℕ y₊))
+          ⟩
+            (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ x₊) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ x₋)
+          ≡⟨ inverse (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
+            (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) + (x₊ -ℕ x₋)
+          ≡⟨ inverse (ap (λ e → e + (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+            (x₊ -ℕ x₋) * (y₊ -ℕ y₋) + (x₊ -ℕ x₋)
+          ≡⟨ ap3 (λ e1 e2 e3 → e1 * e2 + e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
+            x * y + x
           ∎
 
       -- exercise 5.8.c

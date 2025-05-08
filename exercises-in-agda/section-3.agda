@@ -1,4 +1,7 @@
 module _ where
+  -- Hack: Writing a public open import here in a top-level anonymous module
+  --       allows all section modules (e.g. section-5, section-6, ...) following this module (section-3) to use 
+  --       all transitively past section modules (e.g. section-2) without needing to additionally import them. 
   open import section-2 public
 
   data Nat : Set where

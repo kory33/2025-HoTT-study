@@ -153,9 +153,7 @@ module _ where
 
     -- exercise 4.1.b
     neg : Int → Int
-    neg zeroInt = zeroInt
-    neg (posSucc n) = negSucc n
-    neg (negSucc n) = posSucc n
+    neg n = let (pair n₊ n₋) = asNatDiff n in Nat-minus n₋ n₊
 
     -- exercise 4.1.c
     mul : Int → Int → Int
@@ -173,6 +171,10 @@ module _ where
       _*_ : Int → Int → Int
       _*_ = mul
       infixl 40 _*_
+
+      _-_ : Int → Int → Int
+      x - y = add x (neg y)
+      infixl 35 _-_
 
       -_ : Int → Int
       -_ = neg
