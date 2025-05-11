@@ -108,6 +108,12 @@ module _ where
          B x → B y
     tr B refl b = b
 
+    tr2 : {A1 A2 : Set} → (B : A1 → A2 → Set) →
+          {x₁ x₂ : A1} → (p : x₁ ≡ x₂) →
+          {y₁ y₂ : A2} → (q : y₁ ≡ y₂) →
+          B x₁ y₁ → B x₂ y₂
+    tr2 B refl refl b = b
+
     apd : {A : Set} → {B : A → Set} →
           (f : (a : A) → B a) →
           {x y : A} →
@@ -117,7 +123,7 @@ module _ where
 
   -- adapted from https://plfa.github.io/Equality/
   module ≡-Reasoning {A : Set} where
-    open ≡-Basic
+    open ≡-Basic public
 
     infix  1 begin_
     infixr 2 step-≡-∣ step-≡-⟩
@@ -139,7 +145,6 @@ module _ where
     x ∎  =  refl
 
   module ≡-Basic1 where
-    open ≡-Basic
     open ≡-Reasoning
 
     -- 5.5.1
@@ -223,7 +228,6 @@ module _ where
 
   module NatEquality where
     open NatBasic public
-    open ≡-Basic public
     open NatBasic.Symbolic
     open ≡-Reasoning
 
@@ -470,7 +474,6 @@ module _ where
 
   module IntEquality where
     open IntBasic public
-    open ≡-Basic public
     open ≡-Reasoning
 
     -- exercise 5.6
@@ -489,7 +492,6 @@ module _ where
     -- exercise 5.7
     module IntAddAbGroup where
       open IntBasic public
-      open ≡-Basic public
       open NatBasic.SymbolicQuantified
       open IntBasic.Symbolic
       open IntBasic.SymbolicQuantified
