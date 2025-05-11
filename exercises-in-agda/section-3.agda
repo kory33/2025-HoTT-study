@@ -50,7 +50,7 @@ module _ where
       infixl 45 _**_
     open Symbolic
 
-    module SymbolicQuantified where
+    module SymbolicQualified where
       _+ℕ_ : Nat → Nat → Nat
       _+ℕ_ = add
       infixl 35 _+ℕ_

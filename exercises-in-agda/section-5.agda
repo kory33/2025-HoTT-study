@@ -492,9 +492,9 @@ module _ where
     -- exercise 5.7
     module IntAddAbGroup where
       open IntBasic public
-      open NatBasic.SymbolicQuantified
+      open NatBasic.SymbolicQualified
       open IntBasic.Symbolic
-      open IntBasic.SymbolicQuantified
+      open IntBasic.SymbolicQualified
       open ≡-Reasoning
 
       -- exercise 5.7.a
@@ -859,9 +859,9 @@ module _ where
     -- exercise 5.8
     module IntCommRing where
       open IntAddAbGroup public
-      open NatBasic.SymbolicQuantified
+      open NatBasic.SymbolicQualified
       open IntBasic.Symbolic
-      open IntBasic.SymbolicQuantified
+      open IntBasic.SymbolicQualified
       open ≡-Reasoning
 
       -- exercise 5.8.a

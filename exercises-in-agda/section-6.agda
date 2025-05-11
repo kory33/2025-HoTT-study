@@ -615,7 +615,7 @@ module _ where
 
   module Int-abs where
     open IntEquality.IntCommRing
-    open NatBasic.SymbolicQuantified
+    open NatBasic.SymbolicQualified
     open IntBasic.Symbolic
     open Leq-Nat
     open Leq-Nat.Symbolic

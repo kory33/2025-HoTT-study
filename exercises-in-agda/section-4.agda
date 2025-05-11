@@ -180,7 +180,7 @@ module _ where
       -_ = neg
       infixl 50 -_
 
-    module SymbolicQuantified where
+    module SymbolicQualified where
       _-ℕ_ : Nat → Nat → Int
       _-ℕ_ = Nat-minus
       infixl 35 _-ℕ_
