@@ -580,12 +580,33 @@ module _ where
   module Nat-dist where
     open NatCommSemiring
     open Leq-Nat
+    open NatBasic.Symbolic
+    open Leq-Nat.Symbolic
 
     dist-to-zero : (x : Nat) → (Nat-dist x zero ≡ x)
     dist-to-zero zero = refl
     dist-to-zero (succ x) = refl
 
-    -- TODO: exercise 6.5
+    module Metric where
+      positivity : (m n : Nat) → (m ≡ n) ↔ (Nat-dist m n ≡ zero)
+      positivity = {!   !}
+
+      symm : (m n : Nat) → (Nat-dist m n ≡ Nat-dist n m)
+      symm = {!   !}
+      
+      triangle : (m n k : Nat) → (Nat-dist m n + Nat-dist n k ≤ Nat-dist m k)
+      triangle = {!   !}
+
+    triangle-eq-biimpl-ordered : (m n k : Nat) →
+                                 (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) ↔ 
+                                 (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
+    triangle-eq-biimpl-ordered m n k = {!   !}
+
+    translation-inv : (a m n : Nat) → Nat-dist (a + m) (a + n) ≡ Nat-dist m n
+    translation-inv = {!   !}
+
+    linear : (k m n : Nat) → Nat-dist (k * m) (k * n) ≡ k * Nat-dist m n
+    linear = {!   !}
 
   Int-abs : (x : Int) → Nat
   Int-abs zeroInt = zero
@@ -594,9 +615,16 @@ module _ where
 
   module Int-abs where
     open IntEquality.IntCommRing
+    open NatBasic.SymbolicQuantified
+    open IntBasic.Symbolic
     open Leq-Nat
+    open Leq-Nat.Symbolic
 
-    -- positive-definite : (x : Int) → (x ≡ zeroInt) ↔ (Int-abs x ≡ zero)
-    -- positive-definite x = ?
-    -- TODO: Int-abs (x + y) ≤ Int-abs x + Int-abs y
-    -- TODO: Int-abs (x * y) = Int-abs x * Int-abs y
+    positive-definite : (x : Int) → (x ≡ zeroInt) ↔ (Int-abs x ≡ zero)
+    positive-definite x = {!   !}
+
+    triangle : (x y : Int) → Int-abs (x + y) ≤ Int-abs x +ℕ Int-abs y
+    triangle = {!   !}
+
+    preserves-prod : (x y : Int) → Int-abs (x * y) ≤ Int-abs x *ℕ Int-abs y
+    preserves-prod = {!   !}
