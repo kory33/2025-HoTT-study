@@ -578,7 +578,10 @@ module _ where
   Nat-dist (succ m) (succ n) = Nat-dist m n
 
   module Nat-dist where
+    open ≡-Reasoning
+    open EmptyBasic
     open NatCommSemiring
+    open Nat-EqualityThroughEq-Nat
     open Leq-Nat
     open NatBasic.Symbolic
     open Leq-Nat.Symbolic
@@ -588,11 +591,27 @@ module _ where
     dist-to-zero (succ x) = refl
 
     module Metric where
+      dist-to-self-eq-zero : (x : Nat) → (Nat-dist x x ≡ zero)
+      dist-to-self-eq-zero zero = refl
+      dist-to-self-eq-zero (succ x) = dist-to-self-eq-zero x
+
       positivity : (m n : Nat) → (m ≡ n) ↔ (Nat-dist m n ≡ zero)
-      positivity = {!   !}
+      positivity m n = pair forward (backward m n)
+        where
+        forward : m ≡ n → Nat-dist m n ≡ zero
+        forward refl = dist-to-self-eq-zero m
+
+        backward : (m n : Nat) → Nat-dist m n ≡ zero → m ≡ n
+        backward zero zero eq = refl
+        backward zero (succ n) eq = absurd (zero-neq-succ n (inverse eq))
+        backward (succ m) zero eq = absurd (zero-neq-succ m (inverse eq))
+        backward (succ m) (succ n) eq = ap succ (backward m n eq)
 
       symm : (m n : Nat) → (Nat-dist m n ≡ Nat-dist n m)
-      symm = {!   !}
+      symm zero zero = refl
+      symm zero (succ n) = refl
+      symm (succ m) zero = refl
+      symm (succ m) (succ n) = symm m n
       
       triangle : (m n k : Nat) → (Nat-dist m n + Nat-dist n k ≤ Nat-dist m k)
       triangle = {!   !}
