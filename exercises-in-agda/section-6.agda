@@ -304,6 +304,12 @@ module _ where
       backward : (x y : Nat) → Σ Nat (λ k → x + k ≡ y) → (x ≤ y)
       backward x y (pair k refl) = self-add x k
 
+    extract-diff : (x y : Nat) → (x ≤ y) → Σ Nat (λ k → x + k ≡ y)
+    extract-diff x y x≤y = (leq-biimpl-exists-diff x y).Σ.fst x≤y
+
+    from-diff : (x y k : Nat) → (x + k ≡ y) → (x ≤ y)
+    from-diff x y k eq = (leq-biimpl-exists-diff x y).Σ.snd (pair k eq)
+
     leq-biimpl-add-right : (x y k : Nat) → (x ≤ y) ↔ (x + k ≤ y + k)
     leq-biimpl-add-right x y k = pair (forward x y k) (backward x y k)
       where
@@ -320,28 +326,28 @@ module _ where
 
     leq-leq-add : (a b c d : Nat) → (a ≤ b) → (c ≤ d) → (a + c ≤ b + d)
     leq-leq-add a b c d a≤b c≤d =
-      let (pair b-a eqba) = (leq-biimpl-exists-diff a b).Σ.fst a≤b
-          (pair d-c eqdc) = (leq-biimpl-exists-diff c d).Σ.fst c≤d
+      let (pair b-a a+b-a=b) = extract-diff a b a≤b
+          (pair d-c c+d-c=d) = extract-diff c d c≤d
           eq1 = begin
             a + c + (b-a + d-c)  ≡⟨ add-unassoc (a + c) b-a d-c ⟩
             a + c + b-a + d-c    ≡⟨ ap (λ e → e + d-c) (add-add-rcomm a c b-a) ⟩
-            a + b-a + c + d-c    ≡⟨ ap (λ e → e + c + d-c) eqba ⟩
+            a + b-a + c + d-c    ≡⟨ ap (λ e → e + c + d-c) a+b-a=b ⟩
             b + c + d-c          ≡⟨ add-assoc b c _ ⟩
-            b + (c + d-c)        ≡⟨ ap (λ e → b + e) eqdc ⟩
+            b + (c + d-c)        ≡⟨ ap (λ e → b + e) c+d-c=d ⟩
             b + d                ∎
-      in (leq-biimpl-exists-diff (a + c) (b + d)).Σ.snd (pair (b-a + d-c) eq1)
+      in from-diff (a + c) (b + d) (b-a + d-c) eq1
 
     leq-biimpl-mul-succ : (x y k : Nat) → (x ≤ y) ↔ (x * succ k ≤ y * succ k)
     leq-biimpl-mul-succ x y k = pair (forward' x y (succ k)) (backward x y k)
       where
       forward' : (x y k : Nat) → (x ≤ y) → (x * k ≤ y * k)
       forward' x y k x≤y =
-        let (pair y-x eq) = (leq-biimpl-exists-diff x y).Σ.fst x≤y
+        let (pair y-x eq) = extract-diff x y x≤y
             eq' = begin
               y * k              ≡⟨ ap (λ e → e * k) (inverse eq) ⟩
               (x + y-x) * k      ≡⟨ mul-rdistr x y-x k ⟩
               x * k + y-x * k    ∎
-        in (leq-biimpl-exists-diff (x * k) (y * k)).Σ.snd (pair (y-x * k) (inverse eq'))
+        in from-diff (x * k) (y * k) (y-x * k) (inverse eq')
 
       backward : (x y k : Nat) → (x * succ k ≤ y * succ k) → (x ≤ y)
       backward zero     zero     _ _   = unit
@@ -357,6 +363,12 @@ module _ where
             leq2 : x * succ k ≤ y * succ k
             leq2 = (leq-biimpl-add-right (x * succ k) (y * succ k) (succ k)).Σ.snd leq1
         in backward x y k leq2
+
+    leq-add-succ-right : (x y : Nat) → (x + y ≤ x + succ y)
+    leq-add-succ-right x y = self-succ (x + y)
+
+    leq-add-succ-left : (x y : Nat) → (x + y ≤ succ x + y)
+    leq-add-succ-left x y = tr (λ e → x + y ≤ e) (inverse (add-succ-left x y)) (self-succ (x + y))
 
     module Min-Leq where
       leq-then-min-eq : (m n : Nat) → (m ≤ n) → (min m n ≡ m)
@@ -433,6 +445,20 @@ module _ where
           ; (right n≤m) → tr (λ e → e ≤ k) (inverse (max-symm m n · leq-then-max-eq n m n≤m)) m≤k
           }
 
+      max-leq-add : (a b : Nat) → max a b ≤ a + b
+      max-leq-add a b =
+        case (total a b) of λ {
+          (left a≤b) → from-diff (max a b) (a + b) a (begin
+            max a b + a   ≡⟨ ap (λ e → e + a) (leq-then-max-eq a b a≤b) ⟩
+            b + a         ≡⟨ add-comm b a ⟩
+            a + b         ∎
+          )
+        ; (right b≤a) → from-diff (max a b) (a + b) b (
+            max a b + b   ≡⟨ ap (λ e → e + b) (max-symm a b · leq-then-max-eq b a b≤a) ⟩
+            a + b         ∎
+          )
+        }
+
   Lt-Nat : (x y : Nat) → Set
   Lt-Nat zero zero = Empty
   Lt-Nat zero (succ y) = Unit
@@ -506,28 +532,34 @@ module _ where
       backward : (x y : Nat) → Σ Nat (λ k → x + succ k ≡ y) → (x < y)
       backward x y (pair k refl) = self-add-succ x k
 
+    extract-diff : (x y : Nat) → (x < y) → Σ Nat (λ k → x + succ k ≡ y)
+    extract-diff x y x<y = (lt-biimpl-exists-diff x y).Σ.fst x<y
+
+    from-diff : (x y k : Nat) → (x + succ k ≡ y) → (x < y)
+    from-diff x y k eq = (lt-biimpl-exists-diff x y).Σ.snd (pair k eq)
+
     lt-biimpl-succ-leq : (m n : Nat) → (m < n) ↔ (succ m ≤ n)
     lt-biimpl-succ-leq m n = pair forward backward
       where
       forward : (m < n) → (succ m ≤ n)
       forward m<n =
-        let (pair k m+sk≡n) = (lt-biimpl-exists-diff m n).Σ.fst m<n
+        let (pair k m+sk≡n) = extract-diff m n m<n
             eq = begin
               succ m + k     ≡⟨ add-succ-left m k ⟩
               succ (m + k)   ≡⟨⟩
               m + succ k     ≡⟨ m+sk≡n ⟩
               n              ∎
-        in (Leq-Nat.leq-biimpl-exists-diff (succ m) n).Σ.snd (pair k eq)
+        in Leq-Nat.from-diff (succ m) n k eq
 
       backward : (succ m ≤ n) → (m < n)
       backward succm≤n =
-        let (pair k succm+k≡n) = (Leq-Nat.leq-biimpl-exists-diff (succ m) n).Σ.fst succm≤n
+        let (pair k succm+k≡n) = Leq-Nat.extract-diff (succ m) n succm≤n
             eq = begin
               m + succ k     ≡⟨⟩
               succ (m + k)   ≡⟨ inverse (add-succ-left m k) ⟩
               succ m + k     ≡⟨ succm+k≡n ⟩
               n              ∎
-        in (lt-biimpl-exists-diff m n).Σ.snd (pair k eq)
+        in from-diff m n k eq
 
     trichotomy : (m n : Nat) → (m < n) +₁ (m ≡ n) +₁ (n < m)
     trichotomy zero zero = left (right refl)
@@ -545,14 +577,14 @@ module _ where
       where
       forward : ((m < n) +₁ (m ≡ n)) → (m ≤ n)
       forward (left m<n) =
-        let (pair k m+sk≡n) = (lt-biimpl-exists-diff m n).Σ.fst m<n
-        in (Leq-Nat.leq-biimpl-exists-diff m n).Σ.snd (pair (succ k) m+sk≡n)
+        let (pair k m+sk≡n) = extract-diff m n m<n
+        in Leq-Nat.from-diff m n (succ k) m+sk≡n
       forward (right refl) = Leq-Nat.Leq-Nat-refl m
 
       backward : (m ≤ n) → ((m < n) +₁ (m ≡ n))
-      backward m≤n with (Leq-Nat.leq-biimpl-exists-diff m n).Σ.fst m≤n
+      backward m≤n with Leq-Nat.extract-diff m n m≤n
       ...             | (pair zero m+zero≡n) = right m+zero≡n
-      ...             | (pair (succ k) m+sk≡n) = left ((lt-biimpl-exists-diff m n).Σ.snd (pair k m+sk≡n))
+      ...             | (pair (succ k) m+sk≡n) = left (from-diff m n k m+sk≡n)
 
     lt-biimpl-not-flip-leq : (m n : Nat) → (m < n) ↔ ¬ (n ≤ m)
     lt-biimpl-not-flip-leq m n = pair (forward m n) backward
@@ -590,6 +622,19 @@ module _ where
     dist-to-zero zero = refl
     dist-to-zero (succ x) = refl
 
+    translation-inv : (a m n : Nat) → Nat-dist (a + m) (a + n) ≡ Nat-dist m n
+    translation-inv zero m n = ap2 (λ e1 e2 → Nat-dist e1 e2) (add-lunit m) (add-lunit n)
+    translation-inv (succ a) m n = begin
+      Nat-dist (succ a + m) (succ a + n)  ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-succ-left a m) (add-succ-left a n) ⟩
+      Nat-dist (a + m) (a + n)            ≡⟨ translation-inv a m n ⟩
+      Nat-dist m n                        ∎
+
+    bounded : (m n : Nat) → (Nat-dist m n ≤ max m n)
+    bounded zero zero = Leq-Nat-refl zero
+    bounded zero (succ n) = Leq-Nat-refl (succ n)
+    bounded (succ m) zero = Leq-Nat-refl (succ m)
+    bounded (succ m) (succ n) = Leq-Nat.trans (Nat-dist m n) (max m n) (succ (max m n)) (bounded m n) (self-succ (max m n))
+
     module Metric where
       dist-to-self-eq-zero : (x : Nat) → (Nat-dist x x ≡ zero)
       dist-to-self-eq-zero zero = refl
@@ -612,20 +657,78 @@ module _ where
       symm zero (succ n) = refl
       symm (succ m) zero = refl
       symm (succ m) (succ n) = symm m n
-      
-      triangle : (m n k : Nat) → (Nat-dist m n + Nat-dist n k ≤ Nat-dist m k)
-      triangle = {!   !}
+
+      -- lemma needed for triangle inequality
+      leq-dist-add : (m n : Nat) → m ≤ Nat-dist m n + n
+      leq-dist-add zero zero = Leq-Nat-refl zero
+      leq-dist-add zero (succ n) = zero-leq-any (Nat-dist zero (succ n) + succ n)
+      leq-dist-add (succ m) zero = Leq-Nat-refl (succ m)
+      leq-dist-add (succ m) (succ n) = leq-dist-add m n
+
+      triangle : (m n k : Nat) → (Nat-dist m n ≤ Nat-dist m k + Nat-dist k n)
+      triangle zero zero zero = from-diff zero zero zero refl
+      triangle zero zero (succ k) = zero-leq-any (succ k + succ k)
+      triangle zero (succ n) zero = from-diff (succ n) (zero + succ n) zero (inverse (add-lunit (succ n)))
+      triangle zero (succ n) (succ k) =
+        tr
+          (λ e → succ n ≤ e)
+          (begin
+            Nat-dist n k + succ k                   ≡⟨ ap (λ e → e + succ k) (symm n k) ⟩
+            Nat-dist k n + succ k                   ≡⟨⟩
+            Nat-dist (succ k) (succ n) + succ k     ≡⟨ add-comm (Nat-dist (succ k) (succ n)) (succ k) ⟩
+            succ k + Nat-dist (succ k) (succ n)     ∎
+          )
+          (leq-dist-add (succ n) (succ k))
+      triangle (succ m) zero zero = Leq-Nat-refl (succ m)
+      triangle (succ m) zero (succ k) = leq-dist-add (succ m) (succ k)
+      triangle (succ m) (succ n) zero =
+        trans (Nat-dist m n) _ _ (bounded m n) (
+          trans (max m n) _ _ (Max-Leq.max-leq-add m n) (
+            trans (m + n) _ _
+              (leq-add-succ-right m n)
+              (leq-add-succ-left m (succ n))
+          )
+        )
+      triangle (succ m) (succ n) (succ k) = triangle m n k
 
     triangle-eq-biimpl-ordered : (m n k : Nat) →
                                  (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) ↔ 
                                  (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
     triangle-eq-biimpl-ordered m n k = {!   !}
 
-    translation-inv : (a m n : Nat) → Nat-dist (a + m) (a + n) ≡ Nat-dist m n
-    translation-inv = {!   !}
+    add-same-order : (a b c d : Nat) → ((a ≤ b) ↔ (c ≤ d)) → (Nat-dist a b + Nat-dist c d ≡ Nat-dist (a + c) (b + d))
+    add-same-order a b c d biimpl = {!   !}
 
     linear : (k m n : Nat) → Nat-dist (k * m) (k * n) ≡ k * Nat-dist m n
-    linear = {!   !}
+    linear zero m n = begin
+      Nat-dist (zero * m) (zero * n)  ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (mul-lzero m) (mul-lzero n) ⟩
+      Nat-dist zero zero              ≡⟨⟩
+      zero                            ≡⟨ inverse (mul-lzero (Nat-dist m n)) ⟩
+      zero * Nat-dist m n             ∎
+    linear (succ k) m n = begin
+      Nat-dist (succ k * m) (succ k * n)         ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (mul-succ-left k m) (mul-succ-left k n) ⟩
+      Nat-dist (k * m + m) (k * n + n)           ≡⟨ equality k ⟩
+      Nat-dist (k * m) (k * n) + Nat-dist m n    ≡⟨ ap (λ e → e + Nat-dist m n) (linear k m n) ⟩
+      k * Nat-dist m n + Nat-dist m n            ≡⟨ inverse (mul-succ-left k (Nat-dist m n)) ⟩
+      succ k * Nat-dist m n                      ∎
+        where
+          equality : (k : Nat) → Nat-dist (k * m + m) (k * n + n) ≡ Nat-dist (k * m) (k * n) + Nat-dist m n
+          equality zero = begin
+            Nat-dist (zero * m + m) (zero * n + n)           ≡⟨ ap2 (λ e1 e2 → Nat-dist (e1 + m) (e2 + n)) (mul-lzero m) (mul-lzero n) ⟩
+            Nat-dist (zero + m) (zero + n)                   ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-lunit m) (add-lunit n) ⟩
+            Nat-dist m n                                     ≡⟨ inverse (add-lunit (Nat-dist m n)) ⟩
+            zero + Nat-dist m n                              ≡⟨⟩
+            Nat-dist zero zero + Nat-dist m n                ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2 + Nat-dist m n) (inverse (mul-lzero m)) (inverse (mul-lzero n)) ⟩
+            Nat-dist (zero * m) (zero * n) + Nat-dist m n    ∎
+
+          equality (succ k) =
+            inverse (add-same-order (succ k * m) (succ k * n) m n (
+              ↔-Basic.flip-biimpl (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
+                (mul-comm m (succ k))
+                (mul-comm n (succ k))
+                (leq-biimpl-mul-succ m n k)
+              )
+            ))
 
   Int-abs : (x : Int) → Nat
   Int-abs zeroInt = zero
@@ -633,6 +736,7 @@ module _ where
   Int-abs (negSucc x) = succ x
 
   module Int-abs where
+    open EmptyBasic
     open IntEquality.IntCommRing
     open NatBasic.SymbolicQualified
     open IntBasic.Symbolic
@@ -640,10 +744,19 @@ module _ where
     open Leq-Nat.Symbolic
 
     positive-definite : (x : Int) → (x ≡ zeroInt) ↔ (Int-abs x ≡ zero)
-    positive-definite x = {!   !}
+    positive-definite x = pair forward (backward x)
+      where
+      forward : (x ≡ zeroInt) → (Int-abs x ≡ zero)
+      forward refl = refl
+
+      backward : (x : Int) → (Int-abs x ≡ zero) → (x ≡ zeroInt)
+      backward zeroInt zeroInt≡zero = refl
+      backward (posSucc x) ()
+      backward (negSucc x) ()
 
     triangle : (x y : Int) → Int-abs (x + y) ≤ Int-abs x +ℕ Int-abs y
     triangle = {!   !}
 
     preserves-prod : (x y : Int) → Int-abs (x * y) ≤ Int-abs x *ℕ Int-abs y
     preserves-prod = {!   !}
+  

@@ -227,6 +227,10 @@ module _ where
   _↔_ : Set → Set → Set
   A ↔ B = (A → B) × (B → A)
 
+  module ↔-Basic where
+    flip-biimpl : {A B : Set} → (A ↔ B) → (B ↔ A)
+    flip-biimpl (pair a→b b→a) = pair b→a a→b
+
   module exercise-4-3 where
     open EmptyBasic
     open Σ
