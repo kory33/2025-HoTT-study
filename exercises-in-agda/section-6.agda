@@ -58,6 +58,9 @@ module _ where
         f zero eq = eq
         f (succ k) eq = f k ((succ-inj (m + k) (n + k)).Σ.snd eq)
 
+    add-inj-left : (m n k : Nat) → (m ≡ n) ↔ (k + m ≡ k + n)
+    add-inj-left m n k = tr2 (λ e1 e2 → (m ≡ n) ↔ (e1 ≡ e2)) (add-comm m k) (add-comm n k) (add-inj m n k)
+
     mul-inj : (m n k : Nat) → (m ≡ n) ↔ (m * succ k ≡ n * succ k)
     mul-inj m n k = pair
       (λ eq → ap (λ x → x * succ k) eq)
@@ -602,6 +605,10 @@ module _ where
         ; (left (right m≡n)) → absurd (notn≤m ((lt-or-eq-biimpl-leq n m).Σ.fst (right (inverse m≡n))))
         ; (right n<m) → absurd (notn≤m ((lt-or-eq-biimpl-leq n m).Σ.fst (left n<m)))
         }
+    
+    as-leq : (m n : Nat) → (m < n) → (m ≤ n)
+    as-leq m n m<n = (lt-or-eq-biimpl-leq m n).Σ.fst (left m<n)
+
 
   Nat-dist : (m n : Nat) → Nat
   Nat-dist zero zero = zero
@@ -621,6 +628,10 @@ module _ where
     dist-to-zero : (x : Nat) → (Nat-dist x zero ≡ x)
     dist-to-zero zero = refl
     dist-to-zero (succ x) = refl
+
+    dist-from-zero : (x : Nat) → (Nat-dist zero x ≡ x)
+    dist-from-zero zero = refl
+    dist-from-zero (succ x) = refl
 
     translation-inv : (a m n : Nat) → Nat-dist (a + m) (a + n) ≡ Nat-dist m n
     translation-inv zero m n = ap2 (λ e1 e2 → Nat-dist e1 e2) (add-lunit m) (add-lunit n)
@@ -691,13 +702,132 @@ module _ where
         )
       triangle (succ m) (succ n) (succ k) = triangle m n k
 
+    ordered-then-diff : (m n : Nat) → (m ≤ n) → m + Nat-dist m n ≡ n
+    ordered-then-diff zero zero _ = refl
+    ordered-then-diff zero (succ n) _ = add-lunit (succ n)
+    ordered-then-diff (succ m) zero ()
+    ordered-then-diff (succ m) (succ n) sm≤sn = (add-succ-left m (Nat-dist m n)) · (ap succ (ordered-then-diff m n sm≤sn))
+
     triangle-eq-biimpl-ordered : (m n k : Nat) →
                                  (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) ↔ 
                                  (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
-    triangle-eq-biimpl-ordered m n k = {!   !}
+    triangle-eq-biimpl-ordered m n k = pair forward backward
+      where
+        forward : (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) → (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
+        forward eqn =
+          case (Lt-Nat.trichotomy m k) of λ {
+            (left (left m<k)) →
+              left (pair
+                (Lt-Nat.as-leq m k m<k)
+                (case (Lt-Nat.trichotomy k n) of λ {
+                  (left (left k<n)) → Lt-Nat.as-leq k n k<n
+                ; (left (right refl)) → Leq-Nat-refl n
+                ; (right n<k) → -- we have m<k, n<k and yet eqn, so this should lead to a contradiction
+                    {!   !}
+                })
+              )
+          ; (right k<m) →
+              right (pair
+                (case (Lt-Nat.trichotomy n k) of λ {
+                  (left (left n<k)) → Lt-Nat.as-leq n k n<k
+                ; (left (right refl)) → Leq-Nat-refl k
+                ; (right k<n) → -- we have k<m, k<n and yet eqn, so this should lead to a contradiction
+                    {!   !}
+                })
+                (Lt-Nat.as-leq k m k<m)
+              )
+          ; (left (right refl)) → case (total m n) of λ {
+              (left m≤n) → left (pair (Leq-Nat-refl m) m≤n)
+            ; (right n≤m) → right (pair n≤m (Leq-Nat-refl m))
+            }
+          }
+
+        backward' : (m n k : Nat) → ((m ≤ k) × (k ≤ n)) → Nat-dist m n ≡ Nat-dist m k + Nat-dist k n
+        backward' m n k (pair m≤k k≤n) =
+          inverse ((add-inj-left (Nat-dist m k + Nat-dist k n) (Nat-dist m n) m).Σ.snd lemma)
+            where
+            lemma : m + (Nat-dist m k + Nat-dist k n) ≡ m + Nat-dist m n
+            lemma = begin
+              m + (Nat-dist m k + Nat-dist k n)    ≡⟨ add-unassoc m (Nat-dist m k) (Nat-dist k n) ⟩
+              m + Nat-dist m k + Nat-dist k n      ≡⟨ ap (λ e → e + Nat-dist k n) (ordered-then-diff m k m≤k) ⟩
+              k + Nat-dist k n                     ≡⟨ ordered-then-diff k n k≤n ⟩
+              n                                    ≡⟨ inverse (ordered-then-diff m n (trans m k n m≤k k≤n)) ⟩
+              m + Nat-dist m n                     ∎          
+
+        backward : (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m))) → (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n)
+        backward (left (pair m≤k k≤n)) = backward' m n k (pair m≤k k≤n)
+        backward (right (pair n≤k k≤m)) = begin
+          Nat-dist m n                  ≡⟨ Metric.symm m n ⟩
+          Nat-dist n m                  ≡⟨ backward' n m k (pair n≤k k≤m) ⟩
+          Nat-dist n k + Nat-dist k m   ≡⟨ ap2 (λ e1 e2 → e1 + e2) (Metric.symm n k) (Metric.symm k m) ⟩
+          Nat-dist k n + Nat-dist m k   ≡⟨ add-comm (Nat-dist k n) (Nat-dist m k) ⟩
+          Nat-dist m k + Nat-dist k n   ∎
+
+    ordered-dist-add-eq-right-add : (a b c : Nat) → (a ≤ b) → (Nat-dist a b + c ≡ Nat-dist a (b + c))
+    ordered-dist-add-eq-right-add a b c a≤b =
+      let
+        eq = begin
+          a + (Nat-dist a b + c)   ≡⟨ add-unassoc a (Nat-dist a b) c ⟩
+          a + Nat-dist a b + c     ≡⟨ ap (λ e → e + c) (ordered-then-diff a b a≤b) ⟩
+          b + c                    ≡⟨ inverse (ordered-then-diff a (b + c) (trans a b (b + c) a≤b (self-add b c))) ⟩
+          a + Nat-dist a (b + c)   ∎
+      in (add-inj-left (Nat-dist a b + c) (Nat-dist a (b + c)) a).Σ.snd eq
 
     add-same-order : (a b c d : Nat) → ((a ≤ b) ↔ (c ≤ d)) → (Nat-dist a b + Nat-dist c d ≡ Nat-dist (a + c) (b + d))
-    add-same-order a b c d biimpl = {!   !}
+    add-same-order a b zero zero _ = refl
+    add-same-order a b zero (succ d) (pair _ c≤dthena≤b) = 
+      let a≤b = c≤dthena≤b (Leq-Nat.zero-leq-any d)
+      in ordered-dist-add-eq-right-add a b (succ d) a≤b
+    add-same-order a b (succ c) zero (pair a≤bthensc≤zero _) =
+      let
+        b<a = case (Lt-Nat.trichotomy a b) of λ {
+            (left (left a<b)) → absurd (a≤bthensc≤zero (Lt-Nat.as-leq a b a<b))
+          ; (left (right refl)) → absurd (a≤bthensc≤zero (Leq-Nat-refl a))
+          ; (right b<a) → b<a
+          }
+      in begin
+        Nat-dist a b + Nat-dist (succ c) zero    ≡⟨⟩
+        Nat-dist a b + succ c                    ≡⟨ ap (λ e → e + succ c) (Metric.symm a b) ⟩
+        Nat-dist b a + succ c                    ≡⟨ ordered-dist-add-eq-right-add b a (succ c) (Lt-Nat.as-leq b a b<a) ⟩
+        Nat-dist b (a + succ c)                  ≡⟨ Metric.symm b (a + succ c) ⟩
+        Nat-dist (a + succ c) b                  ∎
+    add-same-order a b (succ c) (succ d) eqn = add-same-order a b c d eqn
+
+    right-succ-leq-succ : (a b : Nat) → Nat-dist a (succ b) ≤ succ (Nat-dist a b)
+    right-succ-leq-succ zero b = tr (λ e → Nat-dist zero (succ b) ≤ succ e) (inverse (dist-from-zero b)) (Leq-Nat-refl (succ b))
+    right-succ-leq-succ (succ a) zero =
+      trans (Nat-dist a zero) (succ a) (succ (succ a))
+        (tr (λ e → e ≤ succ a) (inverse (dist-to-zero a)) (self-succ a))
+        (self-succ (succ a))
+    right-succ-leq-succ (succ a) (succ b) = right-succ-leq-succ a b
+
+    right-add-leq-add : (a b c : Nat) → Nat-dist a (b + c) ≤ Nat-dist a b + c
+    right-add-leq-add a b zero = Leq-Nat-refl (Nat-dist a b)
+    right-add-leq-add a b (succ c) =
+      trans (Nat-dist a (b + succ c)) (succ (Nat-dist a (b + c))) (Nat-dist a b + succ c)
+        (right-succ-leq-succ a (b + c))
+        (right-add-leq-add a b c)
+
+    left-succ-leq-succ : (a b : Nat) → Nat-dist (succ a) b ≤ succ (Nat-dist a b)
+    left-succ-leq-succ a b = tr2 (λ e1 e2 → e1 ≤ succ e2) (Metric.symm b (succ a)) (Metric.symm b a) (right-succ-leq-succ b a)
+
+    left-add-leq-add : (a b c : Nat) → Nat-dist (a + c) b ≤ Nat-dist a b + c
+    left-add-leq-add a b c = tr2 (λ e1 e2 → e1 ≤ e2 + c) (Metric.symm b (a + c)) (Metric.symm b a) (right-add-leq-add b a c)
+
+    cross-add-leq-add : (a b c d : Nat) → Nat-dist (a + c) (b + d) ≤ Nat-dist a b + Nat-dist c d
+    cross-add-leq-add a b zero zero = Leq-Nat-refl (Nat-dist a b)
+    cross-add-leq-add a b zero (succ d) =
+      trans (Nat-dist a (succ (b + d))) (succ (Nat-dist a (b + d))) (succ (Nat-dist a b + d))
+        (right-succ-leq-succ a (b + d))
+        (right-add-leq-add a b d)
+    cross-add-leq-add a b (succ c) zero =
+      trans (Nat-dist (succ (a + c)) b) (succ (Nat-dist (a + c) b)) (succ (Nat-dist a b + c))
+        (left-succ-leq-succ (a + c) b)
+        (left-add-leq-add a b c)
+    cross-add-leq-add a b (succ c) (succ d) = cross-add-leq-add a b c d
+
+    cross-mul-leq-mul : (a b c d : Nat) → Nat-dist (a * c + b * d) (a * d + b * c) ≤ Nat-dist a b * Nat-dist c d
+    cross-mul-leq-mul = {!   !}
 
     linear : (k m n : Nat) → Nat-dist (k * m) (k * n) ≡ k * Nat-dist m n
     linear zero m n = begin
@@ -740,6 +870,8 @@ module _ where
     open IntEquality.IntCommRing
     open NatBasic.SymbolicQualified
     open IntBasic.Symbolic
+    open IntBasic.SymbolicQualified
+    open ≡-Reasoning
     open Leq-Nat
     open Leq-Nat.Symbolic
 
@@ -754,9 +886,46 @@ module _ where
       backward (posSucc x) ()
       backward (negSucc x) ()
 
+    abs-Nat-minus : (x₊ x₋ : Nat) → Int-abs (x₊ -ℕ x₋) ≡ Nat-dist x₊ x₋
+    abs-Nat-minus zero zero = refl
+    abs-Nat-minus zero (succ x₋) = refl
+    abs-Nat-minus (succ x₊) zero = refl
+    abs-Nat-minus (succ x₊) (succ x₋) = abs-Nat-minus x₊ x₋
+
     triangle : (x y : Int) → Int-abs (x + y) ≤ Int-abs x +ℕ Int-abs y
-    triangle = {!   !}
+    triangle x y =
+      let
+        (pair x₊ x₋) = asNatDiff x
+        (pair y₊ y₋) = asNatDiff y
+        lhs : Int-abs (x + y) ≡ Nat-dist (x₊ +ℕ y₊) (x₋ +ℕ y₋)
+        lhs = begin
+          Int-abs (x + y)                      ≡⟨ ap2 (λ e1 e2 → Int-abs (e1 + e2)) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
+          Int-abs ((x₊ -ℕ x₋) + (y₊ -ℕ y₋))    ≡⟨ ap Int-abs (Nat-minus-add x₊ x₋ y₊ y₋) ⟩
+          Int-abs ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))   ≡⟨ abs-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋) ⟩
+          Nat-dist (x₊ +ℕ y₊) (x₋ +ℕ y₋)       ∎
+        rhs : Int-abs x +ℕ Int-abs y ≡ Nat-dist x₊ x₋ +ℕ Nat-dist y₊ y₋
+        rhs = begin
+          Int-abs x +ℕ Int-abs y                     ≡⟨ ap2 (λ e1 e2 → Int-abs e1 +ℕ Int-abs e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
+          Int-abs (x₊ -ℕ x₋) +ℕ Int-abs (y₊ -ℕ y₋)   ≡⟨ ap2 (λ e1 e2 → e1 +ℕ e2) (abs-Nat-minus x₊ x₋) (abs-Nat-minus y₊ y₋) ⟩
+          Nat-dist x₊ x₋ +ℕ Nat-dist y₊ y₋           ∎
+      in tr2 (λ e1 e2 → e1 ≤ e2) (inverse lhs) (inverse rhs) (Nat-dist.cross-add-leq-add x₊ x₋ y₊ y₋)
 
     preserves-prod : (x y : Int) → Int-abs (x * y) ≤ Int-abs x *ℕ Int-abs y
-    preserves-prod = {!   !}
-  
+    preserves-prod x y =
+      let
+        (pair x₊ x₋) = asNatDiff x
+        (pair y₊ y₋) = asNatDiff y
+        lhs : Int-abs (x * y) ≡ Nat-dist (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)
+        lhs = begin
+          Int-abs (x * y)                                              ≡⟨ ap2 (λ e1 e2 → Int-abs (e1 * e2)) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
+          Int-abs ((x₊ -ℕ x₋) * (y₊ -ℕ y₋))                            ≡⟨ ap Int-abs (Nat-minus-mul x₊ x₋ y₊ y₋) ⟩
+          Int-abs ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊))   ≡⟨ abs-Nat-minus (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) ⟩
+          Nat-dist (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)       ∎
+
+        rhs : Int-abs x *ℕ Int-abs y ≡ Nat-dist x₊ x₋ *ℕ Nat-dist y₊ y₋
+        rhs = begin
+          Int-abs x *ℕ Int-abs y                     ≡⟨ ap2 (λ e1 e2 → Int-abs e1 *ℕ Int-abs e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
+          Int-abs (x₊ -ℕ x₋) *ℕ Int-abs (y₊ -ℕ y₋)   ≡⟨ ap2 (λ e1 e2 → e1 *ℕ e2) (abs-Nat-minus x₊ x₋) (abs-Nat-minus y₊ y₋) ⟩
+          Nat-dist x₊ x₋ *ℕ Nat-dist y₊ y₋           ∎
+      in tr2 (λ e1 e2 → e1 ≤ e2) (inverse lhs) (inverse rhs) (Nat-dist.cross-mul-leq-mul x₊ x₋ y₊ y₋)
+ 
