@@ -231,6 +231,16 @@ module _ where
     flip-biimpl : {A B : Set} → (A ↔ B) → (B ↔ A)
     flip-biimpl (pair a→b b→a) = pair b→a a→b
 
+    trans : {A B C : Set} → (A ↔ B) → (B ↔ C) → (A ↔ C)
+    trans (pair a→b b→a) (pair b→c c→b) = pair (b→c ∘ a→b) (b→a ∘ c→b)
+
+    prod : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
+    prod (pair a→b b→a) (pair c→d d→c) = pair (λ { (pair a c) → pair (a→b a) (c→d c) }) (λ { (pair b d) → pair (b→a b) (d→c d) })
+
+    open EmptyBasic
+    neg-both : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
+    neg-both (pair a→b b→a) = pair (contrapose b→a) (contrapose a→b)
+
   module exercise-4-3 where
     open EmptyBasic
     open Σ

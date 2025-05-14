@@ -281,13 +281,23 @@ module _ where
     total (succ x) zero = right unit
     total (succ x) (succ y) = total x y
 
+    by-comparing : (x y : Nat) → {P : Set} → ((x ≤ y) +₁ (y ≤ x) → P) → P
+    by-comparing x y f = 
+      case (total x y) of λ {
+        (left x≤y) → f (left x≤y)
+      ; (right y≤x) → f (right y≤x)
+      }
+
     self-succ : (x : Nat) → (x ≤ succ x)
     self-succ zero = unit
     self-succ (succ x) = self-succ x
 
-    self-add : (x k : Nat) → (x ≤ x + k)
-    self-add x zero = Leq-Nat-refl x
-    self-add x (succ k) = trans x (x + k) (x + succ k) (self-add x k) (self-succ (x + k))
+    self-add-right : (x k : Nat) → (x ≤ x + k)
+    self-add-right x zero = Leq-Nat-refl x
+    self-add-right x (succ k) = trans x (x + k) (x + succ k) (self-add-right x k) (self-succ (x + k))
+
+    self-add-left : (x k : Nat) → (x ≤ k + x)
+    self-add-left x k = tr (λ e → x ≤ e) (add-comm x k) (self-add-right x k)
 
     leq-biimpl-exists-diff : (x y : Nat) → (x ≤ y) ↔ (Σ Nat (λ k → x + k ≡ y))
     leq-biimpl-exists-diff x y = pair (forward x y) (backward x y)
@@ -305,7 +315,7 @@ module _ where
         in (pair k eq')
 
       backward : (x y : Nat) → Σ Nat (λ k → x + k ≡ y) → (x ≤ y)
-      backward x y (pair k refl) = self-add x k
+      backward x y (pair k refl) = self-add-right x k
 
     extract-diff : (x y : Nat) → (x ≤ y) → Σ Nat (λ k → x + k ≡ y)
     extract-diff x y x≤y = (leq-biimpl-exists-diff x y).Σ.fst x≤y
@@ -406,7 +416,7 @@ module _ where
 
         backward : (m n k : Nat) → ((m ≤ n) × (m ≤ k)) → (m ≤ min n k)
         backward m n k (pair m≤n m≤k) =
-          case (total n k) of λ {
+          by-comparing n k λ {
             (left n≤k) → tr (λ e → m ≤ e) (inverse (leq-then-min-eq n k n≤k)) m≤n
           ; (right k≤n) → tr (λ e → m ≤ e) (inverse (min-symm n k · leq-then-min-eq k n k≤n)) m≤k
           }
@@ -443,14 +453,14 @@ module _ where
             (trans n (max m n) k (max-leq-right m n) max≤k)
         backward : (m n k : Nat) → ((m ≤ k) × (n ≤ k)) → (max m n ≤ k)
         backward m n k (pair m≤k n≤k) =
-          case (total m n) of λ {
+          by-comparing m n λ {
             (left m≤n) → tr (λ e → e ≤ k) (inverse (leq-then-max-eq m n m≤n)) n≤k
           ; (right n≤m) → tr (λ e → e ≤ k) (inverse (max-symm m n · leq-then-max-eq n m n≤m)) m≤k
           }
 
       max-leq-add : (a b : Nat) → max a b ≤ a + b
       max-leq-add a b =
-        case (total a b) of λ {
+        by-comparing a b λ {
           (left a≤b) → from-diff (max a b) (a + b) a (begin
             max a b + a   ≡⟨ ap (λ e → e + a) (leq-then-max-eq a b a≤b) ⟩
             b + a         ≡⟨ add-comm b a ⟩
@@ -483,6 +493,12 @@ module _ where
     antireflexive : (x : Nat) → ¬ (x < x)
     antireflexive zero ()
     antireflexive (succ x) bot = EmptyBasic.absurd (antireflexive x bot)
+
+    neq : (m n : Nat) → (m < n) → ¬ (m ≡ n)
+    neq zero zero ()
+    neq zero (succ n) _ ()
+    neq (succ m) zero _ ()
+    neq (succ m) (succ n) sm<sn eq = neq m n sm<sn ((Nat-EqualityThroughEq-Nat.succ-inj m n).Σ.snd eq)
 
     asymmetric : (x y : Nat) → (x < y) → ¬ (y < x)
     asymmetric zero zero ()
@@ -589,6 +605,21 @@ module _ where
       ...             | (pair zero m+zero≡n) = right m+zero≡n
       ...             | (pair (succ k) m+sk≡n) = left (from-diff m n k m+sk≡n)
 
+    as-leq : (m n : Nat) → (m < n) → (m ≤ n)
+    as-leq m n m<n = (lt-or-eq-biimpl-leq m n).Σ.fst (left m<n)
+
+    lt-biimpl-neq-and-leq : (m n : Nat) → (m < n) ↔ (¬ (m ≡ n) × (m ≤ n))
+    lt-biimpl-neq-and-leq m n = pair forward backward
+      where
+      forward : (m < n) → (¬ (m ≡ n) × (m ≤ n))
+      forward m<n = pair (neq m n m<n) (as-leq m n m<n)
+      backward : (¬ (m ≡ n) × (m ≤ n)) → (m < n)
+      backward (pair m≠n m≤n) =
+        case ((lt-or-eq-biimpl-leq m n).Σ.snd m≤n) of λ {
+          (left m<n) → m<n
+        ; (right m≡n) → absurd (m≠n m≡n)
+        }
+
     lt-biimpl-not-flip-leq : (m n : Nat) → (m < n) ↔ ¬ (n ≤ m)
     lt-biimpl-not-flip-leq m n = pair (forward m n) backward
       where
@@ -606,9 +637,40 @@ module _ where
         ; (right n<m) → absurd (notn≤m ((lt-or-eq-biimpl-leq n m).Σ.fst (left n<m)))
         }
     
-    as-leq : (m n : Nat) → (m < n) → (m ≤ n)
-    as-leq m n m<n = (lt-or-eq-biimpl-leq m n).Σ.fst (left m<n)
+    lt-biimpl-add-right : (m n k : Nat) → (m < n) ↔ (m + k < n + k)
+    lt-biimpl-add-right m n k = pair (forward m n k) (backward m n k)
+      where
+      forward : (m n k : Nat) → (m < n) → (m + k < n + k)
+      forward m n zero m<n = m<n
+      forward m n (succ k) m<n = forward m n k m<n
 
+      backward : (m n k : Nat) → (m + k < n + k) → (m < n)
+      backward m n zero m+k<n+k = m+k<n+k
+      backward m n (succ k) m+succk<n+succk = backward m n k m+succk<n+succk
+
+    lt-biimpl-add-left : (m n k : Nat) → (m < n) ↔ (k + m < k + n)
+    lt-biimpl-add-left m n k = tr2 (λ e1 e2 → (m < n) ↔ (e1 < e2)) (add-comm m k) (add-comm n k) (lt-biimpl-add-right m n k)
+
+    lt-biimpl-mul-succ-right : (m n k : Nat) → (m < n) ↔ (m * succ k < n * succ k)
+    lt-biimpl-mul-succ-right m n k =
+      ↔-Basic.trans
+        (lt-biimpl-neq-and-leq m n)
+        (↔-Basic.trans
+          (↔-Basic.prod (↔-Basic.neg-both (Nat-EqualityThroughEq-Nat.mul-inj m n k)) (Leq-Nat.leq-biimpl-mul-succ m n k))
+          (↔-Basic.flip-biimpl (lt-biimpl-neq-and-leq (m * succ k) (n * succ k)))
+        )
+    
+    trans-leq : (m n k : Nat) → (m < n) → (n ≤ k) → (m < k)
+    trans-leq m n k m<n n≤k =
+      let (pair pn-m m+spn-m≡n) = extract-diff m n m<n
+          (pair k-n n+k-n≡k) = Leq-Nat.extract-diff n k n≤k
+          eq = begin
+            m + succ (pn-m + k-n) ≡⟨ ap (λ e → m + e) (inverse (add-succ-left pn-m k-n)) ⟩
+            m + (succ pn-m + k-n) ≡⟨ add-unassoc m (succ pn-m) k-n ⟩
+            m + succ pn-m + k-n   ≡⟨ ap (λ e → e + k-n) m+spn-m≡n ⟩
+            n + k-n               ≡⟨ n+k-n≡k ⟩
+            k                    ∎
+      in from-diff m k (pn-m + k-n) eq
 
   Nat-dist : (m n : Nat) → Nat
   Nat-dist zero zero = zero
@@ -624,6 +686,7 @@ module _ where
     open Leq-Nat
     open NatBasic.Symbolic
     open Leq-Nat.Symbolic
+    open Lt-Nat.Symbolic
 
     dist-to-zero : (x : Nat) → (Nat-dist x zero ≡ x)
     dist-to-zero zero = refl
@@ -645,6 +708,12 @@ module _ where
     bounded zero (succ n) = Leq-Nat-refl (succ n)
     bounded (succ m) zero = Leq-Nat-refl (succ m)
     bounded (succ m) (succ n) = Leq-Nat.trans (Nat-dist m n) (max m n) (succ (max m n)) (bounded m n) (self-succ (max m n))
+
+    lt-then-pos : (m n : Nat) → (m < n) → Σ Nat (λ k → Nat-dist m n ≡ succ k)
+    lt-then-pos zero zero ()
+    lt-then-pos (succ m) zero ()
+    lt-then-pos zero (succ n) _ = pair n refl
+    lt-then-pos (succ m) (succ n) sm<sn = lt-then-pos m n sm<sn
 
     module Metric where
       dist-to-self-eq-zero : (x : Nat) → (Nat-dist x x ≡ zero)
@@ -713,35 +782,6 @@ module _ where
                                  (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
     triangle-eq-biimpl-ordered m n k = pair forward backward
       where
-        forward : (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) → (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
-        forward eqn =
-          case (Lt-Nat.trichotomy m k) of λ {
-            (left (left m<k)) →
-              left (pair
-                (Lt-Nat.as-leq m k m<k)
-                (case (Lt-Nat.trichotomy k n) of λ {
-                  (left (left k<n)) → Lt-Nat.as-leq k n k<n
-                ; (left (right refl)) → Leq-Nat-refl n
-                ; (right n<k) → -- we have m<k, n<k and yet eqn, so this should lead to a contradiction
-                    {!   !}
-                })
-              )
-          ; (right k<m) →
-              right (pair
-                (case (Lt-Nat.trichotomy n k) of λ {
-                  (left (left n<k)) → Lt-Nat.as-leq n k n<k
-                ; (left (right refl)) → Leq-Nat-refl k
-                ; (right k<n) → -- we have k<m, k<n and yet eqn, so this should lead to a contradiction
-                    {!   !}
-                })
-                (Lt-Nat.as-leq k m k<m)
-              )
-          ; (left (right refl)) → case (total m n) of λ {
-              (left m≤n) → left (pair (Leq-Nat-refl m) m≤n)
-            ; (right n≤m) → right (pair n≤m (Leq-Nat-refl m))
-            }
-          }
-
         backward' : (m n k : Nat) → ((m ≤ k) × (k ≤ n)) → Nat-dist m n ≡ Nat-dist m k + Nat-dist k n
         backward' m n k (pair m≤k k≤n) =
           inverse ((add-inj-left (Nat-dist m k + Nat-dist k n) (Nat-dist m n) m).Σ.snd lemma)
@@ -763,13 +803,84 @@ module _ where
           Nat-dist k n + Nat-dist m k   ≡⟨ add-comm (Nat-dist k n) (Nat-dist m k) ⟩
           Nat-dist m k + Nat-dist k n   ∎
 
+        ineq1 : (m n k : Nat) → (m < k) → (n < k) → Nat-dist m n < Nat-dist m k + Nat-dist k n
+        ineq1 m n k m<k n<k =
+          let canonical-case : (m n k : Nat) → (m < k) → (n < k) → (m ≤ n) → Nat-dist m n < Nat-dist m k + Nat-dist k n
+              canonical-case m n k m<k n<k m≤n =
+                let (pair x distnk≡sx) = lt-then-pos n k n<k
+                    eq21 : Nat-dist m n + succ x ≡ Nat-dist m k
+                    eq21 = begin
+                      Nat-dist m n + succ x        ≡⟨ ap (λ e → Nat-dist m n + e) (inverse distnk≡sx) ⟩
+                      Nat-dist m n + Nat-dist n k  ≡⟨ inverse (backward' m k n (pair m≤n (Lt-Nat.as-leq n k n<k))) ⟩
+                      Nat-dist m k                 ∎
+                in Lt-Nat.trans-leq (Nat-dist m n) (Nat-dist m k) (Nat-dist m k + Nat-dist k n)
+                  (Lt-Nat.from-diff (Nat-dist m n) (Nat-dist m k) x eq21) -- Nat-dist m n < Nat-dist m k
+                  (self-add-right (Nat-dist m k) (Nat-dist k n))          -- ...          ≤ Nat-dist m k + Nat-dist k n
+          in by-comparing m n λ {
+            (left m≤n) → canonical-case m n k m<k n<k m≤n
+          ; (right n≤m) →
+              tr2 (λ e1 e2 → Nat-dist m n < e1 + e2) (Metric.symm k m) (Metric.symm n k) (
+                tr2 (λ e1 e2 → e1 < e2) (Metric.symm n m) (add-comm (Nat-dist n k) (Nat-dist k m)) (canonical-case n m k n<k m<k n≤m)
+              )
+          }
+
+        ineq2 : (m n k : Nat) → (k < m) → (k < n) → Nat-dist m n < Nat-dist m k + Nat-dist k n
+        ineq2 m n k k<m k<n =
+          let canonical-case : (m n k : Nat) → (k < m) → (k < n) → (m ≤ n) → Nat-dist m n < Nat-dist m k + Nat-dist k n
+              canonical-case m n k k<m k<n m≤n =
+                let (pair x distkm≡sx) = lt-then-pos k m k<m
+                    eq21 : Nat-dist m n + succ x ≡ Nat-dist k n
+                    eq21 = begin
+                      Nat-dist m n + succ x          ≡⟨ ap (λ e → Nat-dist m n + e) (inverse distkm≡sx) ⟩
+                      Nat-dist m n + Nat-dist k m    ≡⟨ add-comm (Nat-dist m n) (Nat-dist k m) ⟩
+                      Nat-dist k m + Nat-dist m n    ≡⟨ inverse (backward' k n m (pair (Lt-Nat.as-leq k m k<m) m≤n)) ⟩
+                      Nat-dist k n                   ∎
+                in Lt-Nat.trans-leq (Nat-dist m n) (Nat-dist k n) (Nat-dist m k + Nat-dist k n)
+                  (Lt-Nat.from-diff (Nat-dist m n) (Nat-dist k n) x eq21) -- Nat-dist m n < Nat-dist k n
+                  (self-add-left (Nat-dist k n) (Nat-dist m k))           -- ...          ≤ Nat-dist m k + Nat-dist k n
+          in
+            by-comparing m n λ {
+              (left m≤n) → canonical-case m n k k<m k<n m≤n
+            ; (right n≤m) →
+              tr2 (λ e1 e2 → Nat-dist m n < e1 + e2) (Metric.symm k m) (Metric.symm n k) (
+                tr2 (λ e1 e2 → e1 < e2) (Metric.symm n m) (add-comm (Nat-dist n k) (Nat-dist k m)) (canonical-case n m k k<n k<m n≤m)
+              )
+            }
+
+        forward : (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) → (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
+        forward eqn =
+          case (Lt-Nat.trichotomy m k) of λ {
+            (left (left m<k)) →
+              left (pair
+                (Lt-Nat.as-leq m k m<k)
+                (case (Lt-Nat.trichotomy k n) of λ {
+                  (left (left k<n)) → Lt-Nat.as-leq k n k<n
+                ; (left (right refl)) → Leq-Nat-refl n
+                ; (right n<k) → absurd (Lt-Nat.neq (Nat-dist m n) _ (ineq1 m n k m<k n<k) eqn)
+                })
+              )
+          ; (right k<m) →
+              right (pair
+                (case (Lt-Nat.trichotomy n k) of λ {
+                  (left (left n<k)) → Lt-Nat.as-leq n k n<k
+                ; (left (right refl)) → Leq-Nat-refl k
+                ; (right k<n) → absurd (Lt-Nat.neq (Nat-dist m n) _ (ineq2 m n k k<m k<n) eqn)
+                })
+                (Lt-Nat.as-leq k m k<m)
+              )
+          ; (left (right refl)) → by-comparing m n λ {
+              (left m≤n) → left (pair (Leq-Nat-refl m) m≤n)
+            ; (right n≤m) → right (pair n≤m (Leq-Nat-refl m))
+            }
+          }
+
     ordered-dist-add-eq-right-add : (a b c : Nat) → (a ≤ b) → (Nat-dist a b + c ≡ Nat-dist a (b + c))
     ordered-dist-add-eq-right-add a b c a≤b =
       let
         eq = begin
           a + (Nat-dist a b + c)   ≡⟨ add-unassoc a (Nat-dist a b) c ⟩
           a + Nat-dist a b + c     ≡⟨ ap (λ e → e + c) (ordered-then-diff a b a≤b) ⟩
-          b + c                    ≡⟨ inverse (ordered-then-diff a (b + c) (trans a b (b + c) a≤b (self-add b c))) ⟩
+          b + c                    ≡⟨ inverse (ordered-then-diff a (b + c) (trans a b (b + c) a≤b (self-add-right b c))) ⟩
           a + Nat-dist a (b + c)   ∎
       in (add-inj-left (Nat-dist a b + c) (Nat-dist a (b + c)) a).Σ.snd eq
 
@@ -826,7 +937,7 @@ module _ where
         (left-add-leq-add a b c)
     cross-add-leq-add a b (succ c) (succ d) = cross-add-leq-add a b c d
 
-    cross-mul-leq-mul : (a b c d : Nat) → Nat-dist (a * c + b * d) (a * d + b * c) ≤ Nat-dist a b * Nat-dist c d
+    cross-mul-leq-mul : (a b c d : Nat) → Nat-dist (a * c + b * d) (a * d + b * c) ≡ Nat-dist a b * Nat-dist c d
     cross-mul-leq-mul = {!   !}
 
     linear : (k m n : Nat) → Nat-dist (k * m) (k * n) ≡ k * Nat-dist m n
@@ -910,7 +1021,7 @@ module _ where
           Nat-dist x₊ x₋ +ℕ Nat-dist y₊ y₋           ∎
       in tr2 (λ e1 e2 → e1 ≤ e2) (inverse lhs) (inverse rhs) (Nat-dist.cross-add-leq-add x₊ x₋ y₊ y₋)
 
-    preserves-prod : (x y : Int) → Int-abs (x * y) ≤ Int-abs x *ℕ Int-abs y
+    preserves-prod : (x y : Int) → Int-abs (x * y) ≡ Int-abs x *ℕ Int-abs y
     preserves-prod x y =
       let
         (pair x₊ x₋) = asNatDiff x
@@ -927,5 +1038,4 @@ module _ where
           Int-abs x *ℕ Int-abs y                     ≡⟨ ap2 (λ e1 e2 → Int-abs e1 *ℕ Int-abs e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
           Int-abs (x₊ -ℕ x₋) *ℕ Int-abs (y₊ -ℕ y₋)   ≡⟨ ap2 (λ e1 e2 → e1 *ℕ e2) (abs-Nat-minus x₊ x₋) (abs-Nat-minus y₊ y₋) ⟩
           Nat-dist x₊ x₋ *ℕ Nat-dist y₊ y₋           ∎
-      in tr2 (λ e1 e2 → e1 ≤ e2) (inverse lhs) (inverse rhs) (Nat-dist.cross-mul-leq-mul x₊ x₋ y₊ y₋)
- 
+      in lhs · Nat-dist.cross-mul-leq-mul x₊ x₋ y₊ y₋ · inverse rhs

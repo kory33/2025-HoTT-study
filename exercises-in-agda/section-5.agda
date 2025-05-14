@@ -114,6 +114,13 @@ module _ where
           B x₁ y₁ → B x₂ y₂
     tr2 B refl refl b = b
 
+    tr3 : {A1 A2 A3 : Set} → (B : A1 → A2 → A3 → Set) →
+          {x₁ x₂ : A1} → (p : x₁ ≡ x₂) →
+          {y₁ y₂ : A2} → (q : y₁ ≡ y₂) →
+          {z₁ z₂ : A3} → (r : z₁ ≡ z₂) →
+          B x₁ y₁ z₁ → B x₂ y₂ z₂
+    tr3 B refl refl refl b = b
+
     apd : {A : Set} → {B : A → Set} →
           (f : (a : A) → B a) →
           {x y : A} →
