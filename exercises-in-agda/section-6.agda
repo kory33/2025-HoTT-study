@@ -974,8 +974,8 @@ module _ where
               )
             ))
 
-    cross-mul-leq-mul : (a b c d : Nat) → Nat-dist (a * c + b * d) (a * d + b * c) ≡ Nat-dist a b * Nat-dist c d
-    cross-mul-leq-mul a b c d =
+    cross-mul-eq-mul : (a b c d : Nat) → Nat-dist (a * c + b * d) (a * d + b * c) ≡ Nat-dist a b * Nat-dist c d
+    cross-mul-eq-mul a b c d =
       let
         -- Idea : 
         --      ⎛ d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐ ⎞   d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐
@@ -1119,5 +1119,5 @@ module _ where
           Int-abs x *ℕ Int-abs y                     ≡⟨ ap2 (λ e1 e2 → Int-abs e1 *ℕ Int-abs e2) (inverse (Nat-minus-asNatDiff x)) (inverse (Nat-minus-asNatDiff y)) ⟩
           Int-abs (x₊ -ℕ x₋) *ℕ Int-abs (y₊ -ℕ y₋)   ≡⟨ ap2 (λ e1 e2 → e1 *ℕ e2) (abs-Nat-minus x₊ x₋) (abs-Nat-minus y₊ y₋) ⟩
           Nat-dist x₊ x₋ *ℕ Nat-dist y₊ y₋           ∎
-      in lhs · Nat-dist.cross-mul-leq-mul x₊ x₋ y₊ y₋ · inverse rhs
+      in lhs · Nat-dist.cross-mul-eq-mul x₊ x₋ y₊ y₋ · inverse rhs
  
