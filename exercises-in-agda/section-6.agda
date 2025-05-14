@@ -696,13 +696,6 @@ module _ where
     dist-from-zero zero = refl
     dist-from-zero (succ x) = refl
 
-    translation-inv : (a m n : Nat) → Nat-dist (a + m) (a + n) ≡ Nat-dist m n
-    translation-inv zero m n = ap2 (λ e1 e2 → Nat-dist e1 e2) (add-lunit m) (add-lunit n)
-    translation-inv (succ a) m n = begin
-      Nat-dist (succ a + m) (succ a + n)  ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-succ-left a m) (add-succ-left a n) ⟩
-      Nat-dist (a + m) (a + n)            ≡⟨ translation-inv a m n ⟩
-      Nat-dist m n                        ∎
-
     bounded : (m n : Nat) → (Nat-dist m n ≤ max m n)
     bounded zero zero = Leq-Nat-refl zero
     bounded zero (succ n) = Leq-Nat-refl (succ n)
@@ -770,6 +763,19 @@ module _ where
           )
         )
       triangle (succ m) (succ n) (succ k) = triangle m n k
+
+    translation-inv-left : (a m n : Nat) → Nat-dist (a + m) (a + n) ≡ Nat-dist m n
+    translation-inv-left zero m n = ap2 (λ e1 e2 → Nat-dist e1 e2) (add-lunit m) (add-lunit n)
+    translation-inv-left (succ a) m n = begin
+      Nat-dist (succ a + m) (succ a + n)  ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-succ-left a m) (add-succ-left a n) ⟩
+      Nat-dist (a + m) (a + n)            ≡⟨ translation-inv-left a m n ⟩
+      Nat-dist m n                        ∎
+
+    translation-inv-right : (m n a : Nat) → Nat-dist (m + a) (n + a) ≡ Nat-dist m n
+    translation-inv-right m n a = begin
+      Nat-dist (m + a) (n + a)  ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-comm m a) (add-comm n a) ⟩
+      Nat-dist (a + m) (a + n)  ≡⟨ translation-inv-left a m n ⟩
+      Nat-dist m n              ∎
 
     ordered-then-diff : (m n : Nat) → (m ≤ n) → m + Nat-dist m n ≡ n
     ordered-then-diff zero zero _ = refl
@@ -937,9 +943,6 @@ module _ where
         (left-add-leq-add a b c)
     cross-add-leq-add a b (succ c) (succ d) = cross-add-leq-add a b c d
 
-    cross-mul-leq-mul : (a b c d : Nat) → Nat-dist (a * c + b * d) (a * d + b * c) ≡ Nat-dist a b * Nat-dist c d
-    cross-mul-leq-mul = {!   !}
-
     linear : (k m n : Nat) → Nat-dist (k * m) (k * n) ≡ k * Nat-dist m n
     linear zero m n = begin
       Nat-dist (zero * m) (zero * n)  ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (mul-lzero m) (mul-lzero n) ⟩
@@ -970,6 +973,84 @@ module _ where
                 (leq-biimpl-mul-succ m n k)
               )
             ))
+
+    cross-mul-leq-mul : (a b c d : Nat) → Nat-dist (a * c + b * d) (a * d + b * c) ≡ Nat-dist a b * Nat-dist c d
+    cross-mul-leq-mul a b c d =
+      let
+        -- Idea : 
+        --      ⎛ d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐ ⎞   d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐
+        --      ⎜   │       │   │     │░░░░░░░│░░░│     │░░░░░░░│   │     │       │   │ ⎟     │░░░░░░░│░░░│     │░░░░░░░│   │     │       │░░░│
+        --      ⎜ c ├───────┼───┤   c ├───────┼───┤   c ├───────┼───┤   c ├───────┼───┤ ⎟   c ├───────┼───┤   c ├───────┼───┤   c ├───────┼───┤
+        -- dist ⎜   │░░░░░░░│   │ +   │░░░░░░░│░░░│     │░░░░░░░│   │ +   │░░░░░░░│░░░│ ⎟ =   │▒▒▒▒▒▒▒│░░░│ -   │▒▒▒▒▒▒▒│░░░│ =   │       │   │
+        --      ⎜   │░░░░░░░│   │     │░░░░░░░│░░░│     │░░░░░░░│   │     │░░░░░░░│░░░│ ⎟     │▒▒▒▒▒▒▒│░░░│     │▒▒▒▒▒▒▒│░░░│     │       │   │
+        --      ⎜   │░░░░░░░│   │     │░░░░░░░│░░░│     │░░░░░░░│   │     │░░░░░░░│░░░│ ⎟     │▒▒▒▒▒▒▒│░░░│     │▒▒▒▒▒▒▒│░░░│     │       │   │
+        --      ⎝   └───────┴───┘     └───────┴───┘ ,   └───────┴───┘     └───────┴───┘ ⎠     └───────┴───┘     └───────┴───┘     └───────┴───┘
+        --                  a   b             a   b             a   b             a   b               a   b             a   b             a   b
+        canonical-case : (a b c d : Nat) → (a ≤ b) → (c ≤ d) → Nat-dist (a * c + b * d) (a * d + b * c) ≡ Nat-dist a b * Nat-dist c d
+        canonical-case a b c d a≤b c≤d =
+          let
+            -- d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐
+            --   │░░░░░░░│░░░│     │░░░░░░░│░░░│     │       │   │
+            -- c ├───────┼───┤   c ├───────┼───┤   c ├───────┼───┤
+            --   │░░░░░░░│░░░│ =   │       │   │ +   │░░░░░░░│░░░│
+            --   │░░░░░░░│░░░│     │       │   │     │░░░░░░░│░░░│
+            --   │░░░░░░░│░░░│     │       │   │     │░░░░░░░│░░░│
+            --   └───────┴───┘     └───────┴───┘     └───────┴───┘
+            --           a   b             a   b             a   b
+            lemma1 : b * d ≡ b * Nat-dist c d + b * c
+            lemma1 = begin
+              b * d                     ≡⟨ ap (λ e → b * e) (inverse (ordered-then-diff c d c≤d)) ⟩
+              b * (c + Nat-dist c d)    ≡⟨ ap (λ e → b * e) (add-comm c (Nat-dist c d)) ⟩
+              b * (Nat-dist c d + c)    ≡⟨ mul-ldistr b (Nat-dist c d) c ⟩
+              b * Nat-dist c d + b * c  ∎
+            -- d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐   d ┌───────┬───┐
+            --   │       │   │     │░░░░░░░│░░░│     │░░░░░░░│   │     │       │░░░│
+            -- c ├───────┼───┤   c ├───────┼───┤   c ├───────┼───┤   c ├───────┼───┤
+            --   │░░░░░░░│   │ +   │       │   │ =   │░░░░░░░│   │ +   │       │   │
+            --   │░░░░░░░│   │     │       │   │     │░░░░░░░│   │     │       │   │
+            --   │░░░░░░░│   │     │       │   │     │░░░░░░░│   │     │       │   │
+            --   └───────┴───┘     └───────┴───┘     └───────┴───┘     └───────┴───┘
+            --           a   b             a   b             a   b             a   b
+            lemma2 : a * c + b * Nat-dist c d ≡ a * d + Nat-dist a b * Nat-dist c d
+            lemma2 = begin
+              a * c + b * Nat-dist c d                                      ≡⟨ ap (λ e → a * c + e * Nat-dist c d) (inverse (ordered-then-diff a b a≤b)) ⟩
+              a * c + (a + Nat-dist a b) * Nat-dist c d                     ≡⟨ ap (λ e → a * c + e) (mul-rdistr a (Nat-dist a b) (Nat-dist c d)) ⟩
+              a * c + (a * Nat-dist c d + Nat-dist a b * Nat-dist c d)      ≡⟨ add-unassoc (a * c) (a * Nat-dist c d) (Nat-dist a b * Nat-dist c d) ⟩
+              a * c + a * Nat-dist c d + Nat-dist a b * Nat-dist c d        ≡⟨ ap (λ e → e + Nat-dist a b * Nat-dist c d) (inverse (mul-ldistr a c (Nat-dist c d))) ⟩
+              a * (c + Nat-dist c d) + Nat-dist a b * Nat-dist c d          ≡⟨ ap (λ e → a * e + Nat-dist a b * Nat-dist c d) (ordered-then-diff c d c≤d) ⟩
+              a * d + Nat-dist a b * Nat-dist c d                           ∎
+          in begin
+            Nat-dist (a * c + b * d) (a * d + b * c)                      ≡⟨ ap (λ e → Nat-dist (a * c + e) (a * d + b * c)) lemma1 ⟩
+            Nat-dist (a * c + (b * Nat-dist c d + b * c)) (a * d + b * c) ≡⟨ ap (λ e → Nat-dist e (a * d + b * c)) (add-unassoc (a * c) (b * Nat-dist c d) (b * c)) ⟩
+            Nat-dist (a * c + b * Nat-dist c d + b * c) (a * d + b * c)   ≡⟨ translation-inv-right (a * c + b * Nat-dist c d) (a * d) (b * c) ⟩
+            Nat-dist (a * c + b * Nat-dist c d) (a * d)                   ≡⟨ ap (λ e → Nat-dist e (a * d)) lemma2 ⟩
+            Nat-dist (a * d + Nat-dist a b * Nat-dist c d) (a * d)        ≡⟨ translation-inv-left (a * d) (Nat-dist a b * Nat-dist c d) zero ⟩
+            Nat-dist (Nat-dist a b * Nat-dist c d) zero                   ≡⟨ dist-to-zero (Nat-dist a b * Nat-dist c d) ⟩
+            Nat-dist a b * Nat-dist c d                           ∎
+      in
+        by-comparing a b λ {
+          (left a≤b) → by-comparing c d λ {
+            (left c≤d) → canonical-case a b c d a≤b c≤d
+          ; (right d≤c) → begin
+              Nat-dist (a * c + b * d) (a * d + b * c) ≡⟨ Metric.symm (a * c + b * d) (a * d + b * c) ⟩
+              Nat-dist (a * d + b * c) (a * c + b * d) ≡⟨ canonical-case a b d c a≤b d≤c ⟩
+              Nat-dist a b * Nat-dist d c              ≡⟨ ap (λ e → Nat-dist a b * e) (Metric.symm d c) ⟩
+              Nat-dist a b * Nat-dist c d              ∎
+          }
+        ; (right b≤a) → by-comparing c d λ {
+            (left c≤d) → begin
+              Nat-dist (a * c + b * d) (a * d + b * c) ≡⟨ Metric.symm (a * c + b * d) (a * d + b * c) ⟩
+              Nat-dist (a * d + b * c) (a * c + b * d) ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-comm (a * d) (b * c)) (add-comm (a * c) (b * d)) ⟩
+              Nat-dist (b * c + a * d) (b * d + a * c) ≡⟨ canonical-case b a c d b≤a c≤d ⟩
+              Nat-dist b a * Nat-dist c d              ≡⟨ ap (λ e → e * Nat-dist c d) (Metric.symm b a) ⟩
+              Nat-dist a b * Nat-dist c d              ∎
+          ; (right d≤c) → begin 
+              Nat-dist (a * c + b * d) (a * d + b * c) ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-comm (a * c) (b * d)) (add-comm (a * d) (b * c)) ⟩
+              Nat-dist (b * d + a * c) (b * c + a * d) ≡⟨ canonical-case b a d c b≤a d≤c ⟩
+              Nat-dist b a * Nat-dist d c              ≡⟨ ap2 (λ e1 e2 → e1 * e2) (Metric.symm b a) (Metric.symm d c) ⟩
+              Nat-dist a b * Nat-dist c d              ∎
+          }
+        }
 
   Int-abs : (x : Int) → Nat
   Int-abs zeroInt = zero
@@ -1039,3 +1120,4 @@ module _ where
           Int-abs (x₊ -ℕ x₋) *ℕ Int-abs (y₊ -ℕ y₋)   ≡⟨ ap2 (λ e1 e2 → e1 *ℕ e2) (abs-Nat-minus x₊ x₋) (abs-Nat-minus y₊ y₋) ⟩
           Nat-dist x₊ x₋ *ℕ Nat-dist y₊ y₋           ∎
       in lhs · Nat-dist.cross-mul-leq-mul x₊ x₋ y₊ y₋ · inverse rhs
+ 
