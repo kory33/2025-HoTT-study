@@ -128,6 +128,12 @@ module _ where
           tr B p (f x) ≡ f y
     apd f refl = refl
 
+    eq-implies-pr₁-eq : {A : Set} → {B : A → Set} → {p1 p2 : Σ A B} → (p1 ≡ p2) → (Σ-Basic.pr₁ p1 ≡ Σ-Basic.pr₁ p2)
+    eq-implies-pr₁-eq refl = refl
+
+    eq-×-implies-pr₂-eq : {A : Set} → {B : Set} → {p1 p2 : A × B} → (p1 ≡ p2) → (Σ-Basic.pr₂ p1 ≡ Σ-Basic.pr₂ p2)
+    eq-×-implies-pr₂-eq refl = refl
+
   -- adapted from https://plfa.github.io/Equality/
   module ≡-Reasoning {A : Set} where
     open ≡-Basic public
@@ -1387,3 +1393,4 @@ module _ where
           ≡⟨ ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
             y * x
           ∎
+  
