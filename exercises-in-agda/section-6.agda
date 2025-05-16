@@ -531,6 +531,10 @@ module _ where
     lt-succ zero = unit
     lt-succ (succ x) = lt-succ x
 
+    zero-lt-succ : (x : Nat) → (zero < succ x)
+    zero-lt-succ zero = unit
+    zero-lt-succ (succ x) = zero-lt-succ x
+
     not-lt-zero : (x : Nat) → ¬ (x < zero)
     not-lt-zero zero ()
     not-lt-zero (succ x) ()
@@ -692,6 +696,21 @@ module _ where
             n + k-n               ≡⟨ n+k-n≡k ⟩
             k                    ∎
       in from-diff m k (pn-m + k-n) eq
+
+    leq-or-gt : (m n : Nat) → (m ≤ n) +₁ (n < m)
+    leq-or-gt m n =
+      by-comparing m n λ {
+        (left (left m<n)) → left (as-leq m n m<n)
+      ; (left (right refl)) → left (Leq-Nat.Leq-Nat-refl m)
+      ; (right n<m) → right n<m
+      }
+
+    by-comparing-leq-or-gt : (m n : Nat) → {P : Set} → ((m ≤ n) +₁ (n < m) → P) → P
+    by-comparing-leq-or-gt m n f =
+      case (leq-or-gt m n) of λ {
+        (left m≤n) → f (left m≤n)
+      ; (right n<m) → f (right n<m)
+      }
 
   Nat-dist : (m n : Nat) → Nat
   Nat-dist zero zero = zero
@@ -1144,4 +1163,4 @@ module _ where
           Int-abs (x₊ -ℕ x₋) *ℕ Int-abs (y₊ -ℕ y₋)   ≡⟨ ap2 (λ e1 e2 → e1 *ℕ e2) (abs-Nat-minus x₊ x₋) (abs-Nat-minus y₊ y₋) ⟩
           Nat-dist x₊ x₋ *ℕ Nat-dist y₊ y₋           ∎
       in lhs · Nat-dist.cross-mul-eq-mul x₊ x₋ y₊ y₋ · inverse rhs
- 
+  

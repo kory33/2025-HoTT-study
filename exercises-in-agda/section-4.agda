@@ -61,6 +61,18 @@ module _ where
     +₁-emptyLeft ¬a (left x) = absurd (¬a x)
     +₁-emptyLeft ¬a (right y) = y
 
+    leftMap : {A B A' : Set} → (A → A') → (A +₁ B) → (A' +₁ B)
+    leftMap f = < f +₁ id >
+
+    mapLeftOf : {A B A' : Set} → (A +₁ B) → (A → A') → (A' +₁ B)
+    mapLeftOf = swap leftMap
+
+    rightMap : {A B B' : Set} → (B → B') → (A +₁ B) → (A +₁ B')
+    rightMap g = < id +₁ g >
+
+    mapRightOf : {A B B' : Set} → (A +₁ B) → (B → B') → (A +₁ B')
+    mapRightOf = swap rightMap
+
   -- 4.6
   record Σ (A : Set) (B : A → Set) : Set where
     constructor pair

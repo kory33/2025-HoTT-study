@@ -308,16 +308,17 @@ module _ where
 
   module _ where
     open Leq-Nat
+    open Lt-Nat.Symbolic
 
     search-descending-from-Nat : {P : Nat → Set} → {decide-p : Is-decidable-family P} → (N : Nat) →
                                  Σ Nat (λ n → -- found a value n
                                     P n ×     -- that satisfies P
                                     (n ≤ N) × -- and is less than or equal to N
-                                    ((x : Nat) → (succ n ≤ x) → (x ≤ N) → ¬ P x -- such that no value between (succ n) and N satisfies P
+                                    ((x : Nat) → P x → (x ≤ n) +₁ (N < x)  -- such that for any x with (P x), x does not lie in (succ n)..N
                                  )) +₁ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
     search-descending-from-Nat {P} {decide-p} zero =
       case decide-p zero of λ {
-        (left pz) → left (pair zero (pair (pair pz (Leq-Nat.Leq-Nat-refl zero)) (λ { zero (); (succ x) _ () })))
+        (left pz) → left (pair zero (pair (pair pz (Leq-Nat.Leq-Nat-refl zero)) (λ x _ → Lt-Nat.leq-or-gt x zero)))
       ; (right ¬pz) → right λ { zero _ → ¬pz; (succ k) () }
       }
     search-descending-from-Nat {P} {decide-p} (succ N) =
@@ -328,28 +329,24 @@ module _ where
             (pair (pair
               psN
               (Leq-Nat.Leq-Nat-refl (succ N)))
-              -- (x : Nat) → succ (succ N) ≤ x → x ≤ succ N → ¬ P x
-              λ {
-                zero ()
-              ; (succ x) sN≤x x≤N →
-                let N<x = (Lt-Nat.lt-biimpl-succ-leq N x).Σ.snd sN≤x
-                in absurd ((Lt-Nat.lt-biimpl-not-flip-leq N x).Σ.fst N<x x≤N)
-              }
+              (λ x _ → Lt-Nat.leq-or-gt x (succ N))
             ))
       ; (right ¬psN) →
         case (search-descending-from-Nat {P} {decide-p} N) of λ {
-          (left (pair n (pair (pair pn leq-n) no-value-from-sn-upto-N-satisfies))) →
+          (left (pair n (pair (pair pn leq-n) any-satisfying-Nat-is-≤n-or-N<))) →
             left (pair
               n
               (pair (pair
                 pn
                 (trans n N (succ N) leq-n (self-succ N)))
-                -- no-value-from-n-upto-N-satisfies : (x : Nat) → succ n ≤ x →    x ≤ N   → ¬ P x
-                -- goal                             : (x : Nat) → succ n ≤ x → x ≤ succ N → ¬ P x
-                (λ x sn≤x x≤sN → case (leq-succ-then-leq-or-eq-succ x N x≤sN) of λ {
-                  (left x≤N) → no-value-from-sn-upto-N-satisfies x sn≤x x≤N
-                ; (right refl) → ¬psN
-                })
+                (λ x px →
+                  +₁-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
+                    case (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x).Σ.snd ((Lt-Nat.lt-biimpl-succ-leq N x).Σ.fst N<x) of λ {
+                      (left sN<x) → sN<x
+                    ; (right refl) → absurd (¬psN px)
+                    }
+                  )
+                )
               ))
         ; (right ¬pn-below-N) →
             right (λ n n≤sN → by-comparing n N λ {
@@ -384,12 +381,12 @@ module _ where
             Lt-Nat.by-comparing m'' m' λ {
               (left (left m''<m')) → Lt-Nat.as-leq m'' m' m''<m'
             ; (left (right refl)) → Leq-Nat.Leq-Nat-refl m''
-            ; (right m'<m'') → absurd (no-value-from-sm'-upto-m-satisfies m'' -- impossible
-              ((Lt-Nat.lt-biimpl-succ-leq m' m'').Σ.fst m'<m'')
-              (mub m'' pm'')
-              pm''
-            )}
-          ))
+            ; (right m'<m'') →
+              case (no-value-from-sm'-upto-m-satisfies m'' pm'') of λ {
+                (left m''≤m') → m''≤m'
+              ; (right m<m'') → absurd ((Lt-Nat.lt-biimpl-not-flip-leq m m'').Σ.fst m<m'' (mub m'' pm'')) -- impossible
+              }
+        }))
       ; (right ¬pm'-below-m) → absurd (¬pm'-below-m n (mub n pn) pn) -- impossible
       }
  
