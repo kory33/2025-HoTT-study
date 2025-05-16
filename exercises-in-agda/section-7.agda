@@ -1,3 +1,5 @@
+open import Function.Base using (case_of_)
+
 module _ where
   open import section-6 public
 
@@ -33,6 +35,7 @@ module _ where
       )
     
     -- TODO: exercise 7.1
+    -- TODO: exercise 7.2
 
   CongrMod : (x y k : Nat) → Set
   CongrMod x y k = Divides k (Nat-dist x y)
@@ -66,15 +69,15 @@ module _ where
   module Fin-Basic where
     open Lt-Nat.Symbolic
 
-    incl-succ : (k : Nat) → Fin k → Fin (succ k)
-    incl-succ k fk = left fk
+    incl-succ : {k : Nat} → Fin k → Fin (succ k)
+    incl-succ fk = left fk
 
-    last : (k : Nat) → Fin (succ k)
-    last _ = right unit
+    last : {k : Nat} → Fin (succ k)
+    last = right unit
 
     ind-Fk : {P : (k : Nat) → Fin k → Set} →
-             (g : (k : Nat) → (x : Fin k) → P k x → P (succ k) (incl-succ k x)) →
-             (p : (k : Nat) → P (succ k) (last k)) →
+             (g : (k : Nat) → (x : Fin k) → P k x → P (succ k) (incl-succ x)) →
+             (p : (k : Nat) → P (succ k) last) →
              (k : Nat) → (x : Fin k) → P k x
     ind-Fk g p zero ()
     ind-Fk g p (succ k) (left fk) = g k fk (ind-Fk g p k fk)
@@ -91,17 +94,60 @@ module _ where
         (incl-Nat-bounded fk) (Lt-Nat.lt-succ k)
     incl-Nat-bounded {succ k} (right unit) = Lt-Nat.lt-succ k
 
-  -- exercise 7.7.a
+    zero-Fin : {k : Nat} → Fin (succ k)
+    zero-Fin {zero} = right unit
+    zero-Fin {succ k} = incl-succ (zero-Fin {k})
+
+    skip-zero : {k : Nat} → Fin k → Fin (succ k)
+    skip-zero {succ k} (left x) = incl-succ (skip-zero {k} x)
+    skip-zero {succ k} (right unit) = last
+
+    succ-Fin : {k : Nat} → Fin k → Fin k
+    succ-Fin {succ k} (left x) = skip-zero x
+    succ-Fin {succ k} (right unit) = zero-Fin
+
+  Eq-Fin : (k : Nat) → Fin k → Fin k → Set
+  Eq-Fin zero () ()
+  Eq-Fin (succ k) (left x) (left y) = Eq-Fin k x y
+  Eq-Fin (succ k) (left x) (right unit) = Empty
+  Eq-Fin (succ k) (right unit) (left y) = Empty
+  Eq-Fin (succ k) (right unit) (right unit) = Unit
+
+  -- exercise 7.5
+  module Eq-Fin where
+    open Fin-Basic
+    open ≡-Basic public
+    open ≡-Reasoning
+    open EmptyBasic
+
+    Eq-Fin-refl : {k : Nat} → (x : Fin k) → Eq-Fin k x x
+    Eq-Fin-refl {zero} ()
+    Eq-Fin-refl {succ k} (left x) = Eq-Fin-refl x
+    Eq-Fin-refl {succ k} (right unit) = unit
+
+    Fin-≡-biimpl-Eq-Fin : {k : Nat} → (x y : Fin k) → (x ≡ y) ↔ (Eq-Fin k x y)
+    Fin-≡-biimpl-Eq-Fin {zero} () ()
+    Fin-≡-biimpl-Eq-Fin {succ k} x y = pair (λ { refl → Eq-Fin-refl x }) (backward x y)
+      where
+      backward : (x y : Fin (succ k)) → (Eq-Fin (succ k) x y) → (x ≡ y)
+      backward (left x) (left y) eq-fin = ap left ((Fin-≡-biimpl-Eq-Fin {k} x y).Σ.snd eq-fin)
+      backward (left x) (right unit) ()
+      backward (right unit) (left y) ()
+      backward (right unit) (right unit) eq-fin = refl
+
+    postulate incl-succ-inj : {k : Nat} → {x y : Fin k} → (incl-succ x ≡ incl-succ y) → (x ≡ y)
+    postulate succ-non-last-neq-zero : {k : Nat} → {x : Fin k} → ¬ (succ-Fin (incl-succ x) ≡ zero-Fin)
+    postulate succ-inj : {k : Nat} → {x y : Fin k} → (succ-Fin x ≡ succ-Fin y) → (x ≡ y)
+
   module classical-Fin-and-Fin where
     open Σ-Basic
     open ≡-Reasoning
 
-    eq-biimpl-pr₁-eq : {k : Nat} → (x y : classical-Fin k) →
-      (x ≡ y) ↔ (pr₁ x ≡ pr₁ y)
+    -- exercise 7.7.a
+    eq-biimpl-pr₁-eq : {k : Nat} → (x y : classical-Fin k) → (x ≡ y) ↔ (pr₁ x ≡ pr₁ y)
     eq-biimpl-pr₁-eq {zero} (pair k k<zero) = EmptyBasic.absurd (Lt-Nat.not-lt-zero k k<zero)
-    eq-biimpl-pr₁-eq {succ k} x y = pair (forward x y) (backward x y)
-      where
-      forward : (x y : classical-Fin (succ k)) → (x ≡ y) → (pr₁ x ≡ pr₁ y)
-      forward x y eq = ap pr₁ eq
+    eq-biimpl-pr₁-eq {succ k} (pair x x<sk) (pair y y<sk) = pair
+      eq-implies-pr₁-eq
+      (λ { refl → case (Lt-Nat.subsingleton x (succ k) x<sk y<sk) of λ { refl → refl }})
 
-      postulate backward : (x y : classical-Fin (succ k)) → (pr₁ x ≡ pr₁ y) → (x ≡ y)
+    -- TODO: exercise 7.7.b

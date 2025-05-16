@@ -323,6 +323,13 @@ module _ where
     from-diff : (x y k : Nat) → (x + k ≡ y) → (x ≤ y)
     from-diff x y k eq = (leq-biimpl-exists-diff x y).Σ.snd (pair k eq)
 
+    leq-succ-then-leq-or-eq-succ : (m n : Nat) → (m ≤ succ n) → (m ≤ n) +₁ (m ≡ succ n)
+    leq-succ-then-leq-or-eq-succ m n m≤succn =
+      case (extract-diff m (succ n) m≤succn) of λ {
+        (pair zero eq) → right eq
+      ; (pair (succ k) eq) → left (from-diff m n k (((Nat-EqualityThroughEq-Nat.succ-inj (m + k) n).Σ.snd eq)))
+      }
+
     leq-biimpl-add-right : (x y k : Nat) → (x ≤ y) ↔ (x + k ≤ y + k)
     leq-biimpl-add-right x y k = pair (forward x y k) (backward x y k)
       where
@@ -490,6 +497,12 @@ module _ where
     open NatBasic.Symbolic
     open Leq-Nat.Symbolic
 
+    subsingleton : (x y : Nat) → (p : x < y) → (q : x < y) → p ≡ q
+    subsingleton zero zero ()
+    subsingleton zero (succ y) unit unit = refl
+    subsingleton (succ x) zero ()
+    subsingleton (succ x) (succ y) sx<sy tx<ty = subsingleton x y sx<sy tx<ty
+
     antireflexive : (x : Nat) → ¬ (x < x)
     antireflexive zero ()
     antireflexive (succ x) bot = EmptyBasic.absurd (antireflexive x bot)
@@ -589,6 +602,14 @@ module _ where
         (left (left m<n)) → left (left m<n)
       ; (left (right m≡n)) → left (right (ap succ m≡n))
       ; (right n<m) → right n<m
+      }
+
+    by-comparing : (m n : Nat) → {P : Set} → ((m < n) +₁ (m ≡ n) +₁ (n < m) → P) → P
+    by-comparing m n f =
+      case (trichotomy m n) of λ {
+        (left (left m<n)) → f (left (left m<n))
+      ; (left (right m≡n)) → f (left (right m≡n))
+      ; (right n<m) → f (right n<m)
       }
 
     lt-or-eq-biimpl-leq : (m n : Nat) → ((m < n) +₁ (m ≡ n)) ↔ (m ≤ n)
@@ -1052,10 +1073,13 @@ module _ where
           }
         }
 
-  Int-abs : (x : Int) → Nat
-  Int-abs zeroInt = zero
-  Int-abs (posSucc x) = succ x
-  Int-abs (negSucc x) = succ x
+  module _ where
+    open IntBasic
+
+    Int-abs : (x : Int) → Nat
+    Int-abs zeroInt = zero
+    Int-abs (posSucc x) = succ x
+    Int-abs (negSucc x) = succ x
 
   module Int-abs where
     open EmptyBasic

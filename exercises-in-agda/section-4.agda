@@ -92,6 +92,7 @@ module _ where
 
   _×_ : (A B : Set) → Set
   A × B = Σ A (λ x → B)
+  infixl 15 _×_
 
   ind-× : {A B : Set} → {P : A × B → Set} →
           ((x : A) → (y : B) → P (pair x y)) →
@@ -99,12 +100,13 @@ module _ where
   ind-× pXY (pair x y) = pXY x y
 
   -- 4.5
-  data Int : Set where
-    zeroInt : Int
-    posSucc : Nat → Int
-    negSucc : Nat → Int
+  Int = Nat +₁ (Unit +₁ Nat)
 
   module IntBasic where
+    pattern zeroInt = right (left unit)
+    pattern posSucc n = right (right n)
+    pattern negSucc n = left n
+
     Int-succ : Int → Int
     Int-succ zeroInt = posSucc zero
     Int-succ (posSucc n) = posSucc (succ n)

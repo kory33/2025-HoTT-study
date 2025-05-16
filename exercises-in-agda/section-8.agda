@@ -12,6 +12,9 @@ module _ where
   Has-decidable-eq : Set → Set
   Has-decidable-eq A = (x y : A) → Is-decidable (x ≡ y)
 
+  Is-decidable-family : {A : Set} → (A → Set) → Set
+  Is-decidable-family {A} B = (x : A) → Is-decidable (B x)
+
   -- a.k.a. booleanization
   decide-inhabited : {A : Set} → Is-decidable A → Bool
   decide-inhabited (left a) = true
@@ -20,6 +23,13 @@ module _ where
   reflect-inhabitance : {A : Set} → (deca : Is-decidable A) → (decide-inhabited deca ≡ true) → A
   reflect-inhabitance (left a) _ = a
   reflect-inhabitance (right ¬a) eq = absurd (Eq-Bool.false-neq-true (refl · eq))
+
+  open Leq-Nat.Symbolic
+  Nat-is-lower-bound : {P : Nat → Set} (n : Nat) → Set
+  Nat-is-lower-bound {P} n = (x : Nat) → P x → (n ≤ x)
+
+  Nat-is-upper-bound : {P : Nat → Set} (n : Nat) → Set
+  Nat-is-upper-bound {P} n = (x : Nat) → P x → (x ≤ n)
 
   module Is-decidable where
     open ≡-Basic public
@@ -62,9 +72,6 @@ module _ where
       open +₁-Basic
       decide-biimpl : {A B : Set} → (A ↔ B) → (Is-decidable A ↔ Is-decidable B)
       decide-biimpl (pair a→b b→a) = pair (< a→b +₁ contrapose b→a >) (< b→a +₁ contrapose a→b >)
-
-    Nat-has-decidable-eq : Has-decidable-eq Nat
-    Nat-has-decidable-eq m n = (decide-biimpl (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)).Σ.snd (decide-Eq-Nat m n)
 
     decide-⟶-with-dependent-decidability : {A B : Set} → Is-decidable A → (A → Is-decidable B) → Is-decidable (A → B)
     decide-⟶-with-dependent-decidability (left a) f = decide-→ (left a) (f a)
@@ -116,6 +123,12 @@ module _ where
               ; (right ¬eqab) → right (λ eqb → ¬eqab (ap (λ e → pair a e) eqb))
               }
 
+    Nat-has-decidable-eq : Has-decidable-eq Nat
+    Nat-has-decidable-eq m n = (decide-biimpl (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)).Σ.snd (decide-Eq-Nat m n)
+
+    Unit-has-decidable-eq : Has-decidable-eq Unit
+    Unit-has-decidable-eq unit unit = left refl
+
   -- exercise 8.7
   Eq-Copr : {A B : Set} → (A +₁ B) → (A +₁ B) → Set
   Eq-Copr (left a1) (left a2) = a1 ≡ a2
@@ -152,25 +165,11 @@ module _ where
     +₁-right-inj : {A : Set} → {B : Set} → {x y : B} → (right {A} {B} x ≡ right y) → (x ≡ y)
     +₁-right-inj eq = (Copr-≡-biimpl-Eq-Copr).Σ.fst eq
 
-    +₁-deceq-biimpl-both-deceq : {A B : Set} → ((Has-decidable-eq A) × (Has-decidable-eq B)) ↔ Has-decidable-eq (A +₁ B)
+    +₁-deceq-biimpl-both-deceq : {A B : Set} → Has-decidable-eq (A +₁ B) ↔ ((Has-decidable-eq A) × (Has-decidable-eq B))
     +₁-deceq-biimpl-both-deceq {A} {B} = pair forward backward
       where
-        forward : ((Has-decidable-eq A) × (Has-decidable-eq B)) → Has-decidable-eq (A +₁ B)
-        forward (pair deceqa deceqb) (left a1) (left a2) =
-          case (deceqa a1 a2) of λ {
-            (left eqa) → left (ap left eqa)
-          ; (right ¬eqa) → right (λ eqla → ¬eqa (+₁-left-inj eqla))
-          }
-        forward (pair deceqa deceqb) (left a1) (right b2) = right (λ ())
-        forward (pair deceqa deceqb) (right b1) (left a2) = right (λ ())
-        forward (pair deceqa deceqb) (right b1) (right b2) =
-          case (deceqb b1 b2) of λ {
-            (left eqb) → left (ap right eqb)
-          ; (right ¬eqb) → right (λ eqrb → ¬eqb (+₁-right-inj eqrb))
-          }
-
-        backward : Has-decidable-eq (A +₁ B) → ((Has-decidable-eq A) × (Has-decidable-eq B))
-        backward deceqab = pair f g
+        forward : Has-decidable-eq (A +₁ B) → ((Has-decidable-eq A) × (Has-decidable-eq B))
+        forward deceqab = pair f g
           where
             f : Has-decidable-eq A
             f a1 a2 =
@@ -184,8 +183,26 @@ module _ where
                 (left eqrb) → left (+₁-right-inj eqrb)
               ; (right ¬eqrb) → right (λ eqb → ¬eqrb (ap right eqb))
               }
+        backward : ((Has-decidable-eq A) × (Has-decidable-eq B)) → Has-decidable-eq (A +₁ B)
+        backward (pair deceqa deceqb) (left a1) (left a2) =
+          case (deceqa a1 a2) of λ {
+            (left eqa) → left (ap left eqa)
+          ; (right ¬eqa) → right (λ eqla → ¬eqa (+₁-left-inj eqla))
+          }
+        backward (pair deceqa deceqb) (left a1) (right b2) = right (λ ())
+        backward (pair deceqa deceqb) (right b1) (left a2) = right (λ ())
+        backward (pair deceqa deceqb) (right b1) (right b2) =
+          case (deceqb b1 b2) of λ {
+            (left eqb) → left (ap right eqb)
+          ; (right ¬eqb) → right (λ eqrb → ¬eqb (+₁-right-inj eqrb))
+          }
 
-  postulate Int-has-decidable-eq : Has-decidable-eq Int
+  module _ where
+    open Eq-Copr
+    open Has-decidable-eq
+
+    Int-has-decidable-eq : Has-decidable-eq Int
+    Int-has-decidable-eq = (+₁-deceq-biimpl-both-deceq).Σ.snd (pair Nat-has-decidable-eq ((+₁-deceq-biimpl-both-deceq).Σ.snd (pair Unit-has-decidable-eq Nat-has-decidable-eq)))
 
   Eq-Σ : {A : Set} → {B : A → Set} → (Σ A B) → (Σ A B) → Set
   Eq-Σ (pair a1 b1) (pair a2 b2) = Σ (a1 ≡ a2) (λ { (refl) → b1 ≡ b2 })
@@ -235,3 +252,144 @@ module _ where
         (left paireq) → left (eq-implies-pr₁-eq paireq)
       ; (right ¬paireq) → right (λ { refl → ¬paireq refl })
       }
+
+  module exercise-8-9 where
+    open Is-decidable
+    open ≡-Reasoning
+    open Fin-Basic
+
+    decide-Fin-depfn : {k : Nat} → {B : Fin k → Set} → Is-decidable-family B → Is-decidable ((x : Fin k) → B x)
+    decide-Fin-depfn {zero} _ = left λ { () }
+    decide-Fin-depfn {succ k} {B} decide-bx =
+      let B' = λ (x : Fin k) → B (incl-succ x)
+          decide-x→b'x : Is-decidable ((x : Fin k) → B' x)
+          decide-x→b'x = decide-Fin-depfn (λ (x : Fin k) → decide-bx (incl-succ x))
+      in case decide-x→b'x of λ {
+        (left f') →
+          case (decide-bx last) of λ {
+            (left last-b) → left (λ { (left x') → f' x' ; (right unit) → last-b })
+          ; (right ¬last-b) → right (λ f → ¬last-b (f last))
+          }
+      ; (right ¬f') → right (λ f → ¬f' (λ x' → f (incl-succ x')))
+      }
+
+    deceq-Fin-depfn : {k : Nat} → {B : Fin k → Set} → ((x : Fin k) → Has-decidable-eq (B x)) → Has-decidable-eq ((x : Fin k) → B x)
+    deceq-Fin-depfn {zero} _ f1 f2 = {!   !}
+    deceq-Fin-depfn {succ k} {B} x→deceq-bx f1 f2 =
+      case deceq-x'→b'x' (λ x' → f1 (incl-succ x')) (λ x' → f2 (incl-succ x')) of λ {
+        (left f1'≡f2') →
+          case (x→deceq-bx last (f1 last) (f2 last)) of λ {
+            (left f1-last≡f2-last) → left {!   !}
+          ; (right ¬f1-last≡f2-last) → right (λ { refl → ¬f1-last≡f2-last refl })
+          }
+        ; (right ¬f1'≡f2') → right (λ { refl → ¬f1'≡f2' refl })
+      }
+        where
+        B' = λ (x : Fin k) → B (incl-succ x)
+        deceq-x'→b'x' : Has-decidable-eq ((x : Fin k) → B' x)
+        deceq-x'→b'x' = deceq-Fin-depfn (λ x → x→deceq-bx (incl-succ x))
+
+  module exercise-8-3 where
+    open Is-decidable
+    open ≡-Reasoning
+    open Fin-Basic
+  
+    Fin-de-Morgan : {k : Nat} → {P : Fin k → Set} → Is-decidable-family P → ¬ ((x : Fin k) → P x) → Σ (Fin k) (λ x → ¬ P x)
+    Fin-de-Morgan {zero} decide-p ¬ΠP = absurd (¬ΠP λ { () })
+    Fin-de-Morgan {succ k} {P} decide-p ¬ΠP =
+      case decide-p last of λ {
+        (left plast) →
+          let P'        = λ (x : Fin k) → P (incl-succ x)
+              decide-P' = λ (x : Fin k) → decide-p (incl-succ x)
+              ¬ΠP' ΠP'  = ¬ΠP λ { (left x) → ΠP' x ; (right unit) → plast }
+          in case (Fin-de-Morgan {k} decide-P' ¬ΠP') of λ { (pair x ¬Px) → pair (incl-succ x) ¬Px }
+      ; (right ¬plast) → pair last ¬plast
+      }
+
+  module _ where
+    open Leq-Nat
+
+    search-descending-from-Nat : {P : Nat → Set} → {decide-p : Is-decidable-family P} → (N : Nat) →
+                                 Σ Nat (λ n → -- found a value n
+                                    P n ×     -- that satisfies P
+                                    (n ≤ N) × -- and is less than or equal to N
+                                    ((x : Nat) → (succ n ≤ x) → (x ≤ N) → ¬ P x -- such that no value between (succ n) and N satisfies P
+                                 )) +₁ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
+    search-descending-from-Nat {P} {decide-p} zero =
+      case decide-p zero of λ {
+        (left pz) → left (pair zero (pair (pair pz (Leq-Nat.Leq-Nat-refl zero)) (λ { zero (); (succ x) _ () })))
+      ; (right ¬pz) → right λ { zero _ → ¬pz; (succ k) () }
+      }
+    search-descending-from-Nat {P} {decide-p} (succ N) =
+      case decide-p (succ N) of λ {
+        (left psN) →
+          left (pair
+            (succ N)
+            (pair (pair
+              psN
+              (Leq-Nat.Leq-Nat-refl (succ N)))
+              -- (x : Nat) → succ (succ N) ≤ x → x ≤ succ N → ¬ P x
+              λ {
+                zero ()
+              ; (succ x) sN≤x x≤N →
+                let N<x = (Lt-Nat.lt-biimpl-succ-leq N x).Σ.snd sN≤x
+                in absurd ((Lt-Nat.lt-biimpl-not-flip-leq N x).Σ.fst N<x x≤N)
+              }
+            ))
+      ; (right ¬psN) →
+        case (search-descending-from-Nat {P} {decide-p} N) of λ {
+          (left (pair n (pair (pair pn leq-n) no-value-from-sn-upto-N-satisfies))) →
+            left (pair
+              n
+              (pair (pair
+                pn
+                (trans n N (succ N) leq-n (self-succ N)))
+                -- no-value-from-n-upto-N-satisfies : (x : Nat) → succ n ≤ x →    x ≤ N   → ¬ P x
+                -- goal                             : (x : Nat) → succ n ≤ x → x ≤ succ N → ¬ P x
+                (λ x sn≤x x≤sN → case (leq-succ-then-leq-or-eq-succ x N x≤sN) of λ {
+                  (left x≤N) → no-value-from-sn-upto-N-satisfies x sn≤x x≤N
+                ; (right refl) → ¬psN
+                })
+              ))
+        ; (right ¬pn-below-N) →
+            right (λ n n≤sN → by-comparing n N λ {
+              (left n≤N) → ¬pn-below-N n n≤N
+            ; (right N≤n) →
+              case (leq-succ-then-leq-or-eq-succ n N n≤sN) of λ {
+                (left n≤N) → ¬pn-below-N n n≤N
+              ; (right refl) → ¬psN
+              }
+            })
+        }
+      }
+
+  module exercise-8-10 {P : Nat → Set} {decide-p : Is-decidable-family P} {m : Nat} {mub : Nat-is-upper-bound {P} m} where
+    open Is-decidable
+    open ≡-Reasoning
+    open Fin-Basic
+
+    decide-Σ-P : Is-decidable (Σ Nat P)
+    decide-Σ-P =
+      case (search-descending-from-Nat {P} {decide-p} m) of λ {
+        (left (pair n (pair (pair pn leq-n) _))) → left (pair n pn)
+      ; (right ¬pn-below-m) → right (λ (pair n pn) → ¬pn-below-m n (mub n pn) pn)
+      }
+
+    maximize : Σ Nat P → Σ Nat (λ n → P n × Nat-is-upper-bound {P} n)
+    maximize (pair n pn) =
+      case (search-descending-from-Nat {P} {decide-p} m) of λ {
+        (left (pair m' (pair (pair pm' m'≤m) no-value-from-sm'-upto-m-satisfies))) →
+          pair m' (pair pm' (λ m'' pm'' →
+            -- goal : m'' ≤ m'
+            Lt-Nat.by-comparing m'' m' λ {
+              (left (left m''<m')) → Lt-Nat.as-leq m'' m' m''<m'
+            ; (left (right refl)) → Leq-Nat.Leq-Nat-refl m''
+            ; (right m'<m'') → absurd (no-value-from-sm'-upto-m-satisfies m'' -- impossible
+              ((Lt-Nat.lt-biimpl-succ-leq m' m'').Σ.fst m'<m'')
+              (mub m'' pm'')
+              pm''
+            )}
+          ))
+      ; (right ¬pm'-below-m) → absurd (¬pm'-below-m n (mub n pn) pn) -- impossible
+      }
+ 
