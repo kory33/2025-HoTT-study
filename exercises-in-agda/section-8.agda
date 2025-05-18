@@ -226,25 +226,27 @@ module _ where
     iii : Set
     iii = Has-decidable-eq (Σ A B)
 
+    -- TODO: prove these (they seem to be really provable when A has a decidable equality)
     i-then-ii-biimpl-iii : i → ii ↔ iii
     i-then-ii-biimpl-iii deceq-a = pair forward backward
       where
-      forward : ((a : A) → Has-decidable-eq (B a)) → Has-decidable-eq (Σ A B)
-      forward a→deceq-ba (pair a1 b1) (pair a2 b2) =
-        case (deceq-a a1 a2) of λ {
-          (left refl) →
-            case (a→deceq-ba a1 b1 b2) of λ {
-              (left b1≡b2) → left (ap (pair a1) b1≡b2)
-            ; (right b1≠b2) → right (λ paireq → b1≠b2 ({!   !}))
-            }
-        ; (right a1≠a2) → right (λ paireq → a1≠a2 (eq-implies-pr₁-eq paireq))
-        }
-      backward : Has-decidable-eq (Σ A B) → (a : A) → Has-decidable-eq (B a)
-      backward deceq-pair a b1 b2 =
-        case (deceq-pair (pair a b1) (pair a b2)) of λ {
-          (left eqpair) → left {!   !}
-        ; (right ¬eqpair) → right (λ b1≡b2 → ¬eqpair (ap (pair a) b1≡b2))
-        }
+      postulate forward : ((a : A) → Has-decidable-eq (B a)) → Has-decidable-eq (Σ A B)
+      -- forward a→deceq-ba (pair a1 b1) (pair a2 b2) =
+      --   case (deceq-a a1 a2) of λ {
+      --     (left refl) →
+      --       case (a→deceq-ba a1 b1 b2) of λ {
+      --         (left b1≡b2) → left (ap (pair a1) b1≡b2)
+      --       ; (right b1≠b2) → right (λ paireq → b1≠b2 ({!   !}))
+      --       }
+      --   ; (right a1≠a2) → right (λ paireq → a1≠a2 (eq-implies-pr₁-eq paireq))
+      --   }
+
+      postulate backward : Has-decidable-eq (Σ A B) → (a : A) → Has-decidable-eq (B a)
+      -- backward deceq-pair a b1 b2 =
+      --   case (deceq-pair (pair a b1) (pair a b2)) of λ {
+      --     (left paireq) → left ({! !})
+      --   ; (right ¬paireq) → right (λ b1≡b2 → ¬paireq (ap (pair a) b1≡b2))
+      --   }
 
     section-and-iii-imply-i : (b : (x : A) → B x) → iii → i
     section-and-iii-imply-i b deceq-pair a1 a2 =
@@ -273,13 +275,17 @@ module _ where
       ; (right ¬f') → right (λ f → ¬f' (λ x' → f (incl-succ x')))
       }
 
+    -- I think the use of this postulate is essential both in the base case and the inductive part
+    -- (i.e. some restricted version of funext would be equivalent to deceq-Fin-depfn)
+    postulate funext : {A : Set} → {B : A → Set} → {f g : (x : A) → B x} → ((x : A) → f x ≡ g x) → f ≡ g
+
     deceq-Fin-depfn : {k : Nat} → {B : Fin k → Set} → ((x : Fin k) → Has-decidable-eq (B x)) → Has-decidable-eq ((x : Fin k) → B x)
-    deceq-Fin-depfn {zero} _ f1 f2 = {!   !}
+    deceq-Fin-depfn {zero} _ f1 f2 = left (funext λ { () })
     deceq-Fin-depfn {succ k} {B} x→deceq-bx f1 f2 =
       case deceq-x'→b'x' (λ x' → f1 (incl-succ x')) (λ x' → f2 (incl-succ x')) of λ {
         (left f1'≡f2') →
           case (x→deceq-bx last (f1 last) (f2 last)) of λ {
-            (left f1-last≡f2-last) → left {!   !}
+            (left f1-last≡f2-last) → left (funext λ { (left x') → ap (λ e → e x') f1'≡f2'; (right unit) → f1-last≡f2-last })
           ; (right ¬f1-last≡f2-last) → right (λ { refl → ¬f1-last≡f2-last refl })
           }
         ; (right ¬f1'≡f2') → right (λ { refl → ¬f1'≡f2' refl })

@@ -34,7 +34,9 @@ module _ where
         x + y           ∎
       )
     
-    -- TODO: exercise 7.1
+    -- TODO: prove, as part of 7.1
+    postulate divides-summand-and-sum-then-divides-other : (d x y : Nat) → d ∣ x → d ∣ (x + y) → d ∣ y
+
     -- TODO: exercise 7.2
 
   CongrMod : (x y k : Nat) → Set
