@@ -148,9 +148,6 @@ module _ where
     eq-×-implies-pr₂-eq : {A : Set} → {B : Set} → {p1 p2 : A × B} → (p1 ≡ p2) → (Σ-Basic.pr₂ p1 ≡ Σ-Basic.pr₂ p2)
     eq-×-implies-pr₂-eq refl = refl
 
-    ind-+₁-comp-left : {A B : Set} → {P : A +₁ B → Set} → {l : (x : A) → P(left x)} → {r : (y : B) → P(right y)} → {copr : A +₁ B} →
-                       copr 
-
   -- adapted from https://plfa.github.io/Equality/
   module ≡-Reasoning {A : Set} where
     open ≡-Basic public
