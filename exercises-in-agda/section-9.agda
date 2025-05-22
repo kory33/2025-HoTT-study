@@ -365,7 +365,7 @@ module _ where
               blackward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
               blackward-left-is-not-pointToEliminate a pt≡bla =
                 let ru≡la = begin
-                      (right unit)                       ≡⟨ inverse (Sect (right unit)) ⟩
+                      (right unit)                     ≡⟨ inverse (Sect (right unit)) ⟩
                       forward (backward (right unit))  ≡⟨ ap forward pt≡bla ⟩
                       forward (backward (left a))      ≡⟨ Sect (left a) ⟩
                       left a                           ∎
@@ -494,13 +494,13 @@ module _ where
                     let bla>pt = backward'≥pt-then-backward∘left>pt a b'a≥pt
                         (pred-bla , succ-pred-bla) = Lt-Nat.gt-something-then-exists-pred (backward (left a)) {pointToEliminate} bla>pt
                     in begin
-                      left (forward' (backward' a))                            ≡⟨ left∘forward'≡forward∘succ-if-≥pt (backward' a) b'a≥pt ⟩
-                      forward (succ (backward' a))                             ≡⟨ ap (forward ∘ succ) (backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt) ⟩
-                      forward (succ (NatBasic.predOrZero (backward (left a)))) ≡⟨ ap (forward ∘ succ ∘ NatBasic.predOrZero) succ-pred-bla ⟩
-                      forward (succ (NatBasic.predOrZero (succ pred-bla)))     ≡⟨ ap (forward ∘ succ) (NatEquality.predOrZero-succ pred-bla) ⟩
-                      forward (succ pred-bla)                                  ≡⟨ ap forward (inverse succ-pred-bla) ⟩
-                      forward (backward (left a))                              ≡⟨ Sect (left a) ⟩
-                      left a                                                   ∎
+                      left (forward' (backward' a))                             ≡⟨ left∘forward'≡forward∘succ-if-≥pt (backward' a) b'a≥pt ⟩
+                      forward (succ (backward' a))                              ≡⟨ ap (forward ∘ succ) (backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt) ⟩
+                      forward (succ (NatBasic.predOrZero (backward (left a))))  ≡⟨ ap (forward ∘ succ ∘ NatBasic.predOrZero) succ-pred-bla ⟩
+                      forward (succ (NatBasic.predOrZero (succ pred-bla)))      ≡⟨ ap (forward ∘ succ) (NatEquality.predOrZero-succ pred-bla) ⟩
+                      forward (succ pred-bla)                                   ≡⟨ ap forward (inverse succ-pred-bla) ⟩
+                      forward (backward (left a))                               ≡⟨ Sect (left a) ⟩
+                      left a                                                    ∎
                   }
                 )
 
