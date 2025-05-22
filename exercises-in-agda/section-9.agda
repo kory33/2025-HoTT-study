@@ -446,13 +446,12 @@ module _ where
               backward'<pt-then-backward∘left≤pt a b'a<pt =
                 Lt-Nat.by-comparing-leq-or-gt (backward (left a)) pointToEliminate λ {
                   (left bla≤pt) → bla≤pt
-                ; (right bla>pt) → -- this is a contradictory arm: Can we simply the proof with EmptyBasic.absurd?
+                ; (right bla>pt) →
                     let (predbla , succ-predbla) = Lt-Nat.gt-something-then-exists-pred (backward (left a)) {pointToEliminate} bla>pt
                         b'a≡predOrZero-bla = backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt
-                        predbla<pt  = tr (λ e → e < pointToEliminate) (b'a≡predOrZero-bla · ap NatBasic.predOrZero succ-predbla · NatEquality.predOrZero-succ predbla) b'a<pt
-                        spredbla≤pt = (Lt-Nat.lt-biimpl-succ-leq predbla pointToEliminate).Σ.fst predbla<pt
-                        bla≤pt      = tr (λ e → e ≤ pointToEliminate) (inverse succ-predbla) spredbla≤pt
-                    in bla≤pt
+                        predOrZero-bla≥pt = Lt-Nat.lt-then-leq-predOrZero pointToEliminate (backward (left a)) bla>pt
+                        predOrZero-bla<pt = tr (λ e → e < pointToEliminate) b'a≡predOrZero-bla b'a<pt
+                    in absurd ((Lt-Nat.lt-biimpl-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate).Σ.fst predOrZero-bla<pt predOrZero-bla≥pt)
                 }
               backward'≥pt-then-backward∘left>pt : (a : A) → (pointToEliminate ≤ backward' a) → (pointToEliminate < backward (left a))
               backward'≥pt-then-backward∘left>pt a b'a≥pt =

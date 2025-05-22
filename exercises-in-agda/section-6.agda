@@ -48,6 +48,9 @@ module _ where
         (λ succeq → obseq-then-eq x y (eq-then-obseq (succ x) (succ y) succeq))
       )
 
+    eq-if-succ-eq : (x y : Nat) → (succ x ≡ succ y) → (x ≡ y)
+    eq-if-succ-eq x y eq = (succ-inj x y).Σ.snd eq
+
     -- 6.4.2
     zero-neq-succ : (x : Nat) → ¬ (zero ≡ succ x)
     zero-neq-succ x zero-eq-succx = eq-then-obseq zero (succ x) zero-eq-succx
@@ -586,6 +589,16 @@ module _ where
 
     from-diff : (x y k : Nat) → (x + succ k ≡ y) → (x < y)
     from-diff x y k eq = (lt-biimpl-exists-diff x y).Σ.snd (k , eq)
+
+    lt-then-leq-predOrZero : (m n : Nat) → (m < n) → (m ≤ NatBasic.predOrZero n)
+    lt-then-leq-predOrZero m zero m<zero = absurd (not-lt-zero m m<zero)
+    lt-then-leq-predOrZero m (succ n) m<sn =
+      let (k , m+sk≡sn) = extract-diff m (succ n) m<sn
+      in Leq-Nat.from-diff m (predOrZero (succ n)) k (begin
+          m + k               ≡⟨ Nat-EqualityThroughEq-Nat.eq-if-succ-eq (m + k) n (m+sk≡sn) ⟩
+          n                   ≡⟨ inverse (Nat-EqualityThroughEq-Nat.predOrZero-succ n) ⟩
+          predOrZero (succ n) ∎
+        )
 
     lt-biimpl-succ-leq : (m n : Nat) → (m < n) ↔ (succ m ≤ n)
     lt-biimpl-succ-leq m n = forward , backward
