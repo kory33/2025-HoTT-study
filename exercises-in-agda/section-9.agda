@@ -517,12 +517,12 @@ module _ where
                     NatBasic.predOrZero (backward (left (forward' n))) ≡⟨ ap (NatBasic.predOrZero ∘ backward) (left∘forward'≡forward∘succ-if-≥pt n n≥pt) ⟩
                     NatBasic.predOrZero (backward (forward (succ n)))  ≡⟨ ap NatBasic.predOrZero (Retr (succ n)) ⟩
                     NatBasic.predOrZero (succ n)                       ≡⟨ NatEquality.predOrZero-succ n ⟩
-                    n                            ∎
+                    n                                                  ∎
                 }
 
 
       Nat-≄-Fin : (k : Nat) → Nat ≄ Fin k
-      Nat-≄-Fin zero                   = Inhabited-≄-Empty zero
+      Nat-≄-Fin zero = Inhabited-≄-Empty zero
       Nat-≄-Fin (succ k) (Nat≃Fink+Unit , is-equiv) =
         let (inv , is-inverse) = Nat≃+Unit-then-Nat≃ Nat≃Fink+Unit (equiv-has-inverse is-equiv)
         in Nat-≄-Fin k (inv , has-inverse-equiv is-inverse)
