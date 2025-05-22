@@ -61,6 +61,10 @@ module _ where
     +₁-emptyLeft ¬a (left x) = absurd (¬a x)
     +₁-emptyLeft ¬a (right y) = y
 
+    swap-+₁ : {X Y : Set} → X +₁ Y → Y +₁ X
+    swap-+₁ (left x)  = right x
+    swap-+₁ (right y) = left y
+
     leftMap : {A B A' : Set} → (A → A') → (A +₁ B) → (A' +₁ B)
     leftMap f = < f +₁ id >
 
@@ -86,30 +90,37 @@ module _ where
   ind-Σ pXY (pair x y) = pXY x y
 
   module Σ-Basic where
+    module Symbolic where
+      pattern _,_ a b = pair a b
+      infixr 15 _,_
+    open Symbolic
+
     pr₁ : {A : Set} → {B : A → Set} → Σ A B → A
-    pr₁ (pair x y) = x
+    pr₁ (x , y) = x
 
     pr₂ : {A : Set} → {B : A → Set} → (p : Σ A B) → B (pr₁ p)
-    pr₂ (pair x y) = y
+    pr₂ (x , y) = y
 
     curry : {A : Set} → {B : A → Set} → {P : Σ A B → Set} →
             ((z : Σ A B) → P z) →
-            (x : A) → (y : B x) → P (pair x y)
-    curry p x y = p (pair x y)
+            (x : A) → (y : B x) → P (x , y)
+    curry p x y = p (x , y)
 
     uncurry : {A : Set} → {B : A → Set} → {P : Σ A B → Set} →
-              ((x : A) → (y : B x) → P (pair x y)) →
+              ((x : A) → (y : B x) → P (x , y)) →
               (z : Σ A B) → P z
     uncurry = ind-Σ
+
+  open Σ-Basic.Symbolic public
 
   _×_ : (A B : Set) → Set
   A × B = Σ A (λ x → B)
   infixl 15 _×_
 
   ind-× : {A B : Set} → {P : A × B → Set} →
-          ((x : A) → (y : B) → P (pair x y)) →
+          ((x : A) → (y : B) → P (x , y)) →
           (z : A × B) → P z
-  ind-× pXY (pair x y) = pXY x y
+  ind-× pXY (x , y) = pXY x y
 
   -- 4.5
   Int = Nat +₁ (Unit +₁ Nat)
@@ -156,23 +167,23 @@ module _ where
     Nat-minus (succ n) (succ m) = Nat-minus n m
 
     asNatDiff : Int → (Nat × Nat)
-    asNatDiff zeroInt = pair zero zero
-    asNatDiff (posSucc n) = pair (succ n) zero
-    asNatDiff (negSucc n) = pair zero (succ n)
-    
+    asNatDiff zeroInt = (zero , zero)
+    asNatDiff (posSucc n) = ((succ n), zero)
+    asNatDiff (negSucc n) = (zero , (succ n))
+     
     add : Int → Int → Int
-    add n m = let (pair n₊ n₋) = asNatDiff n
-                  (pair m₊ m₋) = asNatDiff m
+    add n m = let (n₊ , n₋) = asNatDiff n
+                  (m₊ , m₋) = asNatDiff m
               in Nat-minus (NatBasic.add n₊ m₊) (NatBasic.add n₋ m₋)
 
     -- exercise 4.1.b
     neg : Int → Int
-    neg n = let (pair n₊ n₋) = asNatDiff n in Nat-minus n₋ n₊
+    neg n = let (n₊ , n₋) = asNatDiff n in Nat-minus n₋ n₊
 
     -- exercise 4.1.c
     mul : Int → Int → Int
-    mul n m = let (pair n₊ n₋) = asNatDiff n
-                  (pair m₊ m₋) = asNatDiff m
+    mul n m = let (n₊ , n₋) = asNatDiff n
+                  (m₊ , m₋) = asNatDiff m
               in Nat-minus
                 (NatBasic.add (NatBasic.mul n₊ m₊) (NatBasic.mul n₋ m₋))
                 (NatBasic.add (NatBasic.mul n₊ m₋) (NatBasic.mul n₋ m₊))
@@ -220,6 +231,13 @@ module _ where
   ind-Bool pT pF true = pT
   ind-Bool pT pF false = pF
 
+  module Bool-If-Syntax where
+    if_then_else_ : (b : Bool) → {P : Bool → Set} →
+                    (pT : P true) → (pF : P false) →
+                    P b
+    if_then_else_ b {P} pT pF = ind-Bool {P} pT pF b
+  open Bool-If-Syntax public
+
   module BoolBasic where
     -- exercise 4.2.a
     neg-bool : Bool → Bool
@@ -243,17 +261,17 @@ module _ where
 
   module ↔-Basic where
     flip-biimpl : {A B : Set} → (A ↔ B) → (B ↔ A)
-    flip-biimpl (pair a→b b→a) = pair b→a a→b
+    flip-biimpl (a→b , b→a) = (b→a , a→b)
 
     trans : {A B C : Set} → (A ↔ B) → (B ↔ C) → (A ↔ C)
-    trans (pair a→b b→a) (pair b→c c→b) = pair (b→c ∘ a→b) (b→a ∘ c→b)
+    trans (a→b , b→a) (b→c , c→b) = ((b→c ∘ a→b), (b→a ∘ c→b))
 
     prod : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
-    prod (pair a→b b→a) (pair c→d d→c) = pair (λ { (pair a c) → pair (a→b a) (c→d c) }) (λ { (pair b d) → pair (b→a b) (d→c d) })
+    prod (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
 
     open EmptyBasic
     neg-both : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
-    neg-both (pair a→b b→a) = pair (contrapose b→a) (contrapose a→b)
+    neg-both (a→b , b→a) = ((contrapose b→a), (contrapose a→b))
 
   module exercise-4-3 where
     open EmptyBasic
@@ -263,6 +281,9 @@ module _ where
     ¬¬_ : Set → Set
     ¬¬_ A = ¬ ¬ A
     infix 50 ¬¬_
+
+    biimpl : {A B : Set} → (A ↔ B) → (A ↔ B)
+    biimpl p = p
 
     ex-a-i : {P : Set} → ¬ (P × ¬ P)
     ex-a-i p×¬p = (snd p×¬p) (fst p×¬p)
@@ -339,12 +360,14 @@ module _ where
     ex-d-i (right ¬p) ¬¬p = absurd (¬¬p ¬p)
 
     ex-d-ii : {P Q : Set} → (¬¬(Q → P)) ↔ ((P +₁ ¬ P) → (Q → P))
-    ex-d-ii = pair
-      (λ ¬¬qp lem q → case lem of λ
-        { (left p) → p
-        ; (right ¬p) → absurd (¬¬qp (λ qp → ¬p (qp q)))
-        })
-      (λ lemToQ→P → map lemToQ→P ex-c-iv)
+    ex-d-ii =
+      biimpl (
+        (λ ¬¬qp lem q → case lem of λ
+          { (left p) → p
+          ; (right ¬p) → absurd (¬¬qp (λ qp → ¬p (qp q)))
+          }),
+        (λ lemToQ→P → map lemToQ→P ex-c-iv)
+      )
 
     ex-e-i : {P : Set} → ¬ ¬ ¬ P → ¬ P
     ex-e-i ¬¬¬p p = ¬¬¬p (λ ¬p → ¬p p)
@@ -356,37 +379,43 @@ module _ where
       pure q
 
     ex-e-iii : {P Q : Set} → ¬¬((¬¬ P) × (¬¬ Q)) → ¬¬ P × ¬¬ Q
-    ex-e-iii ¬¬-pair = pair (¬¬-pair >>= pr₁) (¬¬-pair >>= pr₂)
+    ex-e-iii ¬¬-pair = ((¬¬-pair >>= pr₁), (¬¬-pair >>= pr₂))
 
     ex-f-i : {P Q : Set} → ¬¬(P × Q) ↔ (¬¬ P × ¬¬ Q)
-    ex-f-i = pair
-      (λ ¬¬pq → pair (map pr₁ ¬¬pq) (map pr₂ ¬¬pq))
-      (λ { (pair ¬¬p ¬¬q) → do
-        p ← ¬¬p
-        q ← ¬¬q
-        pure (pair p q)
-      })
+    ex-f-i =
+      biimpl (
+        (λ ¬¬pq → ((map pr₁ ¬¬pq), (map pr₂ ¬¬pq))),
+        (λ { (¬¬p , ¬¬q) → do
+          p ← ¬¬p
+          q ← ¬¬q
+          pure (p , q)
+        })
+      )
 
     ex-f-ii' : {P Q : Set} → ¬ (P +₁ Q) ↔ (¬ P × ¬ Q)
-    ex-f-ii' = pair
-      (λ ¬p∨q → pair (λ p → ¬p∨q (left p)) (λ q → ¬p∨q (right q)))
-      (λ { (pair ¬p _) (left p) → ¬p p ; (pair _ ¬q) (right q) → ¬q q })
+    ex-f-ii' =
+      biimpl (
+        (λ ¬p∨q → ((λ p → ¬p∨q (left p)), (λ q → ¬p∨q (right q)))),
+        (λ { (¬p , _) (left p) → ¬p p ; (_ , ¬q) (right q) → ¬q q })
+      )
 
     ↔-neg-of-↔ : {P Q : Set} → (P ↔ Q) → (¬ P ↔ ¬ Q)
-    ↔-neg-of-↔ (pair p→q q→p) = pair (contrapose q→p) (contrapose p→q)
+    ↔-neg-of-↔ (p→q , q→p) = ((contrapose q→p), (contrapose p→q))
 
     ex-f-ii : {P Q : Set} → ¬¬(P +₁ Q) ↔ ¬(¬ P × ¬ Q)
     ex-f-ii = ↔-neg-of-↔ ex-f-ii'
 
     ex-f-iii : {P Q : Set} → ¬¬(P → Q) ↔ (¬¬ P → ¬¬ Q)
-    ex-f-iii = pair
-      (_<*>_)
-      (λ ¬¬p→¬¬q ¬p→q →
-         absurd (¬p→q (λ p →
-           absurd (
-             ¬¬p→¬¬q (λ ¬p → ¬p p) (λ q → ¬p→q (λ _ → q))
-           )
-         ))
+    ex-f-iii =
+      biimpl (
+        (_<*>_),
+        (λ ¬¬p→¬¬q ¬p→q →
+          absurd (¬p→q (λ p →
+            absurd (
+              ¬¬p→¬¬q (λ ¬p → ¬p p) (λ q → ¬p→q (λ _ → q))
+            )
+          ))
+        )
       )
 
   -- exercise 4.4

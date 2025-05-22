@@ -18,20 +18,22 @@ module _ where
     open ≡-Reasoning
 
     divides-refl : (m : Nat) → m ∣ m
-    divides-refl m = pair one (mul-runit m)
+    divides-refl m = (one , mul-runit m)
 
     -- 7.1.4
     one-divides-any : (m : Nat) → one ∣ m
-    one-divides-any m = pair m (mul-lunit m)
+    one-divides-any m = (m , mul-lunit m)
 
     -- 7.1.5
     divides-both-then-divides-sum : (d x y : Nat) → d ∣ x → d ∣ y → d ∣ (x + y)
-    divides-both-then-divides-sum d x y (pair k p) (pair l q) =
-      pair (k + l) (begin
-        d * (k + l)     ≡⟨ mul-ldistr d k l ⟩
-        d * k + d * l   ≡⟨ ap (λ e → e + d * l) p ⟩
-        x + d * l       ≡⟨ ap (λ e → x + e) q ⟩
-        x + y           ∎
+    divides-both-then-divides-sum d x y (k , p) (l , q) =
+      (
+        k + l ,
+        (begin
+          d * (k + l)     ≡⟨ mul-ldistr d k l ⟩
+          d * k + d * l   ≡⟨ ap (λ e → e + d * l) p ⟩
+          x + d * l       ≡⟨ ap (λ e → x + e) q ⟩
+          x + y           ∎)
       )
     
     -- TODO: prove, as part of 7.1
@@ -129,7 +131,7 @@ module _ where
 
     Fin-≡-biimpl-Eq-Fin : {k : Nat} → (x y : Fin k) → (x ≡ y) ↔ (Eq-Fin k x y)
     Fin-≡-biimpl-Eq-Fin {zero} () ()
-    Fin-≡-biimpl-Eq-Fin {succ k} x y = pair (λ { refl → Eq-Fin-refl x }) (backward x y)
+    Fin-≡-biimpl-Eq-Fin {succ k} x y = ((λ { refl → Eq-Fin-refl x }), backward x y)
       where
       backward : (x y : Fin (succ k)) → (Eq-Fin (succ k) x y) → (x ≡ y)
       backward (left x) (left y) eq-fin = ap left ((Fin-≡-biimpl-Eq-Fin {k} x y).Σ.snd eq-fin)
@@ -147,9 +149,11 @@ module _ where
 
     -- exercise 7.7.a
     eq-biimpl-pr₁-eq : {k : Nat} → (x y : classical-Fin k) → (x ≡ y) ↔ (pr₁ x ≡ pr₁ y)
-    eq-biimpl-pr₁-eq {zero} (pair k k<zero) = EmptyBasic.absurd (Lt-Nat.not-lt-zero k k<zero)
-    eq-biimpl-pr₁-eq {succ k} (pair x x<sk) (pair y y<sk) = pair
-      eq-implies-pr₁-eq
-      (λ { refl → case (Lt-Nat.subsingleton x (succ k) x<sk y<sk) of λ { refl → refl }})
+    eq-biimpl-pr₁-eq {zero} (k , k<zero) = EmptyBasic.absurd (Lt-Nat.not-lt-zero k k<zero)
+    eq-biimpl-pr₁-eq {succ k} (x , x<sk) (y , y<sk) =
+      (
+        eq-implies-pr₁-eq ,
+        (λ { refl → case (Lt-Nat.subsingleton x (succ k) x<sk y<sk) of λ { refl → refl }})
+      )
 
     -- TODO: exercise 7.7.b

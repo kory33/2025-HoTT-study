@@ -33,10 +33,24 @@ module _ where
 
     infix 54 _⁻¹
 
+    module _ where
+      open EmptyBasic
+      _≢_ : {A : Set} → A → A → Set
+      x ≢ y = ¬ (x ≡ y)
+
+      ≢-inverse : {A : Set} → {x y : A} →
+                  (x ≢ y) → (y ≢ x)
+      ≢-inverse x≢y y≡x = x≢y (inverse y≡x)
+
     assoc : {A : Set} → {x y z w : A} →
             (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) →
-            (p · q) · r ≡ p · (q · r)
+            p · q · r ≡ p · (q · r)
     assoc refl p r = refl
+
+    unassoc : {A : Set} → {x y z w : A} →
+             (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) →
+             p · (q · r) ≡ p · q · r
+    unassoc p q r = inverse (assoc p q r)
 
     ·-lunit : {A : Set} → {x y : A} →
               (p : x ≡ y) → refl · p ≡ p
@@ -134,6 +148,9 @@ module _ where
     eq-×-implies-pr₂-eq : {A : Set} → {B : Set} → {p1 p2 : A × B} → (p1 ≡ p2) → (Σ-Basic.pr₂ p1 ≡ Σ-Basic.pr₂ p2)
     eq-×-implies-pr₂-eq refl = refl
 
+    ind-+₁-comp-left : {A B : Set} → {P : A +₁ B → Set} → {l : (x : A) → P(left x)} → {r : (y : B) → P(right y)} → {copr : A +₁ B} →
+                       copr 
+
   -- adapted from https://plfa.github.io/Equality/
   module ≡-Reasoning {A : Set} where
     open ≡-Basic public
@@ -162,8 +179,8 @@ module _ where
 
     -- 5.5.1
     refl-uniq : {A : Set} → (a : A) → (y : Σ A (λ x → a ≡ x)) →
-                pair a refl ≡ y
-    refl-uniq a (pair x refl) = refl
+                (a , refl) ≡ y
+    refl-uniq a (x , refl) = refl
 
     -- exercise 5.1
     distr-inv-concat : {A : Set} → {x y z : A} →
@@ -202,8 +219,13 @@ module _ where
 
     -- exercise 5.3
     lift : {A : Set} → {B : A → Set} → {a x : A} →
-          (p : a ≡ x) → (b : B a) → pair a b ≡ pair x (tr B p b)
+          (p : a ≡ x) → (b : B a) → (a , b) ≡ (x , (tr B p b))
     lift refl b = refl
+
+    tr-concat : {A : Set} → {B : A → Set} → {x y z : A} →
+                (p : x ≡ y) → (q : y ≡ z) → (b : B x) →
+                tr B (p · q) b ≡ tr B q (tr B p b)
+    tr-concat refl refl b = refl
 
     module exercise-5-4 where
       variable
@@ -239,10 +261,17 @@ module _ where
                  (α₁ p q r s) · (α₂ p q r s) · (α₃ p q r s) ≡ (α₄ p q r s) · (α₅ p q r s)
       pentagon refl refl refl refl = refl
 
+  module UnitEquality where
+    any-units-eq : (u v : Unit) → u ≡ v
+    any-units-eq unit unit = refl
+
   module NatEquality where
     open NatBasic public
     open NatBasic.Symbolic
     open ≡-Reasoning
+
+    predOrZero-succ : (n : Nat) → predOrZero (succ n) ≡ n
+    predOrZero-succ n = refl
 
     -- 5.6.1
     add-lunit : (n : Nat) → zero + n ≡ n
@@ -543,7 +572,7 @@ module _ where
       add-runit (posSucc n) = refl
       add-runit (negSucc n) = refl
 
-      Nat-minus-asNatDiff : (x : Int) → (let (pair x₊ x₋) = asNatDiff x in x₊ -ℕ x₋) ≡ x
+      Nat-minus-asNatDiff : (x : Int) → (let (x₊ , x₋) = asNatDiff x in x₊ -ℕ x₋) ≡ x
       Nat-minus-asNatDiff zeroInt = refl
       Nat-minus-asNatDiff (posSucc zero) = refl
       Nat-minus-asNatDiff (posSucc (succ n)) = refl
@@ -604,14 +633,14 @@ module _ where
 
       asNatDiff-Nat-minus-normalization :
         (x₊ x₋ : Nat) →
-        (let (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
+        (let (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
          in Σ Nat (λ k → (x₊ ≡ x₊' +ℕ k) × (x₋ ≡ x₋' +ℕ k)))
-      asNatDiff-Nat-minus-normalization zero zero = pair zero (pair refl refl)
-      asNatDiff-Nat-minus-normalization (succ x₊) zero = pair zero (pair refl refl)
-      asNatDiff-Nat-minus-normalization zero (succ x₋) = pair zero (pair refl refl)
+      asNatDiff-Nat-minus-normalization zero zero = (zero , refl , refl)
+      asNatDiff-Nat-minus-normalization (succ x₊) zero = (zero , refl , refl)
+      asNatDiff-Nat-minus-normalization zero (succ x₋) = (zero , refl , refl)
       asNatDiff-Nat-minus-normalization (succ x₊) (succ x₋) =
-        let (pair k (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
-        in pair (succ k) (pair (ap succ nx₊) (ap succ nx₋))
+        let (k , nx₊ , nx₋) = asNatDiff-Nat-minus-normalization x₊ x₋
+        in (succ k , ap succ nx₊ , ap succ nx₋)
 
       Nat-minus-add-same :
         (x y k : Nat) →
@@ -631,10 +660,10 @@ module _ where
       Nat-minus-add : (x₊ x₋ y₊ y₋ : Nat) →
         (x₊ -ℕ x₋) + (y₊ -ℕ y₋) ≡ (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
       Nat-minus-add x₊ x₋ y₊ y₋ =
-        let (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
-            (pair y₊' y₋') = asNatDiff (y₊ -ℕ y₋)
-            (pair kx (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
-            (pair ky (pair ny₊ ny₋)) = asNatDiff-Nat-minus-normalization y₊ y₋
+        let (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
+            (y₊' , y₋') = asNatDiff (y₊ -ℕ y₋)
+            (kx , nx₊ , nx₋) = asNatDiff-Nat-minus-normalization x₊ x₋
+            (ky , ny₊ , ny₋) = asNatDiff-Nat-minus-normalization y₊ y₋
         in
           begin
             (x₊ -ℕ x₋) + (y₊ -ℕ y₋)
@@ -678,8 +707,8 @@ module _ where
       add-pred-left : (x y : Int) → pred x + y ≡ pred (x + y)
       add-pred-left x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             pred x + y
@@ -700,8 +729,8 @@ module _ where
       add-pred-right : (x y : Int) → x + pred y ≡ pred (x + y)
       add-pred-right x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             x + pred y
@@ -722,8 +751,8 @@ module _ where
       add-succ-left : (x y : Int) → Int-succ x + y ≡ Int-succ (x + y)
       add-succ-left x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             Int-succ x + y
@@ -744,8 +773,8 @@ module _ where
       add-succ-right : (x y : Int) → x + Int-succ y ≡ Int-succ (x + y)
       add-succ-right x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             x + Int-succ y
@@ -767,9 +796,9 @@ module _ where
       add-assoc : (x y z : Int) → (x + y) + z ≡ x + (y + z)
       add-assoc x y z =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
-          (pair z₊ z₋) = asNatDiff z
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
+          (z₊ , z₋) = asNatDiff z
         in
           begin
             (x + y) + z
@@ -794,8 +823,8 @@ module _ where
       add-comm : (x y : Int) → x + y ≡ y + x
       add-comm x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             x + y
@@ -881,7 +910,7 @@ module _ where
       mul-lzero : (x : Int) → zeroInt * x ≡ zeroInt
       mul-lzero x =
         let
-          (pair x₊ x₋) = asNatDiff x
+          (x₊ , x₋) = asNatDiff x
         in
           begin
             zeroInt * x
@@ -905,7 +934,7 @@ module _ where
       mul-lunit : (x : Int) → Int-one * x ≡ x
       mul-lunit x =
         let
-          (pair x₊ x₋) = asNatDiff x
+          (x₊ , x₋) = asNatDiff x
         in
           begin
             Int-one * x
@@ -928,7 +957,7 @@ module _ where
       mul-runit : (x : Int) → x * Int-one ≡ x
       mul-runit x =
         let
-          (pair x₊ x₋) = asNatDiff x
+          (x₊ , x₋) = asNatDiff x
         in
           begin
             x * Int-one
@@ -945,10 +974,10 @@ module _ where
           ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ
           ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
       Nat-minus-mul x₊ x₋ y₊ y₋ =
-        let (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
-            (pair y₊' y₋') = asNatDiff (y₊ -ℕ y₋)
-            (pair kx (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
-            (pair ky (pair ny₊ ny₋)) = asNatDiff-Nat-minus-normalization y₊ y₋
+        let (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
+            (y₊' , y₋') = asNatDiff (y₊ -ℕ y₋)
+            (kx , nx₊ , nx₋) = asNatDiff-Nat-minus-normalization x₊ x₋
+            (ky , ny₊ , ny₋) = asNatDiff-Nat-minus-normalization y₊ y₋
 
             expandCrossTerm : (a b c d : Nat) →
               (a +ℕ b) *ℕ (c +ℕ d) ≡
@@ -1057,8 +1086,8 @@ module _ where
       neg-Nat-minus : (x₊ x₋ : Nat) → (- (x₊ -ℕ x₋)) ≡ (x₋ -ℕ x₊)
       neg-Nat-minus x₊ x₋ =
         let
-          (pair x₊' x₋') = asNatDiff (x₊ -ℕ x₋)
-          (pair kx (pair nx₊ nx₋)) = asNatDiff-Nat-minus-normalization x₊ x₋
+          (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
+          (kx , nx₊ , nx₋) = asNatDiff-Nat-minus-normalization x₊ x₋
         in
           begin
             - (x₊ -ℕ x₋)
@@ -1086,8 +1115,8 @@ module _ where
       pred-mul : (x y : Int) → pred x * y ≡ x * y - y
       pred-mul x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             pred x * y
@@ -1113,8 +1142,8 @@ module _ where
       mul-pred : (x y : Int) → x * pred y ≡ x * y - x
       mul-pred x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             x * pred y
@@ -1143,8 +1172,8 @@ module _ where
       succ-mul : (x y : Int) → Int-succ x * y ≡ x * y + y
       succ-mul x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             Int-succ x * y
@@ -1169,8 +1198,8 @@ module _ where
       mul-succ : (x y : Int) → x * Int-succ y ≡ x * y + x
       mul-succ x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             x * Int-succ y
@@ -1202,9 +1231,9 @@ module _ where
       mul-ldistr : (x y z : Int) → x * (y + z) ≡ (x * y) + (x * z)
       mul-ldistr x y z =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
-          (pair z₊ z₋) = asNatDiff z
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
+          (z₊ , z₋) = asNatDiff z
         in
           begin
             x * (y + z)
@@ -1252,9 +1281,9 @@ module _ where
       mul-rdistr : (x y z : Int) → (x + y) * z ≡ (x * z) + (y * z)
       mul-rdistr x y z =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
-          (pair z₊ z₋) = asNatDiff z
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
+          (z₊ , z₋) = asNatDiff z
         in
           begin
             (x + y) * z
@@ -1303,9 +1332,9 @@ module _ where
       mul-assoc : (x y z : Int) → (x * y) * z ≡ x * (y * z)
       mul-assoc x y z =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
-          (pair z₊ z₋) = asNatDiff z
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
+          (z₊ , z₋) = asNatDiff z
         in
           begin
             x * y * z
@@ -1372,8 +1401,8 @@ module _ where
       mul-comm : (x y : Int) → x * y ≡ y * x
       mul-comm x y =
         let
-          (pair x₊ x₋) = asNatDiff x
-          (pair y₊ y₋) = asNatDiff y
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
         in
           begin
             x * y
