@@ -1,5 +1,5 @@
 module _ where
-  open import section-4 public
+  open import section-04 public
 
   data _≡_ {A : Set} (a : A) : A → Set where
     refl : a ≡ a

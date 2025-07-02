@@ -1,7 +1,7 @@
 open import Function.Base using (case_of_)
 
 module _ where
-  open import section-3 public
+  open import section-03 public
 
   -- 4.2
   data Unit : Set where

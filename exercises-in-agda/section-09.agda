@@ -1,7 +1,7 @@
 open import Function.Base using (case_of_)
 
 module _ where
-  open import section-8 public
+  open import section-08 public
 
   -- 9.1.2
   Homotopy : {A : Set} → {B : (x : A) → Set} → (f g : (x : A) → B x) → Set

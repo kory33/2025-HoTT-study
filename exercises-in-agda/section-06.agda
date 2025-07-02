@@ -1,7 +1,7 @@
 open import Function.Base using (case_of_)
 
 module _ where
-  open import section-5 public
+  open import section-05 public
   
   Eq-Nat : (x y : Nat) → Set
   Eq-Nat zero zero = Unit

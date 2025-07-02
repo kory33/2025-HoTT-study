@@ -1,7 +1,7 @@
 open import Function.Base using (case_of_)
 
 module _ where
-  open import section-6 public
+  open import section-06 public
 
   Divides : Nat → Nat → Set
   Divides m n = Σ Nat (λ k → NatBasic.mul m k ≡ n)

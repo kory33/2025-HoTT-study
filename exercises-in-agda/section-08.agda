@@ -1,7 +1,7 @@
 open import Function.Base using (case_of_)
 
 module _ where
-  open import section-7 public
+  open import section-07 public
 
   open EmptyBasic
   open ≡-Basic
