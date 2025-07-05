@@ -105,6 +105,15 @@ module _ where
          f x₁ y₁ z₁ w₁ v₁ u₁ a₁ b₁ ≡ f x₂ y₂ z₂ w₂ v₂ u₂ a₂ b₂
     ap8 f refl refl refl refl refl refl refl refl = refl
 
+    ap-id : {A : Set} → {x y : A} →
+            (p : x ≡ y) → ap id p ≡ p
+    ap-id refl = refl
+
+    ap-comp : {A B C : Set} → (g : B → C) → (f : A → B) →
+             {x y : A} → (p : x ≡ y) →
+             ap (g ∘ f) p ≡ ap g (ap f p) 
+    ap-comp g f refl = refl
+
     ap-refl : {A B : Set} → (f : A → B) → (x : A) → ap f {x} refl ≡ refl
     ap-refl f x = refl
 

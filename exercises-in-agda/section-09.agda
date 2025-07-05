@@ -11,6 +11,12 @@ module _ where
     open ≡-Basic
 
     module Symbolic where
+      -- When K : f ~ g, we will diagramatically write the situation as:
+      --         g 
+      --         │ 
+      --        [K]
+      --         │ 
+      --         f 
       _~_ : {A : Set} → {B : (x : A) → Set} → (f g : (x : A) → B x) → Set
       f ~ g = Homotopy f g
 
@@ -30,86 +36,472 @@ module _ where
         A : Set
         B : (x : A) → Set
 
+      --       f       
+      --       │       
+      --  [htpy-refl f]
+      --       │       
+      --       f       
       htpy-refl    : (f : (x : A) → B x)     → f ~ f
       htpy-refl f x = refl
 
+      --  g                  f          
+      --  │                  │          
+      -- [K]  then  [htpy-inverse f g K]
+      --  │                  │          
+      --  f                  g          
       htpy-inverse : (f g : (x : A) → B x)   → f ~ g → g ~ f
-      htpy-inverse f g H x = inverse (H x)
+      htpy-inverse f g K x = inverse (K x)
 
+      --  h                      h            
+      --  │                      │            
+      -- [G]                     │            
+      --  │                      │            
+      --  │ g   then  [htpy-concat f g h H G] 
+      --  │                      │            
+      -- [H]                     │            
+      --  │                      │            
+      --  f                      f            
       htpy-concat  : (f g h : (x : A) → B x) → f ~ g → g ~ h → f ~ h
-      htpy-concat f g h H1 H2 x = (H1 x) · (H2 x)
+      htpy-concat f g h H G x = (H x) · (G x)
 
       htpy-eq-refl : (f : (x : A) → B x) → {g : (x : A) → B x} → (f ≡ g) → f ~ g
       htpy-eq-refl f {g} refl = htpy-refl f
 
       module HomotopyGroupoidSymbolic where
+        --  h               h      
+        --  │               │      
+        -- [G]              │      
+        --  │               │      
+        --  │ g   then  [H ·ₕₜₚ G] 
+        --  │               │      
+        -- [H]              │      
+        --  │               │      
+        --  f               f      
         _·ₕₜₚ_ : {f g h : (x : A) → B x} → f ~ g → g ~ h → f ~ h
         H ·ₕₜₚ G = htpy-concat _ _ _ H G
 
         infixl 40 _·ₕₜₚ_
 
+        --  g             f     
+        --  │             │     
+        -- [K]  then  [K ⁻¹ₕₜₚ] 
+        --  │             │     
+        --  f             g     
         _⁻¹ₕₜₚ : {f g : (x : A) → B x} → f ~ g → g ~ f
         H ⁻¹ₕₜₚ = htpy-inverse _ _ H
         infix 54 _⁻¹ₕₜₚ
 
+      open ≡-Reasoning
       open HomotopyGroupoidSymbolic
+
+      module Reasoning where
+        open Symbolic public
+        open HomotopyGroupoidSymbolic public
+
+        infix  1 begin-htpy_
+        infixr 2 step-~-∣ step-~-⟩ step-~-⟩⁻¹
+        infix  3 _∎-htpy
+
+        begin-htpy_ : {A : Set} → {B : (x : A) → Set} → {f g : (x : A) → B x} → f ~ g → f ~ g
+        begin-htpy f~g = f~g
+
+        step-~-∣ : {A : Set} → {B : (x : A) → Set} → (f : (x : A) → B x) → {g : (x : A) → B x} → f ~ g → f ~ g
+        step-~-∣ f f~g = f~g
+
+        step-~-⟩ : {A : Set} → {B : (x : A) → Set} → (f : (x : A) → B x) → {g h : (x : A) → B x} → f ~ g → g ~ h → f ~ h
+        step-~-⟩ f f~g g~h = f~g ·ₕₜₚ g~h
+
+        step-~-⟩⁻¹ : {A : Set} → {B : (x : A) → Set} → (f : (x : A) → B x) → {g h : (x : A) → B x} → g ~ f → g ~ h → f ~ h
+        step-~-⟩⁻¹ f g~f g~h = (g~f ⁻¹ₕₜₚ) ·ₕₜₚ g~h
+
+        syntax step-~-∣   f f~g      =  f ~⟨⟩ f~g
+        syntax step-~-⟩   f f~g g~h  =  f ~⟨ f~g ⟩ g~h
+        syntax step-~-⟩⁻¹ f g~f g~h  =  f ~⟨← g~f ⟩ g~h
+
+        _∎-htpy : {A : Set} → {B : (x : A) → Set} → (f : (x : A) → B x) → f ~ f
+        x ∎-htpy  =  htpy-refl x
+
+      open Reasoning
 
       private variable
         f g h i : (x : A) → B x
 
-      htpy-assoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ K ·ₕₜₚ L ~ H ·ₕₜₚ (K ·ₕₜₚ L)
-      htpy-assoc H K L x = assoc (H x) (K x) (L x)
+      -- "Left-homotope" a concatenation.
+      --
+      -- If p : H1 ~ H2, then:
+      --     │       │  
+      --    [K]     [K] 
+      --     │   ~   │  
+      --   [H1]    [H2] 
+      --     │       │  
+      --     f       f  
+      ·ₕₜₚ-lhtpe : {A B : Set} → {f g h : A → B} → {H1 H2 : f ~ g} → (p : H1 ~ H2) → (K : g ~ h) → (H1 ·ₕₜₚ K ~ H2 ·ₕₜₚ K)
+      ·ₕₜₚ-lhtpe {A} {B} {f} {g} {h} {H1} {H2} p K x =
+        begin
+          (H1 ·ₕₜₚ K) x         ≡⟨⟩
+          (H1 x) · (K x)        ≡⟨ ap (λ y → y · K x) (p x) ⟩
+          (H2 x) · (K x)        ≡⟨⟩
+          (H2 ·ₕₜₚ K) x         ∎
 
-      htpy-unassoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ (K ·ₕₜₚ L) ~ H ·ₕₜₚ K ·ₕₜₚ L
-      htpy-unassoc H K L = (htpy-assoc H K L) ⁻¹ₕₜₚ
+      -- "Right-homotope" a concatenation.
+      --
+      -- If p : K1 ~ K2, then:
+      --     │       │  
+      --   [K1]    [K2] 
+      --     │   ~   │  
+      --    [H]     [H] 
+      --     │       │  
+      --     f       f  
+      ·ₕₜₚ-rhtpe : {A B : Set} → {f g h : A → B} → (H : f ~ g) → {K1 K2 : g ~ h} → (p : K1 ~ K2) → (H ·ₕₜₚ K1 ~ H ·ₕₜₚ K2)
+      ·ₕₜₚ-rhtpe {A} {B} {f} {g} {h} H {K1} {K2} p x =
+        begin
+          (H ·ₕₜₚ K1) x         ≡⟨⟩
+          (H x) · (K1 x)        ≡⟨ ap (λ y → H x · y) (p x) ⟩
+          (H x) · (K2 x)        ≡⟨⟩
+          (H ·ₕₜₚ K2) x         ∎
 
-      htpy-lunit : (H : f ~ g) → (htpy-refl f) ·ₕₜₚ H ~ H
-      htpy-lunit H x = ·-lunit (H x)
+      --     │       │          │       │ 
+      --    [L]      │      [K ·ₕₜₚ L]  │ 
+      --     │       │   =      │       │ 
+      -- [H ·ₕₜₚ K]  │         [H]      │ 
+      --     │       │          │       │ 
+      --     f       x          f       x 
+      -- By an abuse of notation, x in the diagram stands for const x : Unit → A.
+      -- When we don't have function extensionality, this is the best we can say about
+      -- these "equality" between homotopies.
+      --
+      -- The same claim can be written using a higher homotopy, and we will usually be writing in this way:
+      --     │              │     
+      --    [L]         [K ·ₕₜₚ L]
+      --     │       ~      │     
+      -- [H ·ₕₜₚ K]        [H]    
+      --     │              │     
+      --     f              f     
+      ·ₕₜₚ-assoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ K ·ₕₜₚ L ~ H ·ₕₜₚ (K ·ₕₜₚ L)
+      ·ₕₜₚ-assoc H K L x = assoc (H x) (K x) (L x)
 
-      htpy-runit : (H : f ~ g) → H ·ₕₜₚ (htpy-refl g) ~ H
-      htpy-runit H x = ·-runit (H x)
+      ·ₕₜₚ-unassoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ (K ·ₕₜₚ L) ~ H ·ₕₜₚ K ·ₕₜₚ L
+      ·ₕₜₚ-unassoc H K L = (·ₕₜₚ-assoc H K L) ⁻¹ₕₜₚ
 
-      htpy-linv : (H : f ~ g) → (H ⁻¹ₕₜₚ ·ₕₜₚ H) ~ htpy-refl g
-      htpy-linv H x = ·-linv (H x)
+      --       │            │  
+      --      [H]          [H] 
+      --       │        ~   │  
+      -- [htpy-refl f]      │  
+      --       │            │  
+      --       f            f  
+      ·ₕₜₚ-lunit : (H : f ~ g) → (htpy-refl f) ·ₕₜₚ H ~ H
+      ·ₕₜₚ-lunit H x = ·-lunit (H x)
 
-      htpy-rinv : (H : f ~ g) → (H ·ₕₜₚ H ⁻¹ₕₜₚ) ~ htpy-refl f
-      htpy-rinv H x = ·-rinv (H x)
+      --       g             g  
+      --       │             │  
+      -- [htpy-refl g]       │  
+      --       │        ~    │  
+      --      [H]           [H] 
+      --       │             │  
+      --       f             f  
+      ·ₕₜₚ-runit : (H : f ~ g) → H ·ₕₜₚ (htpy-refl g) ~ H
+      ·ₕₜₚ-runit H x = ·-runit (H x)
+
+      --       g        g 
+      --       │        │ 
+      --      [H]       │ 
+      --       │     ~  │ 
+      --   [H ⁻¹ₕₜₚ]    │ 
+      --       │        │ 
+      --       f        f 
+      ·ₕₜₚ-linv : (H : f ~ g) → (H ⁻¹ₕₜₚ ·ₕₜₚ H) ~ htpy-refl g
+      ·ₕₜₚ-linv H x = ·-linv (H x)
+
+      --       g        g 
+      --       │        │ 
+      --   [H ⁻¹ₕₜₚ]    │ 
+      --       │     ~  │ 
+      --      [H]       │ 
+      --       │        │ 
+      --       f        f 
+      ·ₕₜₚ-rinv : (H : f ~ g) → (H ·ₕₜₚ H ⁻¹ₕₜₚ) ~ htpy-refl f
+      ·ₕₜₚ-rinv H x = ·-rinv (H x)
+
+      -- 10.4.3
+      nat-htpy : {A B : Set} → {f g : A → B} → (H : f ~ g) → {x y : A} → (p : x ≡ y) → (ap f p · H y ≡ H x · ap g p)
+      nat-htpy {A} {B} {f} {g} H {x} {y} refl =
+        begin
+          ap f refl · H x        ≡⟨⟩
+          refl · H x             ≡⟨⟩
+          H x                    ≡⟨ inverse (·-runit (H x)) ⟩
+          H x · refl             ≡⟨⟩
+          H x · ap g refl        ∎
 
     -- 9.1.7
     module _ where
+      open HomotopyGroupoidSymbolic
+      open ≡-Reasoning
+      open Reasoning
+
       private variable
         A B C : Set
 
-      rwhisker : (h : B → C) → {f g : A → B} → (H : f ~ g) → h ∘ f ~ h ∘ g
-      rwhisker h H x = ap h (H x)
+      --  h    g 
+      --  │    │ 
+      --  │   [G]
+      --  │    │ 
+      --  h    f 
+      rwhisker : (h : B → C) → {f g : A → B} → (G : f ~ g) → h ∘ f ~ h ∘ g
+      rwhisker h G x = ap h (G x)
 
+      --  ┊   │       │  
+      --  ┊  [G]  ~  [G] 
+      --  ┊   │       │  
+      --  ┊   │       │  
+      --      f       f  
+      rwhisker-id : {f g : A → B} → (G : f ~ g) → rwhisker id G ~ G
+      rwhisker-id G x =
+        begin
+          rwhisker id G x         ≡⟨⟩
+          ap id (G x)             ≡⟨ ap-id (G x) ⟩
+          G x                     ∎
+
+      --    │   │      │   │   │  
+      --    │  [G]  ~  │   │  [G] 
+      --    │   │      │   │   │  
+      --    │   │      │   │   │  
+      --   f∘g  h      f   g   h  
+      rwhisker-comp : {A B C D : Set} → (f : C → D) → (g : B → C) → {h k : A → B} → (G : h ~ k) →
+                      rwhisker (f ∘ g) G ~ rwhisker f (rwhisker g G)
+      rwhisker-comp {A} {B} {C} {D} f g {h} {k} G x =
+        begin
+          rwhisker (f ∘ g) G x           ≡⟨⟩
+          ap (f ∘ g) (G x)               ≡⟨ ap-comp f g (G x) ⟩
+          ap f (ap g (G x))              ≡⟨⟩
+          rwhisker f (rwhisker g G) x    ∎
+
+      -- If p : G1 ~ G2, then:
+      --  h   g       h   g   
+      --  │   │       │   │   
+      --  │  [G1]  ~  │  [G2] 
+      --  │   │       │   │   
+      --  h   f       h   f   
+      rwhisker-rhtpe : {A B C : Set} → (h : B → C) → {f g : A → B} → {G1 G2 : f ~ g} → (p : G1 ~ G2) → rwhisker h G1 ~ rwhisker h G2
+      rwhisker-rhtpe {A} {B} {C} h {f} {g} {G1} {G2} p x =
+        begin
+          rwhisker h G1 x         ≡⟨⟩
+          ap h (G1 x)             ≡⟨ ap (λ t → ap h t) (p x) ⟩
+          ap h (G2 x)             ≡⟨⟩
+          rwhisker h G2 x         ∎
+
+      --  h    f 
+      --  │    │ 
+      -- [H]   │ 
+      --  │    │ 
+      --  g    f 
       lwhisker : {g h : B → C} → (H : g ~ h) → (f : A → B) → g ∘ f ~ h ∘ f
       lwhisker H f x = H (f x)
+    
+      --  │   ┊      │  
+      -- [G]  ┊  ~  [G] 
+      --  │   ┊      │  
+      --  │   ┊      │  
+      --  f          f  
+      lwhisker-id : {f g : A → B} → (G : f ~ g) → lwhisker G id ~ G
+      lwhisker-id G x =
+        begin
+          lwhisker G id x         ≡⟨⟩
+          id (G x)                ≡⟨⟩
+          G x                     ∎
+
+      --   │   │       │   │   │  
+      --  [G]  │   ~  [G]  │   │  
+      --   │   │       │   │   │  
+      --   │   │       │   │   │  
+      --   h  f∘g      h   f   g  
+      lwhisker-comp : {A B C D : Set} → {h k : C → D} → (G : h ~ k) → (f : B → C) → (g : A → B) → 
+                      lwhisker G (f ∘ g) ~ lwhisker (lwhisker G f) g
+      lwhisker-comp {A} {B} {C} {D} {h} {k} G f g x = refl
+
+      --   │   │         │      │ 
+      --  [H]  │         │      │ 
+      --   │   │  =  [G ·ₕₜₚ H] │ 
+      --  [G]  │         │      │ 
+      --   │   │         │      │ 
+      --   f   k         f      k 
+      lwhisker-concat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) → (k : A → B) →
+                      lwhisker (G ·ₕₜₚ H) k ~ (lwhisker G k) ·ₕₜₚ (lwhisker H k)
+      lwhisker-concat {A} {B} {C} {f} {g} {h} G H k x = refl
+
+      -- If p : G1 ~ G2, then:
+      --  g    h      g    h 
+      --  │    │      │    │ 
+      -- [G1]  │  ~  [G2]  │ 
+      --  │    │      │    │ 
+      --  f    h      f    h 
+      lwhisker-lhtpe : {A B C : Set} → {f g : B → C} → {G1 G2 : f ~ g} → (p : G1 ~ G2) → (h : A → B) → lwhisker G1 h ~ lwhisker G2 h
+      lwhisker-lhtpe {A} {B} {C} {f} {g} {G1} {G2} p h x =
+        begin
+          lwhisker G1 h x         ≡⟨⟩
+          G1 (h x)                ≡⟨ p (h x) ⟩
+          G2 (h x)                ≡⟨⟩
+          lwhisker G2 h x         ∎
+
+      -- horizontal composition
+
+      --  k    g  
+      --  │    │  
+      --  │   [G] 
+      -- [K]   │  
+      --  │    │  
+      --  h    f  
+      comp-horizontal-lr : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
+      comp-horizontal-lr {A} {B} {C} {h} {k} K {f} {g} G = (lwhisker K f) ·ₕₜₚ (rwhisker k G)
+
+      --  k    g  
+      --  │    │  
+      -- [K]   │  
+      --  │   [G] 
+      --  │    │  
+      --  h    f  
+      comp-horizontal-rl : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
+      comp-horizontal-rl {A} {B} {C} {h} {k} K {f} {g} G = (rwhisker h G) ·ₕₜₚ (lwhisker K g)
+
+      --  k    g  
+      --  │    │  
+      --  │   [G] 
+      -- [K]   │  
+      --  │    │  
+      --  h    f  
+      comp-horizontal : {h k : B → C} → (h ~ k) → {f g : A → B} → (f ~ g) → (h ∘ f) ~ (k ∘ g)
+      comp-horizontal = comp-horizontal-lr
+
+      --  k    g       k    g  
+      --  │    │       │    │  
+      --  │   [G]  ~  [K]   │  
+      -- [K]   │       │   [G] 
+      --  │    │       │    │  
+      --  h    f       h    f  
+      comp-horizontal-lr-rl : {A B C : Set} →
+                              {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → 
+                              comp-horizontal-lr K G ~ comp-horizontal-rl K G
+      comp-horizontal-lr-rl {A} {B} {C} {h} {k} K {f} {g} G x =
+        begin
+          comp-horizontal-lr K G x                 ≡⟨⟩
+          ((lwhisker K f) ·ₕₜₚ (rwhisker k G)) x   ≡⟨⟩
+          (lwhisker K f x) · (rwhisker k G x)      ≡⟨⟩
+          K (f x) · ap k (G x)                     ≡⟨ inverse (nat-htpy K (G x)) ⟩
+          ap h (G x) · K (g x)                     ≡⟨⟩
+          ((rwhisker h G) ·ₕₜₚ (lwhisker K g)) x   ≡⟨⟩
+          comp-horizontal-rl K G x                 ∎
+
+      --  h    f       h        f        
+      --  │    │       │        │        
+      --  │    │   ~   │  [htpy-refl f]  
+      -- [H]   │      [H]       │        
+      --  │    │       │        │        
+      --  g    f       g        f        
+      lwhisker-to-comp-horizontal : {A B C : Set} → {g h : B → C} → (H : g ~ h) → (f : A → B) →
+                                    lwhisker H f ~ comp-horizontal H (htpy-refl f)
+      lwhisker-to-comp-horizontal {A} {B} {C} {g} {h} H f =
+        begin-htpy
+          lwhisker H f                                         ~⟨ (·ₕₜₚ-runit (lwhisker H f)) ⁻¹ₕₜₚ ⟩
+          lwhisker H f ·ₕₜₚ htpy-refl (h ∘ f)                  ~⟨⟩
+          lwhisker H f ·ₕₜₚ rwhisker h (htpy-refl f)           ~⟨⟩
+          comp-horizontal H (htpy-refl f)                      ∎-htpy
+
+      --  h    g           h        g  
+      --  │    │           │        │  
+      --  │   [G]  ~       │       [G] 
+      --  │    │     [htpy-refl h]  │  
+      --  │    │           │        │  
+      --  h    f           h        f  
+      rwhisker-to-comp-horizontal : {A B C : Set} → (h : B → C) → {f g : A → B} → (G : f ~ g) →
+                                    rwhisker h G ~ comp-horizontal (htpy-refl h) G
+      rwhisker-to-comp-horizontal {A} {B} {C} h {f} {g} G =
+        begin-htpy
+          rwhisker h G                                       ~⟨ (·ₕₜₚ-lunit (rwhisker h G)) ⁻¹ₕₜₚ ⟩
+          (htpy-refl (h ∘ f)) ·ₕₜₚ (rwhisker h G)            ~⟨⟩
+          (lwhisker (htpy-refl h) f) ·ₕₜₚ (rwhisker h G)     ~⟨⟩
+          comp-horizontal (htpy-refl h) G                    ∎-htpy
+
+      --       ┊         │       │  
+      --       ┊        [G]  ~  [G] 
+      -- [htpy-refl id]  │       │  
+      --       ┊         │       │  
+      --                 f       f  
+      comp-horizontal-lunit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
+                              comp-horizontal (htpy-refl id) G ~ G
+      comp-horizontal-lunit {A} {B} {f} {g} G =
+        begin-htpy
+          comp-horizontal (htpy-refl id) G                     ~⟨⟩
+          (lwhisker (htpy-refl id) f) ·ₕₜₚ (rwhisker id G)     ~⟨⟩
+          htpy-refl (id ∘ f) ·ₕₜₚ (rwhisker id G)              ~⟨ ·ₕₜₚ-lunit (rwhisker id G) ⟩
+          rwhisker id G                                        ~⟨ rwhisker-id G ⟩
+          G                                                    ∎-htpy
+
+      --  │        ┊             │  
+      --  │  [htpy-refl id]      │  
+      -- [G]       ┊         ~  [G] 
+      --  │        ┊             │  
+      --  f                      f  
+      comp-horizontal-runit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
+                              comp-horizontal G (htpy-refl id) ~ G
+      comp-horizontal-runit {A} {B} {f} {g} G =
+        begin-htpy
+          comp-horizontal G (htpy-refl id)                     ~⟨⟩
+          (lwhisker G id) ·ₕₜₚ (rwhisker g (htpy-refl id))     ~⟨⟩
+          (lwhisker G id) ·ₕₜₚ (htpy-refl (g ∘ id))            ~⟨ ·ₕₜₚ-runit (lwhisker G id) ⟩
+          lwhisker G id                                        ~⟨ lwhisker-id G ⟩
+          G                                                    ∎-htpy
+
+      --      │       │      │    │  
+      --      │      [K]     │   [K] 
+      -- [G ·ₕₜₚ H]   │  =  [H]   │  
+      --      │       │      │    │  
+      --      │       │     [G]   │  
+      --      │       │      │    │  
+      --      f       k      f    k  
+      comp-horizontal-lconcat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) →
+                                {k i : A → B} → (K : k ~ i) →
+                                comp-horizontal (G ·ₕₜₚ H) K ~ (lwhisker G k) ·ₕₜₚ (comp-horizontal H K)
+      comp-horizontal-lconcat {A} {B} {C} {f} {g} {h} G H {k} {i} K =
+        begin-htpy
+          comp-horizontal (G ·ₕₜₚ H) K                                ~⟨⟩
+          (lwhisker (G ·ₕₜₚ H) k) ·ₕₜₚ (rwhisker h K)                 ~⟨ ·ₕₜₚ-lhtpe (lwhisker-concat G H k) _ ⟩
+          (lwhisker G k) ·ₕₜₚ  (lwhisker H k) ·ₕₜₚ (rwhisker h K)     ~⟨ ·ₕₜₚ-assoc (lwhisker G k) _ _ ⟩
+          (lwhisker G k) ·ₕₜₚ ((lwhisker H k) ·ₕₜₚ (rwhisker h K))    ~⟨⟩
+          (lwhisker G k) ·ₕₜₚ (comp-horizontal H K)                   ∎-htpy
+
+      -- If p : K1 ~ K2, then:
+      --  k    g       k    g  
+      --  │    │       │    │  
+      --  │   [G]  ~   │   [G] 
+      -- [K1]  │      [K2]  │  
+      --  │    │       │    │  
+      --  h    f       h    f  
+      comp-horizontal-lhtpe : {A B C : Set} → {h k : B → C} → {K1 K2 : h ~ k} →
+                              (p : K1 ~ K2) → {f g : A → B} → (G : f ~ g) →
+                              comp-horizontal K1 G ~ comp-horizontal K2 G
+      comp-horizontal-lhtpe {A} {B} {C} {h} {k} {K1} {K2} p {f} {g} G =
+        begin-htpy
+          comp-horizontal K1 G                                 ~⟨⟩
+          (lwhisker K1 f) ·ₕₜₚ (rwhisker k G)                  ~⟨ ·ₕₜₚ-lhtpe (lwhisker-lhtpe p _) _ ⟩
+          (lwhisker K2 f) ·ₕₜₚ (rwhisker k G)                  ~⟨⟩
+          comp-horizontal K2 G                                 ∎-htpy
+
+      -- If p : G1 ~ G2, then:
+      --  k    g       k    g  
+      --  │    │       │    │  
+      --  │  [G1]  ~   │  [G2] 
+      -- [K]   │      [K]   │  
+      --  │    │       │    │  
+      --  h    f       h    f  
+      comp-horizontal-rhtpe : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} →
+                              {G1 G2 : f ~ g} → (p : G1 ~ G2) → comp-horizontal K G1 ~ comp-horizontal K G2
+      comp-horizontal-rhtpe {A} {B} {C} {h} {k} K {f} {g} {G1} {G2} p =
+        begin-htpy
+          comp-horizontal K G1                                 ~⟨⟩
+          (lwhisker K f) ·ₕₜₚ (rwhisker k G1)                  ~⟨ ·ₕₜₚ-rhtpe _ (rwhisker-rhtpe _ p) ⟩
+          (lwhisker K f) ·ₕₜₚ (rwhisker k G2)                  ~⟨⟩
+          comp-horizontal K G2                                 ∎-htpy
+
   open Homotopy.Symbolic
-
-  module Homotopy-Reasoning where
-    open Homotopy.Symbolic public
-    open Homotopy.HomotopyGroupoidSymbolic public
-    open Homotopy public
-
-    infix  1 begin-htpy_
-    infixr 2 step-~-∣ step-~-⟩
-    infix  3 _∎-htpy
-
-    begin-htpy_ : {A : Set} → {B : (x : A) → Set} → {f g : (x : A) → B x} → f ~ g → f ~ g
-    begin-htpy f~g = f~g
-
-    step-~-∣ : {A : Set} → {B : (x : A) → Set} → (f : (x : A) → B x) → {g : (x : A) → B x} → f ~ g → f ~ g
-    step-~-∣ f f~g = f~g
-
-    step-~-⟩ : {A : Set} → {B : (x : A) → Set} → (f : (x : A) → B x) → {g h : (x : A) → B x} → f ~ g → g ~ h → f ~ h
-    step-~-⟩ f f~g g~h = f~g ·ₕₜₚ g~h
-
-    syntax step-~-∣ f f~g      =  f ~⟨⟩ f~g
-    syntax step-~-⟩ f f~g g~h  =  f ~⟨ f~g ⟩ g~h
-
-    _∎-htpy : {A : Set} → {B : (x : A) → Set} → (f : (x : A) → B x) → f ~ f
-    x ∎-htpy  =  htpy-refl x
 
   module BiInvertibleMaps where
     -- 9.2.1
@@ -531,7 +923,7 @@ module _ where
       open ≡-Reasoning
       open Homotopy
       open Homotopy.Symbolic
-      open Homotopy-Reasoning
+      open Homotopy.Reasoning
       
       is-equiv-preserved-by-homotopy : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f → Is-equiv g
       is-equiv-preserved-by-homotopy {A} {B} {f} {g} FG ((s , S), (r , R)) =
@@ -562,13 +954,10 @@ module _ where
       open ≡-Reasoning
       open Homotopy
       open Homotopy.Symbolic
-      open Homotopy-Reasoning
+      open Homotopy.Reasoning
 
-      variable
+      private variable
         A B X : Set
         h : A → B
         f : A → X
         g : B → X
-
-            
-
