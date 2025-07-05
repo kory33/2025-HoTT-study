@@ -350,8 +350,8 @@ module _ where
       -- [K]   │  
       --  │    │  
       --  h    f  
-      comp-horizontal-lr : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
-      comp-horizontal-lr {A} {B} {C} {h} {k} K {f} {g} G = (lwhisker K f) ·ₕₜₚ (rwhisker k G)
+      hcomp-lr : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
+      hcomp-lr {A} {B} {C} {h} {k} K {f} {g} G = (lwhisker K f) ·ₕₜₚ (rwhisker k G)
 
       --  k    g  
       --  │    │  
@@ -359,8 +359,8 @@ module _ where
       --  │   [G] 
       --  │    │  
       --  h    f  
-      comp-horizontal-rl : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
-      comp-horizontal-rl {A} {B} {C} {h} {k} K {f} {g} G = (rwhisker h G) ·ₕₜₚ (lwhisker K g)
+      hcomp-rl : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
+      hcomp-rl {A} {B} {C} {h} {k} K {f} {g} G = (rwhisker h G) ·ₕₜₚ (lwhisker K g)
 
       --  k    g  
       --  │    │  
@@ -368,8 +368,8 @@ module _ where
       -- [K]   │  
       --  │    │  
       --  h    f  
-      comp-horizontal : {h k : B → C} → (h ~ k) → {f g : A → B} → (f ~ g) → (h ∘ f) ~ (k ∘ g)
-      comp-horizontal = comp-horizontal-lr
+      hcomp : {h k : B → C} → (h ~ k) → {f g : A → B} → (f ~ g) → (h ∘ f) ~ (k ∘ g)
+      hcomp = hcomp-lr
 
       --  k    g       k    g  
       --  │    │       │    │  
@@ -377,18 +377,18 @@ module _ where
       -- [K]   │       │   [G] 
       --  │    │       │    │  
       --  h    f       h    f  
-      comp-horizontal-lr-rl : {A B C : Set} →
+      hcomp-lr-rl : {A B C : Set} →
                               {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → 
-                              comp-horizontal-lr K G ~ comp-horizontal-rl K G
-      comp-horizontal-lr-rl {A} {B} {C} {h} {k} K {f} {g} G x =
+                              hcomp-lr K G ~ hcomp-rl K G
+      hcomp-lr-rl {A} {B} {C} {h} {k} K {f} {g} G x =
         begin
-          comp-horizontal-lr K G x                 ≡⟨⟩
+          hcomp-lr K G x                 ≡⟨⟩
           ((lwhisker K f) ·ₕₜₚ (rwhisker k G)) x   ≡⟨⟩
           (lwhisker K f x) · (rwhisker k G x)      ≡⟨⟩
           K (f x) · ap k (G x)                     ≡⟨ inverse (nat-htpy K (G x)) ⟩
           ap h (G x) · K (g x)                     ≡⟨⟩
           ((rwhisker h G) ·ₕₜₚ (lwhisker K g)) x   ≡⟨⟩
-          comp-horizontal-rl K G x                 ∎
+          hcomp-rl K G x                 ∎
 
       --  h    f       h        f        
       --  │    │       │        │        
@@ -396,14 +396,14 @@ module _ where
       -- [H]   │      [H]       │        
       --  │    │       │        │        
       --  g    f       g        f        
-      lwhisker-to-comp-horizontal : {A B C : Set} → {g h : B → C} → (H : g ~ h) → (f : A → B) →
-                                    lwhisker H f ~ comp-horizontal H (htpy-refl f)
-      lwhisker-to-comp-horizontal {A} {B} {C} {g} {h} H f =
+      lwhisker-to-hcomp : {A B C : Set} → {g h : B → C} → (H : g ~ h) → (f : A → B) →
+                                    lwhisker H f ~ hcomp H (htpy-refl f)
+      lwhisker-to-hcomp {A} {B} {C} {g} {h} H f =
         begin-htpy
           lwhisker H f                                         ~⟨ (·ₕₜₚ-runit (lwhisker H f)) ⁻¹ₕₜₚ ⟩
           lwhisker H f ·ₕₜₚ htpy-refl (h ∘ f)                  ~⟨⟩
           lwhisker H f ·ₕₜₚ rwhisker h (htpy-refl f)           ~⟨⟩
-          comp-horizontal H (htpy-refl f)                      ∎-htpy
+          hcomp H (htpy-refl f)                      ∎-htpy
 
       --  h    g           h        g  
       --  │    │           │        │  
@@ -411,25 +411,25 @@ module _ where
       --  │    │     [htpy-refl h]  │  
       --  │    │           │        │  
       --  h    f           h        f  
-      rwhisker-to-comp-horizontal : {A B C : Set} → (h : B → C) → {f g : A → B} → (G : f ~ g) →
-                                    rwhisker h G ~ comp-horizontal (htpy-refl h) G
-      rwhisker-to-comp-horizontal {A} {B} {C} h {f} {g} G =
+      rwhisker-to-hcomp : {A B C : Set} → (h : B → C) → {f g : A → B} → (G : f ~ g) →
+                                    rwhisker h G ~ hcomp (htpy-refl h) G
+      rwhisker-to-hcomp {A} {B} {C} h {f} {g} G =
         begin-htpy
           rwhisker h G                                       ~⟨ (·ₕₜₚ-lunit (rwhisker h G)) ⁻¹ₕₜₚ ⟩
           (htpy-refl (h ∘ f)) ·ₕₜₚ (rwhisker h G)            ~⟨⟩
           (lwhisker (htpy-refl h) f) ·ₕₜₚ (rwhisker h G)     ~⟨⟩
-          comp-horizontal (htpy-refl h) G                    ∎-htpy
+          hcomp (htpy-refl h) G                    ∎-htpy
 
       --       ┊         │       │  
       --       ┊        [G]  ~  [G] 
       -- [htpy-refl id]  │       │  
       --       ┊         │       │  
       --                 f       f  
-      comp-horizontal-lunit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
-                              comp-horizontal (htpy-refl id) G ~ G
-      comp-horizontal-lunit {A} {B} {f} {g} G =
+      hcomp-lunit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
+                              hcomp (htpy-refl id) G ~ G
+      hcomp-lunit {A} {B} {f} {g} G =
         begin-htpy
-          comp-horizontal (htpy-refl id) G                     ~⟨⟩
+          hcomp (htpy-refl id) G                     ~⟨⟩
           (lwhisker (htpy-refl id) f) ·ₕₜₚ (rwhisker id G)     ~⟨⟩
           htpy-refl (id ∘ f) ·ₕₜₚ (rwhisker id G)              ~⟨ ·ₕₜₚ-lunit (rwhisker id G) ⟩
           rwhisker id G                                        ~⟨ rwhisker-id G ⟩
@@ -440,11 +440,11 @@ module _ where
       -- [G]       ┊         ~  [G] 
       --  │        ┊             │  
       --  f                      f  
-      comp-horizontal-runit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
-                              comp-horizontal G (htpy-refl id) ~ G
-      comp-horizontal-runit {A} {B} {f} {g} G =
+      hcomp-runit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
+                              hcomp G (htpy-refl id) ~ G
+      hcomp-runit {A} {B} {f} {g} G =
         begin-htpy
-          comp-horizontal G (htpy-refl id)                     ~⟨⟩
+          hcomp G (htpy-refl id)                     ~⟨⟩
           (lwhisker G id) ·ₕₜₚ (rwhisker g (htpy-refl id))     ~⟨⟩
           (lwhisker G id) ·ₕₜₚ (htpy-refl (g ∘ id))            ~⟨ ·ₕₜₚ-runit (lwhisker G id) ⟩
           lwhisker G id                                        ~⟨ lwhisker-id G ⟩
@@ -457,16 +457,16 @@ module _ where
       --      │       │     [G]   │  
       --      │       │      │    │  
       --      f       k      f    k  
-      comp-horizontal-lconcat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) →
+      hcomp-lconcat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) →
                                 {k i : A → B} → (K : k ~ i) →
-                                comp-horizontal (G ·ₕₜₚ H) K ~ (lwhisker G k) ·ₕₜₚ (comp-horizontal H K)
-      comp-horizontal-lconcat {A} {B} {C} {f} {g} {h} G H {k} {i} K =
+                                hcomp (G ·ₕₜₚ H) K ~ (lwhisker G k) ·ₕₜₚ (hcomp H K)
+      hcomp-lconcat {A} {B} {C} {f} {g} {h} G H {k} {i} K =
         begin-htpy
-          comp-horizontal (G ·ₕₜₚ H) K                                ~⟨⟩
+          hcomp (G ·ₕₜₚ H) K                                ~⟨⟩
           (lwhisker (G ·ₕₜₚ H) k) ·ₕₜₚ (rwhisker h K)                 ~⟨ ·ₕₜₚ-lhtpe (lwhisker-concat G H k) _ ⟩
           (lwhisker G k) ·ₕₜₚ  (lwhisker H k) ·ₕₜₚ (rwhisker h K)     ~⟨ ·ₕₜₚ-assoc (lwhisker G k) _ _ ⟩
           (lwhisker G k) ·ₕₜₚ ((lwhisker H k) ·ₕₜₚ (rwhisker h K))    ~⟨⟩
-          (lwhisker G k) ·ₕₜₚ (comp-horizontal H K)                   ∎-htpy
+          (lwhisker G k) ·ₕₜₚ (hcomp H K)                   ∎-htpy
 
       -- If p : K1 ~ K2, then:
       --  k    g       k    g  
@@ -475,15 +475,15 @@ module _ where
       -- [K1]  │      [K2]  │  
       --  │    │       │    │  
       --  h    f       h    f  
-      comp-horizontal-lhtpe : {A B C : Set} → {h k : B → C} → {K1 K2 : h ~ k} →
+      hcomp-lhtpe : {A B C : Set} → {h k : B → C} → {K1 K2 : h ~ k} →
                               (p : K1 ~ K2) → {f g : A → B} → (G : f ~ g) →
-                              comp-horizontal K1 G ~ comp-horizontal K2 G
-      comp-horizontal-lhtpe {A} {B} {C} {h} {k} {K1} {K2} p {f} {g} G =
+                              hcomp K1 G ~ hcomp K2 G
+      hcomp-lhtpe {A} {B} {C} {h} {k} {K1} {K2} p {f} {g} G =
         begin-htpy
-          comp-horizontal K1 G                                 ~⟨⟩
+          hcomp K1 G                                 ~⟨⟩
           (lwhisker K1 f) ·ₕₜₚ (rwhisker k G)                  ~⟨ ·ₕₜₚ-lhtpe (lwhisker-lhtpe p _) _ ⟩
           (lwhisker K2 f) ·ₕₜₚ (rwhisker k G)                  ~⟨⟩
-          comp-horizontal K2 G                                 ∎-htpy
+          hcomp K2 G                                 ∎-htpy
 
       -- If p : G1 ~ G2, then:
       --  k    g       k    g  
@@ -492,14 +492,14 @@ module _ where
       -- [K]   │      [K]   │  
       --  │    │       │    │  
       --  h    f       h    f  
-      comp-horizontal-rhtpe : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} →
-                              {G1 G2 : f ~ g} → (p : G1 ~ G2) → comp-horizontal K G1 ~ comp-horizontal K G2
-      comp-horizontal-rhtpe {A} {B} {C} {h} {k} K {f} {g} {G1} {G2} p =
+      hcomp-rhtpe : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} →
+                              {G1 G2 : f ~ g} → (p : G1 ~ G2) → hcomp K G1 ~ hcomp K G2
+      hcomp-rhtpe {A} {B} {C} {h} {k} K {f} {g} {G1} {G2} p =
         begin-htpy
-          comp-horizontal K G1                                 ~⟨⟩
+          hcomp K G1                                 ~⟨⟩
           (lwhisker K f) ·ₕₜₚ (rwhisker k G1)                  ~⟨ ·ₕₜₚ-rhtpe _ (rwhisker-rhtpe _ p) ⟩
           (lwhisker K f) ·ₕₜₚ (rwhisker k G2)                  ~⟨⟩
-          comp-horizontal K G2                                 ∎-htpy
+          hcomp K G2                                 ∎-htpy
 
   open Homotopy.Symbolic
 
