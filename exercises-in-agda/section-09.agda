@@ -87,6 +87,8 @@ module _ where
         -- [K]  then  [K ⁻¹ₕₜₚ] 
         --  │             │     
         --  f             g     
+        --
+        -- In diagrams we will usually write K⁻¹ for K ⁻¹ₕₜₚ.
         _⁻¹ₕₜₚ : {f g : (x : A) → B x} → f ~ g → g ~ f
         H ⁻¹ₕₜₚ = htpy-inverse _ _ H
         infix 54 _⁻¹ₕₜₚ
@@ -202,23 +204,23 @@ module _ where
       ·ₕₜₚ-runit : (H : f ~ g) → H ·ₕₜₚ (htpy-refl g) ~ H
       ·ₕₜₚ-runit H x = ·-runit (H x)
 
-      --       g        g 
-      --       │        │ 
-      --      [H]       │ 
-      --       │     ~  │ 
-      --   [H ⁻¹ₕₜₚ]    │ 
-      --       │        │ 
-      --       f        f 
+      --       g       g 
+      --       │       │ 
+      --      [H]      │ 
+      --       │    ~  │ 
+      --     [H⁻¹]     │ 
+      --       │       │ 
+      --       f       f 
       ·ₕₜₚ-linv : (H : f ~ g) → (H ⁻¹ₕₜₚ ·ₕₜₚ H) ~ htpy-refl g
       ·ₕₜₚ-linv H x = ·-linv (H x)
 
-      --       g        g 
-      --       │        │ 
-      --   [H ⁻¹ₕₜₚ]    │ 
-      --       │     ~  │ 
-      --      [H]       │ 
-      --       │        │ 
-      --       f        f 
+      --       g       g 
+      --       │       │ 
+      --     [H⁻¹]     │ 
+      --       │    ~  │ 
+      --      [H]      │ 
+      --       │       │ 
+      --       f       f 
       ·ₕₜₚ-rinv : (H : f ~ g) → (H ·ₕₜₚ H ⁻¹ₕₜₚ) ~ htpy-refl f
       ·ₕₜₚ-rinv H x = ·-rinv (H x)
 
