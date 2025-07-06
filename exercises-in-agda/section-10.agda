@@ -10,6 +10,9 @@ module _ where
   Is-contr : Set → Set
   Is-contr A = Σ A (λ c → (x : A) → c ≡ x)
 
+  two-points-eq-in-contr-type : {A : Set} → Is-contr A → (x y : A) → x ≡ y
+  two-points-eq-in-contr-type (a , C) x y = (C x)⁻¹ · (C y)
+
   -- 10.1.2
   contraction-to : {A : Set} → (c : A) → Set
   contraction-to c = const c ~ id
@@ -137,7 +140,7 @@ module _ where
           K' : G (f x) ≡ ap f (H x) · refl
           K' = begin
             G (f x)             ≡⟨ K x ⟩
-            ap f (H x)          ≡⟨ inverse (·-runit _) ⟩
+            ap f (H x)          ≡⟨← (·-runit _) ⟩
             ap f (H x) · refl   ∎
       C : (x : fib f y) → center ≡ x
       C x = identity-from-Eq-fib f (C' x)
@@ -145,11 +148,11 @@ module _ where
   -- 10.4.4
   comm-htpy : {A : Set} → (f : A → A) → (H : f ~ id) → (x : A) → (H (f x) ≡ ap f (H x))
   comm-htpy f H x = begin
-    H (f x)                           ≡⟨ inverse (·-runit (H (f x))) ⟩
-    H (f x) · refl                    ≡⟨ ap (λ p → H (f x) · p) (inverse (·-rinv (H x))) ⟩
+    H (f x)                           ≡⟨← (·-runit (H (f x))) ⟩
+    H (f x) · refl                    ≡⟨← ap (λ p → H (f x) · p) (·-rinv (H x)) ⟩
     H (f x) · (H x · (H x)⁻¹)         ≡⟨ unassoc (H (f x)) (H x) ((H x)⁻¹) ⟩
-    H (f x) · H x · (H x)⁻¹           ≡⟨ ap (λ p → H (f x) · p · (H x)⁻¹) (inverse (ap-id (H x))) ⟩
-    H (f x) · ap id (H x) · (H x)⁻¹   ≡⟨ ap (λ p → p · (H x)⁻¹) (inverse (nat-htpy H (H x))) ⟩
+    H (f x) · H x · (H x)⁻¹           ≡⟨← ap (λ p → H (f x) · p · (H x)⁻¹) (ap-id (H x)) ⟩
+    H (f x) · ap id (H x) · (H x)⁻¹   ≡⟨← ap (λ p → p · (H x)⁻¹) (nat-htpy H (H x)) ⟩
     ap f (H x) · H x · (H x)⁻¹        ≡⟨ assoc (ap f (H x)) (H x) ((H x)⁻¹) ⟩
     ap f (H x) · (H x · (H x)⁻¹)      ≡⟨ ap (λ p → ap f (H x) · p) (·-rinv (H x)) ⟩
     ap f (H x) · refl                 ≡⟨ ·-runit _ ⟩
@@ -356,3 +359,80 @@ module _ where
       id-is-contr-fn : Is-contr-fn id
       id-is-contr-fn = Is-equiv-then-is-contr id (Equivalence.id-is-equiv)
     in id-is-contr-fn a -- `Σ A (λ x → x ≡ a)` is judgementally equal to `fib id a`
+
+  -- exercise 10.1
+  module _ where
+    ap-const-refl : {A : Set} → (c : A) → {x y : A} → (p : x ≡ y) → ap (const c) p ≡ refl
+    ap-const-refl c {x} {_} refl = refl
+
+    Is-contr-then-based-loop-space-is-contr : {A : Set} → Is-contr A → (x : A) → Is-contr (x ≡ x)
+    Is-contr-then-based-loop-space-is-contr {A} (a , C) x =
+      let
+        H : const x ~ id
+        H = λ y → (C x)⁻¹ · (C y)
+      in (
+        refl-at x ,
+        λ p →
+          begin
+            refl-at x                                ≡⟨⟩
+            refl · refl                              ≡⟨← ap (λ q → q · refl) (ap-const-refl x p) ⟩
+            ap (const x) p · refl                    ≡⟨← ap (λ q → ap (const x) p · q) (·-linv (C x)) ⟩
+            ap (const x) p · ((C x)⁻¹ · C x)         ≡⟨ nat-htpy H p ⟩
+            (C x)⁻¹ · (C x) · (ap id p)              ≡⟨ ap (λ q → q · (ap id p)) (·-linv (C x)) ⟩
+            refl · (ap id p)                         ≡⟨ ·-lunit (ap id p) ⟩
+            ap id p                                  ≡⟨ ap-id p ⟩
+            p                                        ∎
+      )
+
+    Is-contr-then-identity-is-contr : {A : Set} → Is-contr A → (x y : A) → Is-contr (x ≡ y)
+    Is-contr-then-identity-is-contr {A} contr x y with two-points-eq-in-contr-type contr x y
+    ...                                              | refl = Is-contr-then-based-loop-space-is-contr contr x
+
+  -- exercise 10.2
+  retraction-preserves-contr : {A B : Set} → {f : A → B} → Retr f → Is-contr B → Is-contr A
+  retraction-preserves-contr {A} {B} {f} (g , G) (bc , bC) =
+    (g bc , λ a → begin
+      g bc       ≡⟨ ap g (bC (f a)) ⟩
+      g (f a)    ≡⟨ G a ⟩
+      a          ∎
+    )
+
+  -- exercise 10.3.a
+  const-unit-is-equiv-then-contr : {A : Set} → Is-equiv (λ (a : A) → const unit a) → Is-contr A
+  const-unit-is-equiv-then-contr {A} (_ , retr) = retraction-preserves-contr retr Unit-Is-contr
+
+  contr-then-const-unit-is-equiv : {A : Set} → Is-contr A → Is-equiv (λ (a : A) → const unit a)
+  contr-then-const-unit-is-equiv {A} (ac , C) =
+    has-inverse-equiv ((λ _ → ac) , (λ { unit → refl }) , C)
+
+  -- TODO: exercise 10.3.b
+
+  -- exercise 10.4
+  module _ where
+    open EmptyBasic
+
+    inhabited-sum-is-not-contr : {A B : Set} → A → B → ¬ Is-contr (A +₁ B)
+    inhabited-sum-is-not-contr _ b (left c , C) = Eq-Copr.left-neq-right (C (right b))
+    inhabited-sum-is-not-contr a _ (right c , C) = Eq-Copr.left-neq-right ((C (left a)) ⁻¹)
+
+    fin-is-not-contr-except-fin-one : {n : Nat} → (n ≢ succ zero) → ¬ (Is-contr (Fin n))
+    fin-is-not-contr-except-fin-one {zero}           _    ()
+    fin-is-not-contr-except-fin-one {succ zero}     neq   _   = neq refl
+    fin-is-not-contr-except-fin-one {succ (succ n)}  _  contr = inhabited-sum-is-not-contr (right unit) unit contr
+
+  -- exercise 10.5
+  both-contr-then-product-is-contr : {A B : Set} → Is-contr A → Is-contr B → Is-contr (A × B)
+  both-contr-then-product-is-contr {A} {B} (ca , CA) (cb , CB) =
+    ((ca , cb) , λ (x , y) → begin
+      (ca , cb)           ≡⟨ ap2 (λ a b → (a , b)) (CA x) (CB y) ⟩
+      (x , y)             ∎
+    )
+  product-is-contr-then-both-contr : {A B : Set} → Is-contr (A × B) → Is-contr A × Is-contr B
+  product-is-contr-then-both-contr {A} {B} (cab , CAB) =
+    let
+      ca = fst cab
+      cb = snd cab
+    in (
+      (ca , λ a → ap fst (CAB (a , cb))),
+      (cb , λ b → ap snd (CAB (ca , b)))
+    )

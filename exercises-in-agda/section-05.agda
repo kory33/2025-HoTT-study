@@ -4,6 +4,9 @@ module _ where
   data _≡_ {A : Set} (a : A) : A → Set where
     refl : a ≡ a
 
+  refl-at : {A : Set} → (a : A) → a ≡ a
+  refl-at a = refl
+
   infix 5 _≡_
 
   ind-≡ : {A : Set} → {a : A} →
@@ -162,7 +165,7 @@ module _ where
     open ≡-Basic public
 
     infix  1 begin_
-    infixr 2 step-≡-∣ step-≡-⟩
+    infixr 2 step-≡-∣ step-≡-⟩ step-≡-⟩⁻¹
     infix  3 _∎
 
     begin_ : ∀ {x y : A} → x ≡ y → x ≡ y
@@ -174,8 +177,12 @@ module _ where
     step-≡-⟩ : ∀ (x : A) {y z : A} → y ≡ z → x ≡ y → x ≡ z
     step-≡-⟩ x y≡z x≡y = concat x≡y y≡z
 
+    step-≡-⟩⁻¹ : ∀ (x : A) {y z : A} → y ≡ z → y ≡ x → x ≡ z
+    step-≡-⟩⁻¹ x y≡z y≡x = concat (inverse y≡x) y≡z
+
     syntax step-≡-∣ x x≡y      =  x ≡⟨⟩ x≡y
     syntax step-≡-⟩ x y≡z x≡y  =  x ≡⟨ x≡y ⟩ y≡z
+    syntax step-≡-⟩⁻¹ x y≡z y≡x =  x ≡⟨← y≡x ⟩ y≡z
 
     _∎ : ∀ (x : A) → x ≡ x
     x ∎  =  refl
@@ -197,7 +204,7 @@ module _ where
         (refl · q) ⁻¹
       ≡⟨⟩
         q ⁻¹
-      ≡⟨ inverse (·-runit (q ⁻¹)) ⟩
+      ≡⟨← (·-runit (q ⁻¹)) ⟩
         q ⁻¹ · refl
       ≡⟨⟩
         q ⁻¹ · refl ⁻¹
@@ -213,11 +220,11 @@ module _ where
     con-inv p refl r pq≡r =
       begin
         p
-      ≡⟨ inverse (·-runit p) ⟩
+      ≡⟨← (·-runit p) ⟩
         p · refl
       ≡⟨ pq≡r ⟩
         r
-      ≡⟨ inverse (·-runit r) ⟩
+      ≡⟨← (·-runit r) ⟩
         r · refl
       ≡⟨⟩
         r · refl ⁻¹
@@ -431,7 +438,7 @@ module _ where
         m * zero
       ≡⟨⟩
         zero
-      ≡⟨ inverse (mul-lzero m) ⟩
+      ≡⟨← (mul-lzero m) ⟩
         zero * m
       ∎
     mul-comm m (succ n) =
@@ -443,7 +450,7 @@ module _ where
         m + (n * m)
       ≡⟨ add-comm m (n * m) ⟩
         (n * m) + m
-      ≡⟨ inverse (mul-succ-left n m) ⟩
+      ≡⟨← (mul-succ-left n m) ⟩
         (succ n) * m
       ∎
 
@@ -511,7 +518,7 @@ module _ where
         (m * n) + ((m * n) * k)
       ≡⟨ ap (λ e → (m * n) + e) (mul-assoc m n k) ⟩
         (m * n) + (m * (n * k))
-      ≡⟨ inverse (mul-ldistr m n (n * k)) ⟩
+      ≡⟨← (mul-ldistr m n (n * k)) ⟩
         m * (n + n * k)
       ≡⟨⟩
         m * (n * (succ k))
@@ -675,10 +682,10 @@ module _ where
             (x₊ -ℕ x₋) + (y₊ -ℕ y₋)
           ≡⟨⟩
             (x₊' +ℕ y₊') -ℕ (x₋' +ℕ y₋')
-          ≡⟨ inverse (Nat-minus-add-same (x₊' +ℕ y₊') (x₋' +ℕ y₋') kx) ⟩
+          ≡⟨← (Nat-minus-add-same (x₊' +ℕ y₊') (x₋' +ℕ y₋') kx) ⟩
             ((x₊' +ℕ y₊') +ℕ kx) -ℕ
             ((x₋' +ℕ y₋') +ℕ kx)
-          ≡⟨ inverse (Nat-minus-add-same ((x₊' +ℕ y₊') +ℕ kx) ((x₋' +ℕ y₋') +ℕ kx) ky) ⟩
+          ≡⟨← (Nat-minus-add-same ((x₊' +ℕ y₊') +ℕ kx) ((x₋' +ℕ y₋') +ℕ kx) ky) ⟩
             (((x₊' +ℕ y₊') +ℕ kx) +ℕ ky) -ℕ
             (((x₋' +ℕ y₋') +ℕ kx) +ℕ ky)
           ≡⟨ (
@@ -703,7 +710,7 @@ module _ where
           ) ⟩
             ((x₊' +ℕ kx) +ℕ (y₊' +ℕ ky)) -ℕ
             ((x₋' +ℕ kx) +ℕ (y₋' +ℕ ky))
-          ≡⟨ inverse (
+          ≡⟨← (
             ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4)) nx₊ ny₊ nx₋ ny₋
           ) ⟩
             (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
@@ -726,7 +733,7 @@ module _ where
             (x₊ +ℕ y₊) -ℕ ((succ x₋) +ℕ y₋)
           ≡⟨ ap (λ e → (x₊ +ℕ y₊) -ℕ e) (NatEquality.add-succ-left x₋ y₋) ⟩
             (x₊ +ℕ y₊) -ℕ (succ (x₋ +ℕ y₋))
-          ≡⟨ inverse (pred-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+          ≡⟨← (pred-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
             pred ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             pred (x + y)
@@ -748,7 +755,7 @@ module _ where
             (x₊ +ℕ y₊) -ℕ (x₋ +ℕ (succ y₋))
           ≡⟨⟩
             (x₊ +ℕ y₊) -ℕ (succ (x₋ +ℕ y₋))
-          ≡⟨ inverse (pred-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+          ≡⟨← (pred-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
             pred ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             pred (x + y)
@@ -770,7 +777,7 @@ module _ where
             ((succ x₊) +ℕ y₊) -ℕ (x₋ +ℕ y₋)
           ≡⟨ ap (λ e → e -ℕ (x₋ +ℕ y₋)) (NatEquality.add-succ-left x₊ y₊) ⟩
             (succ (x₊ +ℕ y₊)) -ℕ (x₋ +ℕ y₋)
-          ≡⟨ inverse (succ-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+          ≡⟨← (succ-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
             Int-succ ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             Int-succ (x + y)
@@ -792,7 +799,7 @@ module _ where
             (x₊ +ℕ (succ y₊)) -ℕ (x₋ +ℕ y₋)
           ≡⟨⟩
             (succ (x₊ +ℕ y₊)) -ℕ (x₋ +ℕ y₋)
-          ≡⟨ inverse (succ-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
+          ≡⟨← (succ-Nat-minus (x₊ +ℕ y₊) (x₋ +ℕ y₋)) ⟩
             Int-succ ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋))
           ≡⟨⟩
             Int-succ (x + y)
@@ -818,7 +825,7 @@ module _ where
           ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatEquality.add-assoc x₊ y₊ z₊) (NatEquality.add-assoc x₋ y₋ z₋) ⟩
             (x₊ +ℕ (y₊ +ℕ z₊)) -ℕ
             (x₋ +ℕ (y₋ +ℕ z₋))
-          ≡⟨ inverse (Nat-minus-add x₊ x₋ (y₊ +ℕ z₊) (y₋ +ℕ z₋)) ⟩
+          ≡⟨← (Nat-minus-add x₊ x₋ (y₊ +ℕ z₊) (y₋ +ℕ z₋)) ⟩
             (x₊ -ℕ x₋) + ((y₊ +ℕ z₊) -ℕ (y₋ +ℕ z₋))
           ≡⟨⟩
             (x₊ -ℕ x₋) + (y + z)
@@ -840,7 +847,7 @@ module _ where
             (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
           ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatEquality.add-comm x₊ y₊) (NatEquality.add-comm x₋ y₋) ⟩
             (y₊ +ℕ x₊) -ℕ (y₋ +ℕ x₋)
-          ≡⟨ inverse (Nat-minus-add y₊ y₋ x₊ x₋) ⟩
+          ≡⟨← (Nat-minus-add y₊ y₋ x₊ x₋) ⟩
             (y₊ -ℕ y₋) + (x₊ -ℕ x₋)
           ≡⟨ ap2 (λ e1 e2 → e1 + e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
             y + x
@@ -1073,7 +1080,7 @@ module _ where
           ≡⟨⟩
             ((x₊' *ℕ y₊') +ℕ (x₋' *ℕ y₋')) -ℕ
             ((x₊' *ℕ y₋') +ℕ (x₋' *ℕ y₊'))
-          ≡⟨ inverse (Nat-minus-add-same ((x₊' *ℕ y₊') +ℕ (x₋' *ℕ y₋')) ((x₊' *ℕ y₋') +ℕ (x₋' *ℕ y₊')) (x₊' *ℕ ky +ℕ kx *ℕ y₊' +ℕ kx *ℕ ky +ℕ x₋' *ℕ ky +ℕ kx *ℕ y₋' +ℕ kx *ℕ ky)) ⟩
+          ≡⟨← (Nat-minus-add-same ((x₊' *ℕ y₊') +ℕ (x₋' *ℕ y₋')) ((x₊' *ℕ y₋') +ℕ (x₋' *ℕ y₊')) (x₊' *ℕ ky +ℕ kx *ℕ y₊' +ℕ kx *ℕ ky +ℕ x₋' *ℕ ky +ℕ kx *ℕ y₋' +ℕ kx *ℕ ky)) ⟩
             ((x₊' *ℕ y₊') +ℕ (x₋' *ℕ y₋') +ℕ (x₊' *ℕ ky +ℕ kx *ℕ y₊' +ℕ kx *ℕ ky +ℕ x₋' *ℕ ky +ℕ kx *ℕ y₋' +ℕ kx *ℕ ky)) -ℕ
             ((x₊' *ℕ y₋') +ℕ (x₋' *ℕ y₊') +ℕ (x₊' *ℕ ky +ℕ kx *ℕ y₊' +ℕ kx *ℕ ky +ℕ x₋' *ℕ ky +ℕ kx *ℕ y₋' +ℕ kx *ℕ ky))
           ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2)
@@ -1082,10 +1089,10 @@ module _ where
           ⟩
             (((x₊' *ℕ y₊') +ℕ (x₊' *ℕ ky) +ℕ (kx *ℕ y₊') +ℕ (kx *ℕ ky)) +ℕ ((x₋' *ℕ y₋') +ℕ (x₋' *ℕ ky) +ℕ (kx *ℕ y₋') +ℕ (kx *ℕ ky))) -ℕ
             (((x₊' *ℕ y₋') +ℕ (x₊' *ℕ ky) +ℕ (kx *ℕ y₋') +ℕ (kx *ℕ ky)) +ℕ ((x₋' *ℕ y₊') +ℕ (x₋' *ℕ ky) +ℕ (kx *ℕ y₊') +ℕ (kx *ℕ ky)))
-          ≡⟨ inverse (ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4)) (expandCrossTerm x₊' kx y₊' ky) (expandCrossTerm x₋' kx y₋' ky) (expandCrossTerm x₊' kx y₋' ky) (expandCrossTerm x₋' kx y₊' ky)) ⟩
+          ≡⟨← (ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4)) (expandCrossTerm x₊' kx y₊' ky) (expandCrossTerm x₋' kx y₋' ky) (expandCrossTerm x₊' kx y₋' ky) (expandCrossTerm x₋' kx y₊' ky)) ⟩
             (((x₊' +ℕ kx) *ℕ (y₊' +ℕ ky)) +ℕ ((x₋' +ℕ kx) *ℕ (y₋' +ℕ ky))) -ℕ
             (((x₊' +ℕ kx) *ℕ (y₋' +ℕ ky)) +ℕ ((x₋' +ℕ kx) *ℕ (y₊' +ℕ ky)))
-          ≡⟨ inverse (ap8 (λ e1 e2 e3 e4 e5 e6 e7 e8 → ((e1 *ℕ e2) +ℕ (e3 *ℕ e4)) -ℕ ((e5 *ℕ e6) +ℕ (e7 *ℕ e8))) nx₊ ny₊ nx₋ ny₋ nx₊ ny₋ nx₋ ny₊) ⟩
+          ≡⟨← (ap8 (λ e1 e2 e3 e4 e5 e6 e7 e8 → ((e1 *ℕ e2) +ℕ (e3 *ℕ e4)) -ℕ ((e5 *ℕ e6) +ℕ (e7 *ℕ e8))) nx₊ ny₊ nx₋ ny₋ nx₊ ny₋ nx₋ ny₊) ⟩
             ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
           ∎
 
@@ -1099,9 +1106,9 @@ module _ where
             - (x₊ -ℕ x₋)
           ≡⟨⟩
             (x₋' -ℕ x₊')
-          ≡⟨ inverse (Nat-minus-add-same x₋' x₊' kx) ⟩
+          ≡⟨← (Nat-minus-add-same x₋' x₊' kx) ⟩
             (x₋' +ℕ kx) -ℕ (x₊' +ℕ kx)
-          ≡⟨ inverse (ap2 (λ e1 e2 → e1 -ℕ e2) nx₋ nx₊) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → e1 -ℕ e2) nx₋ nx₊) ⟩
             x₋ -ℕ x₊
           ∎
 
@@ -1126,7 +1133,7 @@ module _ where
         in
           begin
             pred x * y
-          ≡⟨ inverse (ap2 (λ e1 e2 → pred e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → pred e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
             pred (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
           ≡⟨ ap (λ e → e * (y₊ -ℕ y₋)) (pred-Nat-minus x₊ x₋) ⟩
             ((x₊ -ℕ (succ x₋)) * (y₊ -ℕ y₋))
@@ -1137,9 +1144,9 @@ module _ where
             ((x₊ *ℕ y₊) +ℕ ((x₋ *ℕ y₋) +ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ ((x₋ *ℕ y₊) +ℕ y₊))
           ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatCommSemiring.add-unassoc (x₊ *ℕ y₊) (x₋ *ℕ y₋) y₋) (NatCommSemiring.add-unassoc (x₊ *ℕ y₋) (x₋ *ℕ y₊) y₊) ⟩
             ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋) +ℕ y₋) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊) +ℕ y₊)
-          ≡⟨ inverse (Nat-minus-minus ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊)) y₊ y₋) ⟩
+          ≡⟨← (Nat-minus-minus ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊)) y₊ y₋) ⟩
             (((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))) - (y₊ -ℕ y₋)
-          ≡⟨ inverse (ap (λ e → e - (y₊ -ℕ y₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+          ≡⟨← (ap (λ e → e - (y₊ -ℕ y₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
             (x₊ -ℕ x₋) * (y₊ -ℕ y₋) - (y₊ -ℕ y₋)
           ≡⟨ ap2 (λ e1 e2 → e1 * e2 - e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) ⟩
             x * y - y
@@ -1153,7 +1160,7 @@ module _ where
         in
           begin
             x * pred y
-          ≡⟨ inverse (ap2 (λ e1 e2 → e1 * pred e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → e1 * pred e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
             (x₊ -ℕ x₋) * pred (y₊ -ℕ y₋)
           ≡⟨ ap (λ e → (x₊ -ℕ x₋) * e) (pred-Nat-minus y₊ y₋) ⟩
             ((x₊ -ℕ x₋) * (y₊ -ℕ (succ y₋)))
@@ -1167,9 +1174,9 @@ module _ where
               (ap (λ e → e +ℕ (x₋ *ℕ y₊)) (NatCommSemiring.add-comm x₊ (x₊ *ℕ y₋)) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) x₊ (x₋ *ℕ y₊))
           ⟩
             (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ x₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ x₊)
-          ≡⟨ inverse (Nat-minus-minus (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
+          ≡⟨← (Nat-minus-minus (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
             ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) - (x₊ -ℕ x₋)
-          ≡⟨ inverse (ap (λ e → e - (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+          ≡⟨← (ap (λ e → e - (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
             (x₊ -ℕ x₋) * (y₊ -ℕ y₋) - (x₊ -ℕ x₋)
           ≡⟨ ap2 (λ e1 e2 → e1 * e2 - e1) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) ⟩
             x * y - x
@@ -1183,7 +1190,7 @@ module _ where
         in
           begin
             Int-succ x * y
-          ≡⟨ inverse (ap2 (λ e1 e2 → Int-succ e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → Int-succ e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
             Int-succ (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
           ≡⟨ ap (λ e → e * (y₊ -ℕ y₋)) (succ-Nat-minus x₊ x₋) ⟩
             (succ x₊ -ℕ x₋) * (y₊ -ℕ y₋)
@@ -1193,9 +1200,9 @@ module _ where
             (x₊ *ℕ y₊ +ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ y₋ +ℕ x₋ *ℕ y₊)
           ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2) (NatCommSemiring.add-add-rcomm (x₊ *ℕ y₊) y₊ (x₋ *ℕ y₋)) (NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) y₋ (x₋ *ℕ y₊)) ⟩
             (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ y₊) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ y₋)
-          ≡⟨ inverse (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) y₊ y₋) ⟩
+          ≡⟨← (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) y₊ y₋) ⟩
             ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) + (y₊ -ℕ y₋)
-          ≡⟨ inverse (ap (λ e → e + (y₊ -ℕ y₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+          ≡⟨← (ap (λ e → e + (y₊ -ℕ y₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
             (x₊ -ℕ x₋) * (y₊ -ℕ y₋) + (y₊ -ℕ y₋)
           ≡⟨ ap3 (λ e1 e2 e3 → e1 * e2 + e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff y) ⟩
             x * y + y
@@ -1209,7 +1216,7 @@ module _ where
         in
           begin
             x * Int-succ y
-          ≡⟨ inverse (ap2 (λ e1 e2 → e1 * Int-succ e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → e1 * Int-succ e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
             (x₊ -ℕ x₋) * Int-succ (y₊ -ℕ y₋)
           ≡⟨ ap (λ e → (x₊ -ℕ x₋) * e) (succ-Nat-minus y₊ y₋) ⟩
             (x₊ -ℕ x₋) * (succ y₊ -ℕ y₋)
@@ -1225,9 +1232,9 @@ module _ where
               (NatCommSemiring.add-unassoc (x₊ *ℕ y₋) x₋ (x₋ *ℕ y₊) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) x₋ (x₋ *ℕ y₊))
           ⟩
             (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ x₊) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ x₋)
-          ≡⟨ inverse (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
+          ≡⟨← (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
             (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) + (x₊ -ℕ x₋)
-          ≡⟨ inverse (ap (λ e → e + (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
+          ≡⟨← (ap (λ e → e + (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
             (x₊ -ℕ x₋) * (y₊ -ℕ y₋) + (x₊ -ℕ x₋)
           ≡⟨ ap3 (λ e1 e2 e3 → e1 * e2 + e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
             x * y + x
@@ -1275,10 +1282,10 @@ module _ where
           ) ⟩
             ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) +ℕ (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋)) -ℕ
             ((x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) +ℕ (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊))
-          ≡⟨ inverse (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊)) ⟩
+          ≡⟨← (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊)) ⟩
             ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) +
             ((x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) -ℕ (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊))
-          ≡⟨ inverse (ap2 (λ e1 e2 → e1 + e2) (Nat-minus-mul x₊ x₋ y₊ y₋) (Nat-minus-mul x₊ x₋ z₊ z₋)) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → e1 + e2) (Nat-minus-mul x₊ x₋ y₊ y₋) (Nat-minus-mul x₊ x₋ z₊ z₋)) ⟩
             ((x₊ -ℕ x₋) * (y₊ -ℕ y₋)) + ((x₊ -ℕ x₋) * (z₊ -ℕ z₋))
           ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 * e2) + (e3 * e4)) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff z) ⟩
             (x * y) + (x * z)
@@ -1325,10 +1332,10 @@ module _ where
           ) ⟩
             ((x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) +ℕ (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋)) -ℕ
             ((x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊) +ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊))
-          ≡⟨ inverse (Nat-minus-add (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊) (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊)) ⟩
+          ≡⟨← (Nat-minus-add (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊) (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊)) ⟩
             ((x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) -ℕ (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊)) +
             ((y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) -ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊))
-          ≡⟨ inverse (ap2 (λ e1 e2 → e1 + e2) (Nat-minus-mul x₊ x₋ z₊ z₋) (Nat-minus-mul y₊ y₋ z₊ z₋)) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → e1 + e2) (Nat-minus-mul x₊ x₋ z₊ z₋) (Nat-minus-mul y₊ y₋ z₊ z₋)) ⟩
             ((x₊ -ℕ x₋) * (z₊ -ℕ z₋)) + ((y₊ -ℕ y₋) * (z₊ -ℕ z₋))
           ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 * e2) + (e3 * e4)) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff z) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff z) ⟩
             (x * z) + (y * z)
@@ -1344,7 +1351,7 @@ module _ where
         in
           begin
             x * y * z
-          ≡⟨ inverse (ap3 (λ e1 e2 e3 → e1 * e2 * e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff z)) ⟩
+          ≡⟨← (ap3 (λ e1 e2 e3 → e1 * e2 * e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff z)) ⟩
             (x₊ -ℕ x₋) * (y₊ -ℕ y₋) * (z₊ -ℕ z₋)
           ≡⟨ ap (λ e → e * (z₊ -ℕ z₋)) (Nat-minus-mul x₊ x₋ y₊ y₋) ⟩
             ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) * (z₊ -ℕ z₋)
@@ -1388,7 +1395,7 @@ module _ where
           ⟩
             ((x₊ *ℕ (y₊ *ℕ z₊) +ℕ x₊ *ℕ (y₋ *ℕ z₋)) +ℕ (x₋ *ℕ (y₊ *ℕ z₋) +ℕ x₋ *ℕ (y₋ *ℕ z₊))) -ℕ
             ((x₊ *ℕ (y₊ *ℕ z₋) +ℕ x₊ *ℕ (y₋ *ℕ z₊)) +ℕ (x₋ *ℕ (y₊ *ℕ z₊) +ℕ x₋ *ℕ (y₋ *ℕ z₋)))
-          ≡⟨ inverse (ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
+          ≡⟨← (ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
               (NatCommSemiring.mul-ldistr x₊ (y₊ *ℕ z₊) (y₋ *ℕ z₋))
               (NatCommSemiring.mul-ldistr x₋ (y₊ *ℕ z₋) (y₋ *ℕ z₊))
               (NatCommSemiring.mul-ldistr x₊ (y₊ *ℕ z₋) (y₋ *ℕ z₊))
@@ -1396,7 +1403,7 @@ module _ where
           ) ⟩
             ((x₊ *ℕ (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋)) +ℕ (x₋ *ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊))) -ℕ
             ((x₊ *ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊)) +ℕ (x₋ *ℕ (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋)))
-          ≡⟨ inverse (Nat-minus-mul x₊ x₋ (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊)) ⟩
+          ≡⟨← (Nat-minus-mul x₊ x₋ (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊)) ⟩
             (x₊ -ℕ x₋) * ((y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) -ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊))
           ≡⟨ ap (λ e → (x₊ -ℕ x₋) * e) (inverse (Nat-minus-mul y₊ y₋ z₊ z₋)) ⟩
             (x₊ -ℕ x₋) * ((y₊ -ℕ y₋) * (z₊ -ℕ z₋))
@@ -1412,7 +1419,7 @@ module _ where
         in
           begin
             x * y
-          ≡⟨ inverse (ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+          ≡⟨← (ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
             (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
           ≡⟨ Nat-minus-mul x₊ x₋ y₊ y₋ ⟩
             ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
@@ -1423,7 +1430,7 @@ module _ where
             ((y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ (y₋ *ℕ x₊ +ℕ y₊ *ℕ x₋))
           ≡⟨ ap (λ e → (y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ e) (NatCommSemiring.add-comm (y₋ *ℕ x₊) (y₊ *ℕ x₋)) ⟩
             ((y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ (y₊ *ℕ x₋ +ℕ y₋ *ℕ x₊))
-          ≡⟨ inverse (Nat-minus-mul y₊ y₋ x₊ x₋) ⟩
+          ≡⟨← (Nat-minus-mul y₊ y₋ x₊ x₋) ⟩
             (y₊ -ℕ y₋) * (x₊ -ℕ x₋)
           ≡⟨ ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
             y * x

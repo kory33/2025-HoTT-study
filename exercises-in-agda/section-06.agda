@@ -76,7 +76,7 @@ module _ where
         let
           zero-eq-succ =
             begin
-              zero                       ≡⟨ inverse (mul-lzero (succ (succ k))) ⟩
+              zero                       ≡⟨← (mul-lzero (succ (succ k))) ⟩
               zero * succ (succ k)       ≡⟨ eq ⟩
               succ n * succ (succ k)     ≡⟨⟩
               succ n + succ n * succ k   ≡⟨ add-succ-left _ _ ⟩
@@ -88,8 +88,8 @@ module _ where
         let
           zero-eq-succ =
             begin
-              zero                       ≡⟨ inverse (mul-lzero (succ (succ k))) ⟩
-              zero * succ (succ k)       ≡⟨ inverse eq ⟩
+              zero                       ≡⟨← (mul-lzero (succ (succ k))) ⟩
+              zero * succ (succ k)       ≡⟨← eq ⟩
               succ m * succ (succ k)     ≡⟨⟩
               succ m + succ m * succ k   ≡⟨ add-succ-left _ _ ⟩
               succ (m + succ m * succ k)
@@ -100,7 +100,7 @@ module _ where
         let
           eq' =
             begin
-              m * succ (succ k) + succ (succ k)   ≡⟨ inverse (mul-succ-left m (succ (succ k))) ⟩
+              m * succ (succ k) + succ (succ k)   ≡⟨← (mul-succ-left m (succ (succ k))) ⟩
               succ m * succ (succ k)              ≡⟨ eq ⟩
               succ n * succ (succ k)              ≡⟨ mul-succ-left n (succ (succ k)) ⟩
               n * succ (succ k) + succ (succ k)
@@ -128,7 +128,7 @@ module _ where
         let
           eq' =
             begin
-              zero                   ≡⟨ inverse eq ⟩
+              zero                   ≡⟨← eq ⟩
               succ m * succ n        ≡⟨⟩
               succ m + succ m * n    ≡⟨ add-succ-left _ _ ⟩
               succ (m + succ m * n)
@@ -155,7 +155,7 @@ module _ where
             ∎
           eq2 =
             begin
-              succ (succ (m + succ (succ m) * n))  ≡⟨ inverse eq1 ⟩
+              succ (succ (m + succ (succ m) * n))  ≡⟨← eq1 ⟩
               succ (succ m) * succ n               ≡⟨ eq ⟩
               succ zero
             ∎
@@ -171,7 +171,7 @@ module _ where
             ∎
           eq2 =
             begin
-              succ (succ (m * succ (succ n) + n))  ≡⟨ inverse eq1 ⟩
+              succ (succ (m * succ (succ n) + n))  ≡⟨← eq1 ⟩
               succ m * succ (succ n)               ≡⟨ eq ⟩
               succ zero
             ∎
@@ -596,7 +596,7 @@ module _ where
       let (k , m+sk≡sn) = extract-diff m (succ n) m<sn
       in Leq-Nat.from-diff m (predOrZero (succ n)) k (begin
           m + k               ≡⟨ Nat-EqualityThroughEq-Nat.eq-if-succ-eq (m + k) n (m+sk≡sn) ⟩
-          n                   ≡⟨ inverse (Nat-EqualityThroughEq-Nat.predOrZero-succ n) ⟩
+          n                   ≡⟨← (Nat-EqualityThroughEq-Nat.predOrZero-succ n) ⟩
           predOrZero (succ n) ∎
         )
 
@@ -618,7 +618,7 @@ module _ where
         let (k , succm+k≡n) = Leq-Nat.extract-diff (succ m) n succm≤n
             eq = begin
               m + succ k     ≡⟨⟩
-              succ (m + k)   ≡⟨ inverse (add-succ-left m k) ⟩
+              succ (m + k)   ≡⟨← (add-succ-left m k) ⟩
               succ m + k     ≡⟨ succm+k≡n ⟩
               n              ∎
         in from-diff m n k eq
@@ -964,7 +964,7 @@ module _ where
               m + (Nat-dist m k + Nat-dist k n)    ≡⟨ add-unassoc m (Nat-dist m k) (Nat-dist k n) ⟩
               m + Nat-dist m k + Nat-dist k n      ≡⟨ ap (λ e → e + Nat-dist k n) (ordered-then-diff m k m≤k) ⟩
               k + Nat-dist k n                     ≡⟨ ordered-then-diff k n k≤n ⟩
-              n                                    ≡⟨ inverse (ordered-then-diff m n (trans m k n m≤k k≤n)) ⟩
+              n                                    ≡⟨← (ordered-then-diff m n (trans m k n m≤k k≤n)) ⟩
               m + Nat-dist m n                     ∎          
 
         backward : (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m))) → (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n)
@@ -984,7 +984,7 @@ module _ where
                     eq21 : Nat-dist m n + succ x ≡ Nat-dist m k
                     eq21 = begin
                       Nat-dist m n + succ x        ≡⟨ ap (λ e → Nat-dist m n + e) (inverse distnk≡sx) ⟩
-                      Nat-dist m n + Nat-dist n k  ≡⟨ inverse (backward' m k n (m≤n , Lt-Nat.as-leq n k n<k)) ⟩
+                      Nat-dist m n + Nat-dist n k  ≡⟨← (backward' m k n (m≤n , Lt-Nat.as-leq n k n<k)) ⟩
                       Nat-dist m k                 ∎
                 in Lt-Nat.trans-leq (Nat-dist m n) (Nat-dist m k) (Nat-dist m k + Nat-dist k n)
                   (Lt-Nat.from-diff (Nat-dist m n) (Nat-dist m k) x eq21) -- Nat-dist m n < Nat-dist m k
@@ -1006,7 +1006,7 @@ module _ where
                     eq21 = begin
                       Nat-dist m n + succ x          ≡⟨ ap (λ e → Nat-dist m n + e) (inverse distkm≡sx) ⟩
                       Nat-dist m n + Nat-dist k m    ≡⟨ add-comm (Nat-dist m n) (Nat-dist k m) ⟩
-                      Nat-dist k m + Nat-dist m n    ≡⟨ inverse (backward' k n m (Lt-Nat.as-leq k m k<m , m≤n)) ⟩
+                      Nat-dist k m + Nat-dist m n    ≡⟨← (backward' k n m (Lt-Nat.as-leq k m k<m , m≤n)) ⟩
                       Nat-dist k n                   ∎
                 in Lt-Nat.trans-leq (Nat-dist m n) (Nat-dist k n) (Nat-dist m k + Nat-dist k n)
                   (Lt-Nat.from-diff (Nat-dist m n) (Nat-dist k n) x eq21) -- Nat-dist m n < Nat-dist k n
@@ -1058,7 +1058,7 @@ module _ where
         eq = begin
           a + (Nat-dist a b + c)   ≡⟨ add-unassoc a (Nat-dist a b) c ⟩
           a + Nat-dist a b + c     ≡⟨ ap (λ e → e + c) (ordered-then-diff a b a≤b) ⟩
-          b + c                    ≡⟨ inverse (ordered-then-diff a (b + c) (trans a b (b + c) a≤b (self-add-right b c))) ⟩
+          b + c                    ≡⟨← (ordered-then-diff a (b + c) (trans a b (b + c) a≤b (self-add-right b c))) ⟩
           a + Nat-dist a (b + c)   ∎
       in (add-inj-left (Nat-dist a b + c) (Nat-dist a (b + c)) a).Σ.snd eq
 
@@ -1119,20 +1119,20 @@ module _ where
     linear zero m n = begin
       Nat-dist (zero * m) (zero * n)  ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (mul-lzero m) (mul-lzero n) ⟩
       Nat-dist zero zero              ≡⟨⟩
-      zero                            ≡⟨ inverse (mul-lzero (Nat-dist m n)) ⟩
+      zero                            ≡⟨← (mul-lzero (Nat-dist m n)) ⟩
       zero * Nat-dist m n             ∎
     linear (succ k) m n = begin
       Nat-dist (succ k * m) (succ k * n)         ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (mul-succ-left k m) (mul-succ-left k n) ⟩
       Nat-dist (k * m + m) (k * n + n)           ≡⟨ equality k ⟩
       Nat-dist (k * m) (k * n) + Nat-dist m n    ≡⟨ ap (λ e → e + Nat-dist m n) (linear k m n) ⟩
-      k * Nat-dist m n + Nat-dist m n            ≡⟨ inverse (mul-succ-left k (Nat-dist m n)) ⟩
+      k * Nat-dist m n + Nat-dist m n            ≡⟨← (mul-succ-left k (Nat-dist m n)) ⟩
       succ k * Nat-dist m n                      ∎
         where
           equality : (k : Nat) → Nat-dist (k * m + m) (k * n + n) ≡ Nat-dist (k * m) (k * n) + Nat-dist m n
           equality zero = begin
             Nat-dist (zero * m + m) (zero * n + n)           ≡⟨ ap2 (λ e1 e2 → Nat-dist (e1 + m) (e2 + n)) (mul-lzero m) (mul-lzero n) ⟩
             Nat-dist (zero + m) (zero + n)                   ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2) (add-lunit m) (add-lunit n) ⟩
-            Nat-dist m n                                     ≡⟨ inverse (add-lunit (Nat-dist m n)) ⟩
+            Nat-dist m n                                     ≡⟨← (add-lunit (Nat-dist m n)) ⟩
             zero + Nat-dist m n                              ≡⟨⟩
             Nat-dist zero zero + Nat-dist m n                ≡⟨ ap2 (λ e1 e2 → Nat-dist e1 e2 + Nat-dist m n) (inverse (mul-lzero m)) (inverse (mul-lzero n)) ⟩
             Nat-dist (zero * m) (zero * n) + Nat-dist m n    ∎

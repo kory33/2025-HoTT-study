@@ -230,7 +230,7 @@ module _ where
         begin
           ap f refl · H x        ≡⟨⟩
           refl · H x             ≡⟨⟩
-          H x                    ≡⟨ inverse (·-runit (H x)) ⟩
+          H x                    ≡⟨← (·-runit (H x)) ⟩
           H x · refl             ≡⟨⟩
           H x · ap g refl        ∎
 
@@ -387,7 +387,7 @@ module _ where
           hcomp-lr K G x                 ≡⟨⟩
           ((lwhisker K f) ·ₕₜₚ (rwhisker k G)) x   ≡⟨⟩
           (lwhisker K f x) · (rwhisker k G x)      ≡⟨⟩
-          K (f x) · ap k (G x)                     ≡⟨ inverse (nat-htpy K (G x)) ⟩
+          K (f x) · ap k (G x)                     ≡⟨← (nat-htpy K (G x)) ⟩
           ap h (G x) · K (g x)                     ≡⟨⟩
           ((rwhisker h G) ·ₕₜₚ (lwhisker K g)) x   ≡⟨⟩
           hcomp-rl K G x                 ∎
@@ -666,7 +666,7 @@ module _ where
           section-eq : (tr B p) ∘ inverseMap ~ id
           section-eq by = begin
             (tr B p ∘ inverseMap) by      ≡⟨⟩
-            tr B p (tr B (p ⁻¹) by)       ≡⟨ inverse (≡-Basic1.tr-concat (p ⁻¹) _ _) ⟩
+            tr B p (tr B (p ⁻¹) by)       ≡⟨← (≡-Basic1.tr-concat (p ⁻¹) _ _) ⟩
             tr B (p ⁻¹ · p) by            ≡⟨ ap (λ e → tr B e by) (·-linv p) ⟩
             tr B refl by                  ≡⟨⟩
             id by                         ∎
@@ -674,7 +674,7 @@ module _ where
           retract-eq : inverseMap ∘ (tr B p) ~ id
           retract-eq by = begin
             (inverseMap ∘ (tr B p)) by    ≡⟨⟩
-            tr B (p ⁻¹) (tr B p by)       ≡⟨ inverse (≡-Basic1.tr-concat p _ _) ⟩
+            tr B (p ⁻¹) (tr B p by)       ≡⟨← (≡-Basic1.tr-concat p _ _) ⟩
             tr B (p · p ⁻¹) by            ≡⟨ ap (λ e → tr B e by) (·-rinv p) ⟩
             tr B refl by                  ≡⟨⟩
             id by                         ∎
@@ -754,7 +754,7 @@ module _ where
               forward-is-unit-only-at-pointToEliminate : (n : Nat) → (forward n ≡ right unit) → (n ≡ pointToEliminate)
               forward-is-unit-only-at-pointToEliminate n fn≡unit =
                 begin
-                  n                      ≡⟨ inverse (Retr n) ⟩
+                  n                      ≡⟨← (Retr n) ⟩
                   backward (forward n)   ≡⟨ ap backward (fn≡unit) ⟩
                   backward (right unit)  ≡⟨⟩
                   pointToEliminate       ∎
@@ -762,7 +762,7 @@ module _ where
               blackward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
               blackward-left-is-not-pointToEliminate a pt≡bla =
                 let ru≡la = begin
-                      (right unit)                     ≡⟨ inverse (Sect (right unit)) ⟩
+                      (right unit)                     ≡⟨← (Sect (right unit)) ⟩
                       forward (backward (right unit))  ≡⟨ ap forward pt≡bla ⟩
                       forward (backward (left a))      ≡⟨ Sect (left a) ⟩
                       left a                           ∎
@@ -783,7 +783,7 @@ module _ where
                     left (extract-a-from-forward n n≠pt)                            ≡⟨⟩
                     left (extract-a-from-forward-cases n n≠pt (forward n) refl)     ≡⟨ ap left (transport-equality-fn (forward n) (extract-a-from-forward-cases n n≠pt) eq) ⟩
                     left (extract-a-from-forward-cases n n≠pt (left a) eq)          ≡⟨⟩
-                    left a                                                          ≡⟨ inverse eq ⟩
+                    left a                                                          ≡⟨← eq ⟩
                     forward n                                                       ∎
                   )
                   (λ { unit eq → absurd (n≠pt (forward-is-unit-only-at-pointToEliminate n eq)) })
