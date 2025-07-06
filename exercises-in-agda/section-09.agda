@@ -548,6 +548,9 @@ module _ where
     ≃-refl : {A : Set} → A ≃ A
     ≃-refl {A} = (id , (id , λ x → refl), (id , λ x → refl))
 
+    id-is-equiv : {A : Set} → Is-equiv (id {A})
+    id-is-equiv {A} = ≃-refl .Σ.snd
+
     ≃-trans : {A B C : Set} → A ≃ B → B ≃ C → A ≃ C
     ≃-trans (f , (sf , Sf), (rf , Rf)) (g , (sg , Sg), (rg , Rg)) =
       (g ∘ f , (sf ∘ sg , λ c → (ap g (Sf (sg c)) · (Sg c))) , (rf ∘ rg , λ c → (ap rf (Rg (f c)) · (Rf c))))

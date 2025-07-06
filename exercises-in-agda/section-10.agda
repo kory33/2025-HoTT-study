@@ -266,3 +266,93 @@ module _ where
       -- │   │   │
       -- g   f   g
       rwhisker g G   ∎-htpy
+
+  -- 10.4.5
+  Has-inverse-then-Is-coh-invertible : {A B : Set} → (f : A → B) → Has-inverse f → Is-coh-invertible f
+  Has-inverse-then-Is-coh-invertible {A} {B} f (g , G , H) =
+    let
+      -- ╭───────────[G]╮ 
+      -- │              │ 
+      -- │      ╭─[H]╮  │ 
+      -- ╰[G⁻¹]─╯    │  │ 
+      --             │  │ 
+      --             f  g 
+      G' : f ∘ g ~ id
+      G' = lwhisker (G ⁻¹ₕₜₚ) (f ∘ g) ·ₕₜₚ (rwhisker f (lwhisker H g)) ·ₕₜₚ G
+
+      K : lwhisker G' f ~ rwhisker f H
+      K =
+        begin-htpy
+          --              ┊    │
+          -- ╭───────────[G]╮  │
+          -- │              │  │
+          -- │      ╭─[H]╮  │  │
+          -- ╰[G⁻¹]─╯    │  │  │
+          --             │  │  │
+          --             f  g  f
+          lwhisker G' f                                                                                        ~⟨⟩
+          lwhisker ((lwhisker (G ⁻¹ₕₜₚ) (f ∘ g)) ·ₕₜₚ (rwhisker f (lwhisker H g)) ·ₕₜₚ G) f                    ~⟨⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (lwhisker (rwhisker f (lwhisker H g)) f) ·ₕₜₚ (lwhisker G f)   ~⟨⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f (lwhisker H (g ∘ f))) ·ₕₜₚ (lwhisker G f)          
+
+                  ~⟨ ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) (rwhisker-rhtpe f
+                      (comm-htpy-whisk (g ∘ f) H)
+                    )) _ ⟩
+          --     ┊     │     ┊   
+          --  ╭─[G]─╮  │     ┊   
+          --  │     │  │   ╭[H]╮ 
+          --  ╰[G⁻¹]╯  │   │   │ 
+          --     ┊     │   │   │ 
+          --           f   g   f 
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f (rwhisker (g ∘ f) H)) ·ₕₜₚ (lwhisker G f)           ~⟨← ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) (rwhisker-comp f (g ∘ f) H)) _ ⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ  (rwhisker (f ∘ g ∘ f) H) ·ₕₜₚ (lwhisker G f)                   ~⟨⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ  (rwhisker (f ∘ g ∘ f) H) ·ₕₜₚ (lwhisker (lwhisker G f) id)     ~⟨ ·ₕₜₚ-assoc (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) _ _ ⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ ((rwhisker (f ∘ g ∘ f) H) ·ₕₜₚ (lwhisker (lwhisker G f) id))    ~⟨⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (                hcomp-rl (lwhisker G f) H                 )    
+
+                  ~⟨← ·ₕₜₚ-rhtpe (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) (hcomp-lr-rl (lwhisker G f) H) ⟩
+          --     ┊     │     ┊  
+          --     ┊     │   ╭[H]╮
+          --  ╭─[G]─╮  │   │   │
+          --  ╰[G⁻¹]╯  │   │   │
+          --     ┊     │   │   │
+          --           f   g   f
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (hcomp-lr (lwhisker G f) H)                              ~⟨⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ ((lwhisker (lwhisker G f) (g ∘ f)) ·ₕₜₚ (rwhisker f H))  ~⟨⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ ((lwhisker G (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f H))           ~⟨ ·ₕₜₚ-unassoc (lwhisker (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g)) f) _ _ ⟩
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ  (lwhisker G (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f H)            ~⟨⟩
+          (lwhisker (G ⁻¹ₕₜₚ  ·ₕₜₚ G) (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f H)                                   ~⟨← ·ₕₜₚ-rhtpe (lwhisker (G ⁻¹ₕₜₚ  ·ₕₜₚ G) (f ∘ g ∘ f)) (rwhisker-id (rwhisker f H)) ⟩
+          (lwhisker (G ⁻¹ₕₜₚ  ·ₕₜₚ G) (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker id (rwhisker f H))                     ~⟨⟩
+          hcomp (G ⁻¹ₕₜₚ ·ₕₜₚ G) (rwhisker f H)
+
+                  ~⟨ hcomp-lhtpe (·ₕₜₚ-linv G) _ ⟩
+          --  ┊  │     ┊  
+          --  ┊  │   ╭[H]╮
+          --  ┊  │   │   │
+          --     f   g   f
+          hcomp (htpy-refl id) (rwhisker f H)
+
+                  ~⟨ hcomp-lunit _ ⟩
+          -- │     ┊  
+          -- │   ╭[H]╮
+          -- │   │   │
+          -- f   g   f
+          rwhisker f H ∎-htpy
+    in ((g , G' , H) , K)
+
+  -- 10.4.6
+  Is-equiv-then-is-contr : {A B : Set} → (f : A → B) → Is-equiv f → Is-contr-fn f
+  Is-equiv-then-is-contr {A} {B} f is-eqv =
+    let
+      has-inv     = equiv-has-inverse is-eqv
+      is-coh-inv  = Has-inverse-then-Is-coh-invertible f has-inv
+      is-contr-fn = coh-invertible-then-contr-fn f is-coh-inv
+    in is-contr-fn
+
+  -- 10.4.7
+  inverse-paths-type-is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → x ≡ a))
+  inverse-paths-type-is-contr {A} a =
+    let
+      id-is-contr-fn : Is-contr-fn id
+      id-is-contr-fn = Is-equiv-then-is-contr id (Equivalence.id-is-equiv)
+    in id-is-contr-fn a -- `Σ A (λ x → x ≡ a)` is judgementally equal to `fib id a`
