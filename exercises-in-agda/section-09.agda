@@ -545,11 +545,11 @@ module _ where
     open ≡-Basic
 
     -- 9.2.3
-    ≃-refl : {A : Set} → A ≃ A
-    ≃-refl {A} = (id , (id , λ x → refl), (id , λ x → refl))
-
     id-is-equiv : {A : Set} → Is-equiv (id {A})
-    id-is-equiv {A} = ≃-refl .Σ.snd
+    id-is-equiv {A} = ((id , λ x → refl), (id , λ x → refl))
+
+    ≃-refl : {A : Set} → A ≃ A
+    ≃-refl {A} = (id , id-is-equiv)
 
     ≃-trans : {A B C : Set} → A ≃ B → B ≃ C → A ≃ C
     ≃-trans (f , (sf , Sf), (rf , Rf)) (g , (sg , Sg), (rg , Rg)) =
