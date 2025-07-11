@@ -370,23 +370,35 @@ module _ where
       let
         H : const x ~ id
         H = λ y → (C x)⁻¹ · (C y)
+        Hx-refl : H x ≡ refl
+        Hx-refl = ·-linv (C x)
       in (
         refl-at x ,
         λ p →
           begin
             refl-at x                                ≡⟨⟩
             refl · refl                              ≡⟨← ap (λ q → q · refl) (ap-const-refl x p) ⟩
-            ap (const x) p · refl                    ≡⟨← ap (λ q → ap (const x) p · q) (·-linv (C x)) ⟩
-            ap (const x) p · ((C x)⁻¹ · C x)         ≡⟨ nat-htpy H p ⟩
-            (C x)⁻¹ · (C x) · (ap id p)              ≡⟨ ap (λ q → q · (ap id p)) (·-linv (C x)) ⟩
+            ap (const x) p · refl                    ≡⟨← ap (λ q → ap (const x) p · q) (Hx-refl) ⟩
+            ap (const x) p · H x                     ≡⟨ nat-htpy H p ⟩
+            H x · (ap id p)                          ≡⟨ ap (λ q → q · (ap id p)) (Hx-refl) ⟩
             refl · (ap id p)                         ≡⟨ ·-lunit (ap id p) ⟩
             ap id p                                  ≡⟨ ap-id p ⟩
             p                                        ∎
       )
 
     Is-contr-then-identity-is-contr : {A : Set} → Is-contr A → (x y : A) → Is-contr (x ≡ y)
-    Is-contr-then-identity-is-contr {A} contr x y with two-points-eq-in-contr-type contr x y
-    ...                                              | refl = Is-contr-then-based-loop-space-is-contr contr x
+    Is-contr-then-identity-is-contr {A} (a , C) x y =
+      let
+        H : const x ~ id
+        H = λ y → (C x)⁻¹ · (C y)
+        Hx-refl : H x ≡ refl
+        Hx-refl = ·-linv (C x)
+      in (
+        (two-points-eq-in-contr-type (a , C) x y),
+        λ { refl →
+          {!   !}
+        }
+      )
 
   -- exercise 10.2
   retraction-preserves-contr : {A B : Set} → {f : A → B} → Retr f → Is-contr B → Is-contr A
@@ -436,3 +448,15 @@ module _ where
       (ca , λ a → ap fst (CAB (a , cb))),
       (cb , λ b → ap snd (CAB (ca , b)))
     )
+
+  -- exercise 10.6
+  base-is-contr-then-pair-with-base-is-equiv : {A : Set} → ((a , C) : Is-contr A) →
+                                               {B : A → Set} → Is-equiv {B a} {Σ A B} (λ (y : B a) → (a , y))
+  base-is-contr-then-pair-with-base-is-equiv {A} (a , C) {B} =
+    has-inverse-equiv ({!   !} , {!   !} , {!   !})
+    where
+      f : B a → Σ A B
+      f y = (a , y)
+      g : Σ A B → B a
+      g (a' , y) with C a'
+      ...           | refl = y
