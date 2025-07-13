@@ -666,7 +666,7 @@ module _ where
           section-eq : (tr B p) ∘ inverseMap ~ id
           section-eq by = begin
             (tr B p ∘ inverseMap) by      ≡⟨⟩
-            tr B p (tr B (p ⁻¹) by)       ≡⟨← (≡-Basic1.tr-concat (p ⁻¹) _ _) ⟩
+            tr B p (tr B (p ⁻¹) by)       ≡⟨← tr-concat (p ⁻¹) _ _ ⟩
             tr B (p ⁻¹ · p) by            ≡⟨ ap (λ e → tr B e by) (·-linv p) ⟩
             tr B refl by                  ≡⟨⟩
             id by                         ∎
@@ -674,7 +674,7 @@ module _ where
           retract-eq : inverseMap ∘ (tr B p) ~ id
           retract-eq by = begin
             (inverseMap ∘ (tr B p)) by    ≡⟨⟩
-            tr B (p ⁻¹) (tr B p by)       ≡⟨← (≡-Basic1.tr-concat p _ _) ⟩
+            tr B (p ⁻¹) (tr B p by)       ≡⟨← tr-concat p _ _ ⟩
             tr B (p · p ⁻¹) by            ≡⟨ ap (λ e → tr B e by) (·-rinv p) ⟩
             tr B refl by                  ≡⟨⟩
             id by                         ∎

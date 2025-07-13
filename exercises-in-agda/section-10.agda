@@ -1,3 +1,5 @@
+open import Function.Base using (case_of_)
+
 module _ where
   open import section-09 public
 
@@ -7,8 +9,17 @@ module _ where
   open ≡-Reasoning
 
   -- 10.1.1
+  ContractionTo : {A : Set} → A → Set
+  ContractionTo {A} a = (x : A) → a ≡ x
+
   Is-contr : Set → Set
-  Is-contr A = Σ A (λ c → (x : A) → c ≡ x)
+  Is-contr A = Σ A (λ c → ContractionTo c)
+
+  untangle : {A : Set} → ((c , C) : Is-contr A) → ContractionTo c
+  untangle (c , C) a = (C c)⁻¹ · (C a)
+
+  untangled-contr-at-centre : {A : Set} → (contr@(c , C) : Is-contr A) → (untangle contr) c ≡ refl
+  untangled-contr-at-centre (c , C) = ·-linv (C c)
 
   two-points-eq-in-contr-type : {A : Set} → Is-contr A → (x y : A) → x ≡ y
   two-points-eq-in-contr-type (a , C) x y = (C x)⁻¹ · (C y)
@@ -33,19 +44,15 @@ module _ where
   -- 10.2.3
   contr-then-sing-ind : {A : Set} → Is-contr A → {B : A → Set} →
     Σ A (λ a → Σ (B a → (x : A) → B x) (λ ind-sing-a → ev-pt a ∘ ind-sing-a ~ id))
-  contr-then-sing-ind {A} (a , C) {B} =
+  contr-then-sing-ind {A} contr@(a , C) {B} =
     let
-      C' : (x : A) → a ≡ x
-      C' x = (C a)⁻¹ · (C x)
-      p : C' a ≡ refl
-      p = ·-linv (C a)
-
+      C = untangle contr
       ind-sing-a : B a → (x : A) → B x
-      ind-sing-a b x = tr B (C' x) b
+      ind-sing-a b x = tr B (C x) b
       comp-sing-a : ev-pt a ∘ ind-sing-a ~ id
       comp-sing-a = λ b → begin
         (ev-pt a ∘ ind-sing-a) b ≡⟨⟩
-        tr B (C' a) b            ≡⟨ ap (λ t → tr B t b) p ⟩
+        tr B (C a) b             ≡⟨ ap (λ t → tr B t b) (untangled-contr-at-centre contr) ⟩
         tr B refl b              ≡⟨⟩
         b                        ≡⟨⟩
         id b                     ∎
@@ -361,44 +368,9 @@ module _ where
     in id-is-contr-fn a -- `Σ A (λ x → x ≡ a)` is judgementally equal to `fib id a`
 
   -- exercise 10.1
-  module _ where
-    ap-const-refl : {A : Set} → (c : A) → {x y : A} → (p : x ≡ y) → ap (const c) p ≡ refl
-    ap-const-refl c {x} {_} refl = refl
-
-    Is-contr-then-based-loop-space-is-contr : {A : Set} → Is-contr A → (x : A) → Is-contr (x ≡ x)
-    Is-contr-then-based-loop-space-is-contr {A} (a , C) x =
-      let
-        H : const x ~ id
-        H = λ y → (C x)⁻¹ · (C y)
-        Hx-refl : H x ≡ refl
-        Hx-refl = ·-linv (C x)
-      in (
-        refl-at x ,
-        λ p →
-          begin
-            refl-at x                                ≡⟨⟩
-            refl · refl                              ≡⟨← ap (λ q → q · refl) (ap-const-refl x p) ⟩
-            ap (const x) p · refl                    ≡⟨← ap (λ q → ap (const x) p · q) (Hx-refl) ⟩
-            ap (const x) p · H x                     ≡⟨ nat-htpy H p ⟩
-            H x · (ap id p)                          ≡⟨ ap (λ q → q · (ap id p)) (Hx-refl) ⟩
-            refl · (ap id p)                         ≡⟨ ·-lunit (ap id p) ⟩
-            ap id p                                  ≡⟨ ap-id p ⟩
-            p                                        ∎
-      )
-
-    Is-contr-then-identity-is-contr : {A : Set} → Is-contr A → (x y : A) → Is-contr (x ≡ y)
-    Is-contr-then-identity-is-contr {A} (a , C) x y =
-      let
-        H : const x ~ id
-        H = λ y → (C x)⁻¹ · (C y)
-        Hx-refl : H x ≡ refl
-        Hx-refl = ·-linv (C x)
-      in (
-        (two-points-eq-in-contr-type (a , C) x y),
-        λ { refl →
-          {!   !}
-        }
-      )
+  Is-contr-then-identity-is-contr : {A : Set} → Is-contr A → (x y : A) → Is-contr (x ≡ y)
+  Is-contr-then-identity-is-contr {A} (a , C) x y =
+    ((C x)⁻¹ · (C y), λ { refl → ·-linv (C x) })
 
   -- exercise 10.2
   retraction-preserves-contr : {A B : Set} → {f : A → B} → Retr f → Is-contr B → Is-contr A
@@ -452,11 +424,33 @@ module _ where
   -- exercise 10.6
   base-is-contr-then-pair-with-base-is-equiv : {A : Set} → ((a , C) : Is-contr A) →
                                                {B : A → Set} → Is-equiv {B a} {Σ A B} (λ (y : B a) → (a , y))
-  base-is-contr-then-pair-with-base-is-equiv {A} (a , C) {B} =
-    has-inverse-equiv ({!   !} , {!   !} , {!   !})
-    where
-      f : B a → Σ A B
-      f y = (a , y)
-      g : Σ A B → B a
-      g (a' , y) with C a'
-      ...           | refl = y
+  base-is-contr-then-pair-with-base-is-equiv {A} contr@(a , _) {B} =
+    has-inverse-equiv (g , sect , retr)
+      where
+        f : B a → Σ A B
+        f y = (a , y)
+
+        C : ContractionTo a
+        C = untangle contr
+
+        g : Σ A B → B a
+        g (a' , y) = tr B ((C a')⁻¹) y
+
+        sect : (f ∘ g) ~ id
+        sect (a' , y) =
+          begin
+            (f ∘ g) (a' , y)                           ≡⟨⟩
+            f (tr B ((C a')⁻¹) y)                      ≡⟨⟩
+            (a , tr B ((C a')⁻¹) y)                    ≡⟨ ≡-Basic1.lift (C a') (tr B ((C a')⁻¹) y) ⟩
+            (a' , tr B (C a') (tr B ((C a')⁻¹) y))     ≡⟨← ap (λ p → (a' , p)) (tr-concat ((C a')⁻¹) (C a') y) ⟩
+            (a' , tr B ((C a')⁻¹ · C a') y)            ≡⟨ ap (λ p → (a' , tr B p y)) (·-linv (C a')) ⟩
+            (a' , tr B refl y)                         ≡⟨⟩
+            (a' , y)                                   ∎
+
+        retr : (g ∘ f) ~ id
+        retr y = begin
+          g (f y)             ≡⟨⟩
+          g (a , y)           ≡⟨⟩
+          tr B ((C a)⁻¹) y    ≡⟨ ap (λ p → tr B (p ⁻¹) y) (untangled-contr-at-centre contr) ⟩
+          tr B ((refl) ⁻¹) y  ≡⟨⟩
+          y                   ∎

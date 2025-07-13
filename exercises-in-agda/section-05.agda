@@ -10,10 +10,10 @@ module _ where
   infix 5 _≡_
 
   ind-≡ : {A : Set} → {a : A} →
-          {P : (x : A) → (a ≡ x) → Set} →
+          (P : (x : A) → (a ≡ x) → Set) →
           P a refl →
           ((x : A) → (p : a ≡ x) → P x p)
-  ind-≡ parefl x refl = parefl
+  ind-≡ P parefl x refl = parefl
 
   module ≡-Basic where
     concat : {A : Set} → {x y z : A} →
@@ -147,6 +147,11 @@ module _ where
           B x₁ y₁ z₁ → B x₂ y₂ z₂
     tr3 B refl refl refl b = b
 
+    tr-concat : {A : Set} → {B : A → Set} → {x y z : A} →
+                (p : x ≡ y) → (q : y ≡ z) → (b : B x) →
+                tr B (p · q) b ≡ tr B q (tr B p b)
+    tr-concat refl refl b = refl
+
     apd : {A : Set} → {B : A → Set} →
           (f : (a : A) → B a) →
           {x y : A} →
@@ -234,11 +239,6 @@ module _ where
     lift : {A : Set} → {B : A → Set} → {a x : A} →
           (p : a ≡ x) → (b : B a) → (a , b) ≡ (x , (tr B p b))
     lift refl b = refl
-
-    tr-concat : {A : Set} → {B : A → Set} → {x y z : A} →
-                (p : x ≡ y) → (q : y ≡ z) → (b : B x) →
-                tr B (p · q) b ≡ tr B q (tr B p b)
-    tr-concat refl refl b = refl
 
     module exercise-5-4 where
       variable
