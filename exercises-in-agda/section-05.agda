@@ -200,6 +200,9 @@ module _ where
                 (a , refl) ≡ y
     refl-uniq a (x , refl) = refl
 
+    inv-inv : {A : Set} → {x y : A} → (p : x ≡ y) → (p ⁻¹)⁻¹ ≡ p
+    inv-inv refl = refl
+
     -- exercise 5.1
     distr-inv-concat : {A : Set} → {x y z : A} →
       (p : x ≡ y) → (q : y ≡ z) →

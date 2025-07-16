@@ -68,7 +68,7 @@ module _ where
 
   Fin : (k : Nat) → Set
   Fin zero = Empty
-  Fin (succ k) = (Fin k) +₁ Unit
+  Fin (succ k) = (Fin k) +₀ Unit
 
   module Fin-Basic where
     open Lt-Nat.Symbolic

@@ -38,43 +38,43 @@ module _ where
     contrapose f ¬b a = ¬b (f a)
 
   -- 4.4
-  data _+₁_ (A B : Set) : Set where
-    left : A → A +₁ B
-    right : B → A +₁ B
-  infixl 30 _+₁_
+  data _+₀_ (A B : Set) : Set where
+    left : A → A +₀ B
+    right : B → A +₀ B
+  infixl 30 _+₀_
 
-  ind-+₁ : {A B : Set} → {P : A +₁ B → Set} → ((x : A) → P(left x)) → ((y : B) → P(right y)) → (z : A +₁ B) → P z
-  ind-+₁ pL pR (left x) = pL x
-  ind-+₁ pL pR (right y) = pR y
+  ind-+₀ : {A B : Set} → {P : A +₀ B → Set} → ((x : A) → P(left x)) → ((y : B) → P(right y)) → (z : A +₀ B) → P z
+  ind-+₀ pL pR (left x) = pL x
+  ind-+₀ pL pR (right y) = pR y
 
-  module +₁-Basic where
+  module +₀-Basic where
     open EmptyBasic
 
-    <_+₁_> : {A B A' B' : Set} → (A → A') → (B → B') → (A +₁ B) → (A' +₁ B')
-    < f +₁ g > = ind-+₁ (λ x → left (f x)) (λ y → right (g y))
+    <_+₀_> : {A B A' B' : Set} → (A → A') → (B → B') → (A +₀ B) → (A' +₀ B')
+    < f +₀ g > = ind-+₀ (λ x → left (f x)) (λ y → right (g y))
 
-    +₁-emptyRight : {A B : Set} → is-empty B → A +₁ B → A
-    +₁-emptyRight ¬b (left x) = x
-    +₁-emptyRight ¬b (right y) = absurd (¬b y)
+    +₀-emptyRight : {A B : Set} → is-empty B → A +₀ B → A
+    +₀-emptyRight ¬b (left x) = x
+    +₀-emptyRight ¬b (right y) = absurd (¬b y)
 
-    +₁-emptyLeft : {A B : Set} → is-empty A → A +₁ B → B
-    +₁-emptyLeft ¬a (left x) = absurd (¬a x)
-    +₁-emptyLeft ¬a (right y) = y
+    +₀-emptyLeft : {A B : Set} → is-empty A → A +₀ B → B
+    +₀-emptyLeft ¬a (left x) = absurd (¬a x)
+    +₀-emptyLeft ¬a (right y) = y
 
-    swap-+₁ : {X Y : Set} → X +₁ Y → Y +₁ X
-    swap-+₁ (left x)  = right x
-    swap-+₁ (right y) = left y
+    swap-+₀ : {X Y : Set} → X +₀ Y → Y +₀ X
+    swap-+₀ (left x)  = right x
+    swap-+₀ (right y) = left y
 
-    leftMap : {A B A' : Set} → (A → A') → (A +₁ B) → (A' +₁ B)
-    leftMap f = < f +₁ id >
+    leftMap : {A B A' : Set} → (A → A') → (A +₀ B) → (A' +₀ B)
+    leftMap f = < f +₀ id >
 
-    mapLeftOf : {A B A' : Set} → (A +₁ B) → (A → A') → (A' +₁ B)
+    mapLeftOf : {A B A' : Set} → (A +₀ B) → (A → A') → (A' +₀ B)
     mapLeftOf = swap leftMap
 
-    rightMap : {A B B' : Set} → (B → B') → (A +₁ B) → (A +₁ B')
-    rightMap g = < id +₁ g >
+    rightMap : {A B B' : Set} → (B → B') → (A +₀ B) → (A +₀ B')
+    rightMap g = < id +₀ g >
 
-    mapRightOf : {A B B' : Set} → (A +₁ B) → (B → B') → (A +₁ B')
+    mapRightOf : {A B B' : Set} → (A +₀ B) → (B → B') → (A +₀ B')
     mapRightOf = swap rightMap
 
   -- 4.6
@@ -123,7 +123,7 @@ module _ where
   ind-× pXY (x , y) = pXY x y
 
   -- 4.5
-  Int = Nat +₁ (Unit +₁ Nat)
+  Int = Nat +₀ (Unit +₀ Nat)
 
   module IntBasic where
     pattern zeroInt = right (left unit)
@@ -339,11 +339,11 @@ module _ where
         )
       )
     
-    ex-c-iii : {P Q : Set} → ¬¬ ((P → Q) +₁ (Q → P))
+    ex-c-iii : {P Q : Set} → ¬¬ ((P → Q) +₀ (Q → P))
     ex-c-iii not-dummett-law =
       not-dummett-law (left (λ p → absurd (not-dummett-law (right (λ _ → p)))))
 
-    ex-c-iv : {P : Set} → ¬¬ (P +₁ ¬ P)
+    ex-c-iv : {P : Set} → ¬¬ (P +₀ ¬ P)
     ex-c-iv {P} = do
       p→¬p∨¬p→p ← ex-c-iii {P} {¬ P}
       case p→¬p∨¬p→p of λ
@@ -355,11 +355,11 @@ module _ where
             in map left ¬¬p
         }
 
-    ex-d-i : {P : Set} → (P +₁ ¬ P) → (¬¬ P → P)
+    ex-d-i : {P : Set} → (P +₀ ¬ P) → (¬¬ P → P)
     ex-d-i (left p) ¬¬p = p
     ex-d-i (right ¬p) ¬¬p = absurd (¬¬p ¬p)
 
-    ex-d-ii : {P Q : Set} → (¬¬(Q → P)) ↔ ((P +₁ ¬ P) → (Q → P))
+    ex-d-ii : {P Q : Set} → (¬¬(Q → P)) ↔ ((P +₀ ¬ P) → (Q → P))
     ex-d-ii =
       biimpl (
         (λ ¬¬qp lem q → case lem of λ
@@ -392,7 +392,7 @@ module _ where
         })
       )
 
-    ex-f-ii' : {P Q : Set} → ¬ (P +₁ Q) ↔ (¬ P × ¬ Q)
+    ex-f-ii' : {P Q : Set} → ¬ (P +₀ Q) ↔ (¬ P × ¬ Q)
     ex-f-ii' =
       biimpl (
         (λ ¬p∨q → ((λ p → ¬p∨q (left p)), (λ q → ¬p∨q (right q)))),
@@ -402,7 +402,7 @@ module _ where
     ↔-neg-of-↔ : {P Q : Set} → (P ↔ Q) → (¬ P ↔ ¬ Q)
     ↔-neg-of-↔ (p→q , q→p) = ((contrapose q→p), (contrapose p→q))
 
-    ex-f-ii : {P Q : Set} → ¬¬(P +₁ Q) ↔ ¬(¬ P × ¬ Q)
+    ex-f-ii : {P Q : Set} → ¬¬(P +₀ Q) ↔ ¬(¬ P × ¬ Q)
     ex-f-ii = ↔-neg-of-↔ ex-f-ii'
 
     ex-f-iii : {P Q : Set} → ¬¬(P → Q) ↔ (¬¬ P → ¬¬ Q)

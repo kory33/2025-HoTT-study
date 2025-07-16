@@ -7,7 +7,7 @@ module _ where
   open ≡-Basic
 
   Is-decidable : Set → Set
-  Is-decidable A = A +₁ ¬ A
+  Is-decidable A = A +₀ ¬ A
 
   Has-decidable-eq : Set → Set
   Has-decidable-eq A = (x y : A) → Is-decidable (x ≡ y)
@@ -40,11 +40,11 @@ module _ where
     decide-Empty : Is-decidable Empty
     decide-Empty = right id
 
-    decide-+₁ : {A B : Set} → Is-decidable A → Is-decidable B → Is-decidable (A +₁ B)
-    decide-+₁ (left a) (left b) = left (left a)
-    decide-+₁ (left a) (right ¬b) = left (left a)
-    decide-+₁ (right ¬a) (left b) = left (right b)
-    decide-+₁ (right ¬a) (right ¬b) =
+    decide-+₀ : {A B : Set} → Is-decidable A → Is-decidable B → Is-decidable (A +₀ B)
+    decide-+₀ (left a) (left b) = left (left a)
+    decide-+₀ (left a) (right ¬b) = left (left a)
+    decide-+₀ (right ¬a) (left b) = left (right b)
+    decide-+₀ (right ¬a) (right ¬b) =
       right (λ {
         (left a) → ¬a a
       ; (right b) → ¬b b
@@ -69,9 +69,9 @@ module _ where
     decide-Eq-Nat (succ m) (succ n) = decide-Eq-Nat m n
 
     module _ where
-      open +₁-Basic
+      open +₀-Basic
       decide-biimpl : {A B : Set} → (A ↔ B) → (Is-decidable A ↔ Is-decidable B)
-      decide-biimpl (a→b , b→a) = (< a→b +₁ contrapose b→a > , < b→a +₁ contrapose a→b >)
+      decide-biimpl (a→b , b→a) = (< a→b +₀ contrapose b→a > , < b→a +₀ contrapose a→b >)
 
     decide-⟶-with-dependent-decidability : {A B : Set} → Is-decidable A → (A → Is-decidable B) → Is-decidable (A → B)
     decide-⟶-with-dependent-decidability (left a) f = decide-→ (left a) (f a)
@@ -130,7 +130,7 @@ module _ where
     Unit-has-decidable-eq unit unit = left refl
 
   -- exercise 8.7
-  Eq-Copr : {A B : Set} → (A +₁ B) → (A +₁ B) → Set
+  Eq-Copr : {A B : Set} → (A +₀ B) → (A +₀ B) → Set
   Eq-Copr (left a1) (left a2) = a1 ≡ a2
   Eq-Copr (left a1) (right b2) = Empty
   Eq-Copr (right b1) (left a2) = Empty
@@ -141,63 +141,63 @@ module _ where
 
     open Is-decidable
     open ≡-Reasoning
-    open +₁-Basic
+    open +₀-Basic
 
-    Eq-Copr-refl : {A B : Set} → (x : A +₁ B) → Eq-Copr x x
+    Eq-Copr-refl : {A B : Set} → (x : A +₀ B) → Eq-Copr x x
     Eq-Copr-refl (left a) = refl
     Eq-Copr-refl (right b) = refl
 
-    Copr-≡-biimpl-Eq-Copr : {A B : Set} → {x y : A +₁ B} → (x ≡ y) ↔ (Eq-Copr x y)
+    Copr-≡-biimpl-Eq-Copr : {A B : Set} → {x y : A +₀ B} → (x ≡ y) ↔ (Eq-Copr x y)
     Copr-≡-biimpl-Eq-Copr {A} {B} {x} {y} = (forward x y , backward x y)
       where
-        forward : (x y : A +₁ B) → (x ≡ y) → (Eq-Copr x y)
+        forward : (x y : A +₀ B) → (x ≡ y) → (Eq-Copr x y)
         forward x y refl = Eq-Copr-refl x
 
-        backward : (x y : A +₁ B) → (Eq-Copr x y) → (x ≡ y)
+        backward : (x y : A +₀ B) → (Eq-Copr x y) → (x ≡ y)
         backward (left a1) (left a2) eq = ap left eq
         backward (left a1) (right b2) ()
         backward (right b1) (left a2) ()
         backward (right b1) (right b2) eq = ap right eq
 
-    obseq-then-eq : {A B : Set} → {x y : A +₁ B} → (Eq-Copr x y) → (x ≡ y)
+    obseq-then-eq : {A B : Set} → {x y : A +₀ B} → (Eq-Copr x y) → (x ≡ y)
     obseq-then-eq eq = (Copr-≡-biimpl-Eq-Copr).Σ.snd eq
 
-    +₁-left-inj : {A : Set} → {B : Set} → {x y : A} → (left {A} {B} x ≡ left y) → (x ≡ y)
-    +₁-left-inj eq = (Copr-≡-biimpl-Eq-Copr).Σ.fst eq
+    +₀-left-inj : {A : Set} → {B : Set} → {x y : A} → (left {A} {B} x ≡ left y) → (x ≡ y)
+    +₀-left-inj eq = (Copr-≡-biimpl-Eq-Copr).Σ.fst eq
 
-    +₁-right-inj : {A : Set} → {B : Set} → {x y : B} → (right {A} {B} x ≡ right y) → (x ≡ y)
-    +₁-right-inj eq = (Copr-≡-biimpl-Eq-Copr).Σ.fst eq
+    +₀-right-inj : {A : Set} → {B : Set} → {x y : B} → (right {A} {B} x ≡ right y) → (x ≡ y)
+    +₀-right-inj eq = (Copr-≡-biimpl-Eq-Copr).Σ.fst eq
 
-    +₁-deceq-biimpl-both-deceq : {A B : Set} → Has-decidable-eq (A +₁ B) ↔ ((Has-decidable-eq A) × (Has-decidable-eq B))
-    +₁-deceq-biimpl-both-deceq {A} {B} = (forward , backward)
+    +₀-deceq-biimpl-both-deceq : {A B : Set} → Has-decidable-eq (A +₀ B) ↔ ((Has-decidable-eq A) × (Has-decidable-eq B))
+    +₀-deceq-biimpl-both-deceq {A} {B} = (forward , backward)
       where
-        forward : Has-decidable-eq (A +₁ B) → ((Has-decidable-eq A) × (Has-decidable-eq B))
+        forward : Has-decidable-eq (A +₀ B) → ((Has-decidable-eq A) × (Has-decidable-eq B))
         forward deceqab = (f , g)
           where
             f : Has-decidable-eq A
             f a1 a2 =
               case (deceqab (left a1) (left a2)) of λ {
-                (left eqla) → left (+₁-left-inj eqla)
+                (left eqla) → left (+₀-left-inj eqla)
               ; (right ¬eqla) → right (λ eqa → ¬eqla (ap left eqa))
               }
             g : Has-decidable-eq B
             g b1 b2 =
               case (deceqab (right b1) (right b2)) of λ {
-                (left eqrb) → left (+₁-right-inj eqrb)
+                (left eqrb) → left (+₀-right-inj eqrb)
               ; (right ¬eqrb) → right (λ eqb → ¬eqrb (ap right eqb))
               }
-        backward : ((Has-decidable-eq A) × (Has-decidable-eq B)) → Has-decidable-eq (A +₁ B)
+        backward : ((Has-decidable-eq A) × (Has-decidable-eq B)) → Has-decidable-eq (A +₀ B)
         backward (deceqa , deceqb) (left a1) (left a2) =
           case (deceqa a1 a2) of λ {
             (left eqa) → left (ap left eqa)
-          ; (right ¬eqa) → right (λ eqla → ¬eqa (+₁-left-inj eqla))
+          ; (right ¬eqa) → right (λ eqla → ¬eqa (+₀-left-inj eqla))
           }
         backward (deceqa , deceqb) (left a1) (right b2) = right (λ ())
         backward (deceqa , deceqb) (right b1) (left a2) = right (λ ())
         backward (deceqa , deceqb) (right b1) (right b2) =
           case (deceqb b1 b2) of λ {
             (left eqb) → left (ap right eqb)
-          ; (right ¬eqb) → right (λ eqrb → ¬eqb (+₁-right-inj eqrb))
+          ; (right ¬eqb) → right (λ eqrb → ¬eqb (+₀-right-inj eqrb))
           }
 
     left-neq-right : {A : Set} → {B : Set} → {x : A} → {y : B} → ¬ (left x ≡ right y)
@@ -208,7 +208,7 @@ module _ where
     open Has-decidable-eq
 
     Int-has-decidable-eq : Has-decidable-eq Int
-    Int-has-decidable-eq = (+₁-deceq-biimpl-both-deceq).Σ.snd (Nat-has-decidable-eq , (+₁-deceq-biimpl-both-deceq).Σ.snd (Unit-has-decidable-eq , Nat-has-decidable-eq))
+    Int-has-decidable-eq = (+₀-deceq-biimpl-both-deceq).Σ.snd (Nat-has-decidable-eq , (+₀-deceq-biimpl-both-deceq).Σ.snd (Unit-has-decidable-eq , Nat-has-decidable-eq))
 
   Eq-Σ : {A : Set} → {B : A → Set} → (Σ A B) → (Σ A B) → Set
   Eq-Σ (a1 , b1) (a2 , b2) = Σ (a1 ≡ a2) (λ { (refl) → b1 ≡ b2 })
@@ -326,8 +326,8 @@ module _ where
                                  Σ Nat (λ n → -- found a value n
                                     P n ×     -- that satisfies P
                                     (n ≤ N) × -- and is less than or equal to N
-                                    ((x : Nat) → P x → (x ≤ n) +₁ (N < x)  -- such that for any x with (P x), x does not lie in (succ n)..N
-                                 )) +₁ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
+                                    ((x : Nat) → P x → (x ≤ n) +₀ (N < x)  -- such that for any x with (P x), x does not lie in (succ n)..N
+                                 )) +₀ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
     search-descending-from-Nat {P} {decide-p} zero =
       case decide-p zero of λ {
         (left pz) → left (zero , (pz , Leq-Nat.Leq-Nat-refl zero), (λ x _ → Lt-Nat.leq-or-gt x zero))
@@ -348,7 +348,7 @@ module _ where
               n ,
               (pn , trans n N (succ N) leq-n (self-succ N)),
               (λ x px →
-                +₁-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
+                +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
                   case (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x).Σ.snd ((Lt-Nat.lt-biimpl-succ-leq N x).Σ.fst N<x) of λ {
                     (left sN<x) → sN<x
                   ; (right refl) → absurd (¬psN px)

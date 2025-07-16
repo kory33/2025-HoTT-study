@@ -118,10 +118,10 @@ module _ where
       forward (succ m) zero eq = absurd (zero-neq-succ m (inverse eq))
       forward m (succ n) eq = absurd (zero-neq-succ (m + n) (inverse eq))
 
-    product-eq-zero-iff-some-zero : (m n : Nat) → (m * n ≡ zero) ↔ ((m ≡ zero) +₁ (n ≡ zero))
+    product-eq-zero-iff-some-zero : (m n : Nat) → (m * n ≡ zero) ↔ ((m ≡ zero) +₀ (n ≡ zero))
     product-eq-zero-iff-some-zero m n = (forward m n , (λ { (left refl) → mul-lzero n ; (right refl) → mul-rzero m }))
       where
-      forward : (m n : Nat) → (m * n ≡ zero) → ((m ≡ zero) +₁ (n ≡ zero))
+      forward : (m n : Nat) → (m * n ≡ zero) → ((m ≡ zero) +₀ (n ≡ zero))
       forward m zero eq = right refl
       forward zero n eq = left refl
       forward (succ m) (succ n) eq =
@@ -290,12 +290,12 @@ module _ where
     trans _        (succ y) zero     _   bot = EmptyBasic.absurd bot
     trans (succ x) (succ y) (succ z) x≤y y≤z = trans x y z x≤y y≤z
 
-    total : (x y : Nat) → (x ≤ y) +₁ (y ≤ x)
+    total : (x y : Nat) → (x ≤ y) +₀ (y ≤ x)
     total zero y = left unit
     total (succ x) zero = right unit
     total (succ x) (succ y) = total x y
 
-    by-comparing : (x y : Nat) → {P : Set} → ((x ≤ y) +₁ (y ≤ x) → P) → P
+    by-comparing : (x y : Nat) → {P : Set} → ((x ≤ y) +₀ (y ≤ x) → P) → P
     by-comparing x y f = 
       case (total x y) of λ {
         (left x≤y) → f (left x≤y)
@@ -337,7 +337,7 @@ module _ where
     from-diff : (x y k : Nat) → (x + k ≡ y) → (x ≤ y)
     from-diff x y k eq = (leq-biimpl-exists-diff x y).Σ.snd (k , eq)
 
-    leq-succ-then-leq-or-eq-succ : (m n : Nat) → (m ≤ succ n) → (m ≤ n) +₁ (m ≡ succ n)
+    leq-succ-then-leq-or-eq-succ : (m n : Nat) → (m ≤ succ n) → (m ≤ n) +₀ (m ≡ succ n)
     leq-succ-then-leq-or-eq-succ m n m≤succn =
       case (extract-diff m (succ n) m≤succn) of λ {
         (zero , eq) → right eq
@@ -632,7 +632,7 @@ module _ where
             succ n        ∎
       in from-diff m (succ n) k eq 
 
-    trichotomy : (m n : Nat) → (m < n) +₁ (Eq-Nat m n) +₁ (n < m)
+    trichotomy : (m n : Nat) → (m < n) +₀ (Eq-Nat m n) +₀ (n < m)
     trichotomy zero zero = left (right unit)
     trichotomy zero (succ n) = left (left unit)
     trichotomy (succ m) zero = right unit
@@ -656,7 +656,7 @@ module _ where
     trichotomy-gt-case (succ m) zero unit = refl
     trichotomy-gt-case (succ m) (succ n) n<m = trichotomy-gt-case m n n<m
 
-    by-comparing : (m n : Nat) → {P : Set} → ((m < n) +₁ (m ≡ n) +₁ (n < m) → P) → P
+    by-comparing : (m n : Nat) → {P : Set} → ((m < n) +₀ (m ≡ n) +₀ (n < m) → P) → P
     by-comparing m n f =
       case (trichotomy m n) of λ {
         (left (left m<n)) → f (left (left m<n))
@@ -664,16 +664,16 @@ module _ where
       ; (right n<m) → f (right n<m)
       }
 
-    lt-or-eq-biimpl-leq : (m n : Nat) → ((m < n) +₁ (m ≡ n)) ↔ (m ≤ n)
+    lt-or-eq-biimpl-leq : (m n : Nat) → ((m < n) +₀ (m ≡ n)) ↔ (m ≤ n)
     lt-or-eq-biimpl-leq m n = (forward , backward)
       where
-      forward : ((m < n) +₁ (m ≡ n)) → (m ≤ n)
+      forward : ((m < n) +₀ (m ≡ n)) → (m ≤ n)
       forward (left m<n) =
         let (k , m+sk≡n) = extract-diff m n m<n
         in Leq-Nat.from-diff m n (succ k) m+sk≡n
       forward (right refl) = Leq-Nat.Leq-Nat-refl m
 
-      backward : (m ≤ n) → ((m < n) +₁ (m ≡ n))
+      backward : (m ≤ n) → ((m < n) +₀ (m ≡ n))
       backward m≤n with Leq-Nat.extract-diff m n m≤n
       ...             | (zero , m+zero≡n) = right m+zero≡n
       ...             | (succ k , m+sk≡n) = left (from-diff m n k m+sk≡n)
@@ -755,7 +755,7 @@ module _ where
             k                     ∎
       in from-diff m k (pn-m + k-n) eq
 
-    leq-or-gt : (m n : Nat) → (m ≤ n) +₁ (n < m)
+    leq-or-gt : (m n : Nat) → (m ≤ n) +₀ (n < m)
     leq-or-gt m n =
       by-comparing m n λ {
         (left (left m<n)) → left (as-leq m n m<n)
@@ -763,7 +763,7 @@ module _ where
       ; (right n<m) → right n<m
       }
 
-    by-comparing-leq-pr-gt-cases : (m n : Nat) → {P : Set} → ((m ≤ n) +₁ (n < m) → P) → ((m < n) +₁ (Eq-Nat m n) +₁ (n < m) → P)
+    by-comparing-leq-pr-gt-cases : (m n : Nat) → {P : Set} → ((m ≤ n) +₀ (n < m) → P) → ((m < n) +₀ (Eq-Nat m n) +₀ (n < m) → P)
     by-comparing-leq-pr-gt-cases m n f =
       λ {
         (left (left m<n)) → f (left (as-leq m n m<n))
@@ -771,19 +771,19 @@ module _ where
       ; (right n<m) → f (right n<m)
       }
 
-    by-comparing-leq-or-gt : (m n : Nat) → {P : Set} → ((m ≤ n) +₁ (n < m) → P) → P
+    by-comparing-leq-or-gt : (m n : Nat) → {P : Set} → ((m ≤ n) +₀ (n < m) → P) → P
     by-comparing-leq-or-gt m n f = by-comparing-leq-pr-gt-cases m n f (trichotomy m n)
 
-    by-comparing-leq-or-gt-gt-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m ≤ n) +₁ (n < m) → P} →
+    by-comparing-leq-or-gt-gt-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m ≤ n) +₀ (n < m) → P} →
                                      (n<m : n < m) → by-comparing-leq-or-gt m n cases ≡ cases (right n<m)
     by-comparing-leq-or-gt-gt-case m {n} {P} {cases} n<m = ap (by-comparing-leq-pr-gt-cases m n cases) (trichotomy-gt-case m n n<m)
 
-    by-comparing-leq-or-gt-leq-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m ≤ n) +₁ (n < m) → P} →
+    by-comparing-leq-or-gt-leq-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m ≤ n) +₀ (n < m) → P} →
                                       (m≤n : m ≤ n) → by-comparing-leq-or-gt m n cases ≡ cases (left m≤n)
     by-comparing-leq-or-gt-leq-case m {n} {P} {cases} m≤n =
       let motive = by-comparing-leq-or-gt m n cases ≡ cases (left m≤n)
-      in ind-+₁ {(m < n) +₁ (Eq-Nat m n)} {n < m} {λ copr → trichotomy m n ≡ copr → motive}
-        (ind-+₁ {m < n} {Eq-Nat m n} {λ copr → trichotomy m n ≡ left copr → motive}
+      in ind-+₀ {(m < n) +₀ (Eq-Nat m n)} {n < m} {λ copr → trichotomy m n ≡ copr → motive}
+        (ind-+₀ {m < n} {Eq-Nat m n} {λ copr → trichotomy m n ≡ left copr → motive}
           (λ m<n eq → begin
             by-comparing-leq-or-gt m n cases   ≡⟨ ap (by-comparing-leq-pr-gt-cases m n cases) eq ⟩
             cases (left _)                     ≡⟨ ap (cases ∘ left) (Leq-Nat.subsingleton m n _ m≤n) ⟩
@@ -799,7 +799,7 @@ module _ where
         (trichotomy m n) refl
 
     -- an auxiliary function to help with the proof of by-comparing-lt-or-geq-lt-case, otherwise this is inlinable to by-comparing-lt-or-geq
-    by-comparing-lt-or-geq-cases : (m n : Nat) → {P : Set} → ((m < n) +₁ (n ≤ m) → P) → ((m < n) +₁ (Eq-Nat m n) +₁ (n < m) → P)
+    by-comparing-lt-or-geq-cases : (m n : Nat) → {P : Set} → ((m < n) +₀ (n ≤ m) → P) → ((m < n) +₀ (Eq-Nat m n) +₀ (n < m) → P)
     by-comparing-lt-or-geq-cases m n f =
       λ {
         (left (left m<n)) → f (left m<n)
@@ -807,19 +807,19 @@ module _ where
       ; (right n<m) → f (right (as-leq n m n<m))
       }
 
-    by-comparing-lt-or-geq : (m n : Nat) → {P : Set} → ((m < n) +₁ (n ≤ m) → P) → P
+    by-comparing-lt-or-geq : (m n : Nat) → {P : Set} → ((m < n) +₀ (n ≤ m) → P) → P
     by-comparing-lt-or-geq m n f = by-comparing-lt-or-geq-cases m n f (trichotomy m n)
     
-    by-comparing-lt-or-geq-lt-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m < n) +₁ (n ≤ m) → P} →
+    by-comparing-lt-or-geq-lt-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m < n) +₀ (n ≤ m) → P} →
                                      (m<n : m < n) → by-comparing-lt-or-geq m n cases ≡ cases (left m<n)
     by-comparing-lt-or-geq-lt-case m {n} {P} {cases} m<n = ap (by-comparing-lt-or-geq-cases m n cases) (trichotomy-lt-case m n m<n)
 
-    by-comparing-lt-or-geq-geq-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m < n) +₁ (n ≤ m) → P} →
+    by-comparing-lt-or-geq-geq-case : (m : Nat) → {n : Nat} → {P : Set} → {cases : (m < n) +₀ (n ≤ m) → P} →
                                       (n≤m : n ≤ m) → by-comparing-lt-or-geq m n cases ≡ cases (right n≤m)
     by-comparing-lt-or-geq-geq-case m {n} {P} {cases} n≤m =
       let motive = by-comparing-lt-or-geq m n cases ≡ cases (right n≤m)
-      in ind-+₁ {(m < n) +₁ (Eq-Nat m n)} {n < m} {λ copr → trichotomy m n ≡ copr → motive}
-        (ind-+₁ {m < n} {Eq-Nat m n} {λ copr → trichotomy m n ≡ left copr → motive}
+      in ind-+₀ {(m < n) +₀ (Eq-Nat m n)} {n < m} {λ copr → trichotomy m n ≡ copr → motive}
+        (ind-+₀ {m < n} {Eq-Nat m n} {λ copr → trichotomy m n ≡ left copr → motive}
           (λ m<n _ → EmptyBasic.absurd ((lt-biimpl-not-flip-leq m n).Σ.fst m<n n≤m))
           (λ Eqmn eq → begin
             by-comparing-lt-or-geq m n cases   ≡⟨ ap (by-comparing-lt-or-geq-cases m n cases) eq ⟩
@@ -952,7 +952,7 @@ module _ where
 
     triangle-eq-biimpl-ordered : (m n k : Nat) →
                                  (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) ↔ 
-                                 (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
+                                 (((m ≤ k) × (k ≤ n)) +₀ ((n ≤ k) × (k ≤ m)))
     triangle-eq-biimpl-ordered m n k = (forward , backward)
       where
         backward' : (m n k : Nat) → ((m ≤ k) × (k ≤ n)) → Nat-dist m n ≡ Nat-dist m k + Nat-dist k n
@@ -967,7 +967,7 @@ module _ where
               n                                    ≡⟨← (ordered-then-diff m n (trans m k n m≤k k≤n)) ⟩
               m + Nat-dist m n                     ∎          
 
-        backward : (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m))) → (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n)
+        backward : (((m ≤ k) × (k ≤ n)) +₀ ((n ≤ k) × (k ≤ m))) → (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n)
         backward (left (m≤k , k≤n)) = backward' m n k (m≤k , k≤n)
         backward (right (n≤k , k≤m)) = begin
           Nat-dist m n                  ≡⟨ Metric.symm m n ⟩
@@ -1020,7 +1020,7 @@ module _ where
               )
             }
 
-        forward : (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) → (((m ≤ k) × (k ≤ n)) +₁ ((n ≤ k) × (k ≤ m)))
+        forward : (Nat-dist m n ≡ Nat-dist m k + Nat-dist k n) → (((m ≤ k) × (k ≤ n)) +₀ ((n ≤ k) × (k ≤ m)))
         forward eqn =
           case (Lt-Nat.trichotomy m k) of λ {
             (left (left m<k)) →

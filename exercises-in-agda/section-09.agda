@@ -544,37 +544,26 @@ module _ where
     open HomotopyGroupoidSymbolic
     open ≡-Basic
 
+    build-tpe-equiv : {A B : Set} → {f : A → B} → Is-equiv f → A ≃ B
+    build-tpe-equiv {A} {B} {f} is-equiv = (f , is-equiv)
+
     -- 9.2.3
     id-is-equiv : {A : Set} → Is-equiv (id {A})
     id-is-equiv {A} = ((id , λ x → refl), (id , λ x → refl))
+
+    comp-equivs-is-equiv : {A B C : Set} → {g : B → C} → {f : A → B} → 
+      Is-equiv g → Is-equiv f → Is-equiv (g ∘ f)
+    comp-equivs-is-equiv {A} {B} {C} {g} {f} ((sg , Sg), (rg , Rg)) ((sf , Sf), (rf , Rf)) =
+      (
+        (sf ∘ sg , λ c → (ap g (Sf (sg c)) · (Sg c))) ,
+        (rf ∘ rg , λ c → (ap rf (Rg (f c)) · (Rf c)))
+      )
 
     ≃-refl : {A : Set} → A ≃ A
     ≃-refl {A} = (id , id-is-equiv)
 
     ≃-trans : {A B C : Set} → A ≃ B → B ≃ C → A ≃ C
-    ≃-trans (f , (sf , Sf), (rf , Rf)) (g , (sg , Sg), (rg , Rg)) =
-      (g ∘ f , (sf ∘ sg , λ c → (ap g (Sf (sg c)) · (Sg c))) , (rf ∘ rg , λ c → (ap rf (Rg (f c)) · (Rf c))))
-    
-    module Equivalence-Reasoning where
-      infix  1 begin-≃_
-      infixr 2 step-≃-∣ step-≃-⟩
-      infix  3 _∎-≃
-
-      begin-≃_ : {A B : Set} → (A≃B : A ≃ B) → A ≃ B
-      begin-≃ A≃B = A≃B
-
-      step-≃-∣ : (A : Set) → {B : Set} → (A ≃ B) → (A ≃ B)
-      step-≃-∣ A A≃B = A≃B
-
-      step-≃-⟩ : (A : Set) → {B C : Set} → (A ≃ B) → (B ≃ C) → (A ≃ C)
-      step-≃-⟩ A A≃B B≃C = ≃-trans A≃B B≃C
-
-      syntax step-≃-∣ A A≃B      =  A ≃⟨⟩ A≃B
-      syntax step-≃-⟩ A A≃B B≃C  =  A ≃⟨ A≃B ⟩ B≃C
-
-      _∎-≃ : (A : Set) → A ≃ A
-      A ∎-≃  =  ≃-refl
-    open Equivalence-Reasoning
+    ≃-trans (f , f-eqv) (g , g-eqv) = (g ∘ f , comp-equivs-is-equiv g-eqv f-eqv)
 
     -- 9.2.6
     Has-inverse : {A B : Set} → (f : A → B) → Set
@@ -601,6 +590,15 @@ module _ where
       where
         fsect : Is-sect-of g f
         fsect = (equiv-has-inverse f-is-equiv) .Σ.snd .Σ.snd
+    
+    ≃-inverse-map-is-sect-of-original : {A B : Set} → (eqv@(f , _) : A ≃ B) → Is-sect-of f (≃-inverse-map eqv)
+    ≃-inverse-map-is-sect-of-original {A} {B} (f , f-is-eqv@((g , gsect) , _)) = gsect
+
+    ≃-inverse-map-is-retr-of-original : {A B : Set} → (eqv@(f , _) : A ≃ B) → Is-retr-of f (≃-inverse-map eqv)
+    ≃-inverse-map-is-retr-of-original {A} {B} (f , f-is-eqv@((g , gsect) , _)) =
+      let
+        (_ {- should equal g -} , gsect , gretr) = equiv-has-inverse f-is-eqv
+      in gretr
 
     ≃-inverse : {A B : Set} → A ≃ B → B ≃ A
     ≃-inverse {A} {B} eqv = (≃-inverse-map eqv , ≃-inverse-map-is-equiv eqv)
@@ -608,361 +606,671 @@ module _ where
     ≃-comm : {A B : Set} → A ≃ B → B ≃ A
     ≃-comm eqv = ≃-inverse eqv
 
-    -- exercise 9.1
-    module EqualityOps where
-      open ≡-Reasoning
+    module Equivalence-Reasoning where
+      infix  1 begin-≃_
+      infixr 2 step-≃-∣ step-≃-⟩ step-≃-⟩⁻¹
+      infix  3 _∎-≃
 
-      private variable
-        A : Set
-        B : (x : A) → Set
-      
-      inv-is-equiv : {x y : A} → Is-equiv (λ (p : x ≡ y) → inverse p)
-      inv-is-equiv {x} {y} = ((inverse , (λ { refl → refl })), (inverse , (λ { refl → refl })))
+      begin-≃_ : {A B : Set} → (A≃B : A ≃ B) → A ≃ B
+      begin-≃ A≃B = A≃B
 
-      prepend-path-is-equiv : {x y z : A} → (p : x ≡ y) → Is-equiv (λ (q : y ≡ z) → p · q)
-      prepend-path-is-equiv {A} {x} {y} {z} p = ((inverseMap , section-eq), (inverseMap , retract-eq))
-        where
-          inverseMap : (x ≡ z) → (y ≡ z)
-          inverseMap r = p ⁻¹ · r
+      step-≃-∣ : (A : Set) → {B : Set} → (A ≃ B) → (A ≃ B)
+      step-≃-∣ A A≃B = A≃B
 
-          section-eq : (_·_ p) ∘ inverseMap ~ id
-          section-eq q = begin
-            p · (p ⁻¹ · q) ≡⟨ unassoc p (p ⁻¹) q ⟩
-            p · p ⁻¹ · q   ≡⟨ ap (λ e → e · q) (·-rinv p) ⟩
-            refl · q       ≡⟨⟩
-            q              ∎
+      step-≃-⟩ : (A : Set) → {B C : Set} → (A ≃ B) → (B ≃ C) → (A ≃ C)
+      step-≃-⟩ A A≃B B≃C = ≃-trans A≃B B≃C
 
-          retract-eq : inverseMap ∘ (_·_ p) ~ id
-          retract-eq q = begin
-            p ⁻¹ · (p · q) ≡⟨ unassoc (p ⁻¹) p q ⟩
-            p ⁻¹ · p · q   ≡⟨ ap (λ e → e · q) (·-linv p) ⟩
-            refl · q       ≡⟨⟩
-            q              ∎
+      step-≃-⟩⁻¹ : (A : Set) → {B C : Set} → (B ≃ A) → (B ≃ C) → (A ≃ C)
+      step-≃-⟩⁻¹ A B≃A B≃C = ≃-trans (≃-inverse B≃A) B≃C
 
-      concat-swap-is-equiv : {x y z : A} → (q : y ≡ z) → Is-equiv (λ (p : x ≡ y) → p · q)
-      concat-swap-is-equiv {A} {x} {y} {z} q = ((inverseMap , section-eq), (inverseMap , retract-eq))
-        where
-          inverseMap : (x ≡ z) → (x ≡ y)
-          inverseMap r = r · q ⁻¹
+      syntax step-≃-∣ A A≃B       =  A ≃⟨⟩ A≃B
+      syntax step-≃-⟩ A A≃B B≃C   =  A ≃⟨ A≃B ⟩ B≃C
+      syntax step-≃-⟩⁻¹ A B≃A B≃C =  A ≃⟨← B≃A ⟩ B≃C
 
-          section-eq : (λ p → p · q) ∘ inverseMap ~ id
-          section-eq refl = begin
-            refl · (q ⁻¹) · q   ≡⟨⟩
-            q ⁻¹ · q            ≡⟨ ·-linv q ⟩
-            refl                ∎
+      _∎-≃ : (A : Set) → A ≃ A
+      A ∎-≃  =  ≃-refl
 
-          retract-eq : inverseMap ∘ (λ p → p · q) ~ id
-          retract-eq refl = begin
-            refl · q · q ⁻¹   ≡⟨⟩
-            q · q ⁻¹          ≡⟨ ·-rinv q ⟩
-            refl              ∎
+  open ≡-Basic
+  open ≡-Reasoning
+  open Homotopy
+  open Homotopy.Symbolic
+  open HomotopyGroupoidSymbolic
+  open Equivalence
+  open Equivalence.Symbolic
+  open Equivalence-Reasoning
 
-      tr-is-equiv : (B : A → Set) → {x y : A} → (p : x ≡ y) → Is-equiv (tr B p)
-      tr-is-equiv B {x} {y} p = ((inverseMap , section-eq), (inverseMap , retract-eq))
-        where
-          inverseMap : B y → B x
-          inverseMap = tr B (p ⁻¹)
+  -- exercise 9.1
+  module EqualityOps where
+    open ≡-Reasoning
 
-          section-eq : (tr B p) ∘ inverseMap ~ id
-          section-eq by = begin
-            (tr B p ∘ inverseMap) by      ≡⟨⟩
-            tr B p (tr B (p ⁻¹) by)       ≡⟨← tr-concat (p ⁻¹) _ _ ⟩
-            tr B (p ⁻¹ · p) by            ≡⟨ ap (λ e → tr B e by) (·-linv p) ⟩
-            tr B refl by                  ≡⟨⟩
-            id by                         ∎
+    private variable
+      A : Set
+      B : (x : A) → Set
+    
+    inv-is-equiv : {x y : A} → Is-equiv (λ (p : x ≡ y) → inverse p)
+    inv-is-equiv {x} {y} = ((inverse , (λ { refl → refl })), (inverse , (λ { refl → refl })))
 
-          retract-eq : inverseMap ∘ (tr B p) ~ id
-          retract-eq by = begin
-            (inverseMap ∘ (tr B p)) by    ≡⟨⟩
-            tr B (p ⁻¹) (tr B p by)       ≡⟨← tr-concat p _ _ ⟩
-            tr B (p · p ⁻¹) by            ≡⟨ ap (λ e → tr B e by) (·-rinv p) ⟩
-            tr B refl by                  ≡⟨⟩
-            id by                         ∎
+    prepend-path-is-equiv : {x y z : A} → (p : x ≡ y) → Is-equiv (λ (q : y ≡ z) → p · q)
+    prepend-path-is-equiv {A} {x} {y} {z} p = ((inverseMap , section-eq), (inverseMap , retract-eq))
+      where
+        inverseMap : (x ≡ z) → (y ≡ z)
+        inverseMap r = p ⁻¹ · r
 
-    -- exercise 9.2
-    module _ where
-      open EmptyBasic
-      open Eq-Bool
-      open ≡-Reasoning
+        section-eq : (_·_ p) ∘ inverseMap ~ id
+        section-eq q = begin
+          p · (p ⁻¹ · q) ≡⟨ unassoc p (p ⁻¹) q ⟩
+          p · p ⁻¹ · q   ≡⟨ ap (λ e → e · q) (·-rinv p) ⟩
+          refl · q       ≡⟨⟩
+          q              ∎
 
-      const-bool-not-equiv : (b : Bool) → ¬ Is-equiv (λ (b' : Bool) → const b b')
-      const-bool-not-equiv true ((g , G), _) = false-neq-true (inverse (G false {-- : true ≡ false --}))
-      const-bool-not-equiv false ((g , G), _) = false-neq-true (G true)
+        retract-eq : inverseMap ∘ (_·_ p) ~ id
+        retract-eq q = begin
+          p ⁻¹ · (p · q) ≡⟨ unassoc (p ⁻¹) p q ⟩
+          p ⁻¹ · p · q   ≡⟨ ap (λ e → e · q) (·-linv p) ⟩
+          refl · q       ≡⟨⟩
+          q              ∎
 
-      Bool-≄-Unit : Bool ≄ Unit
-      Bool-≄-Unit (equiv , ((g , G), (h , H))) =
-        const-bool-not-equiv
-          (h unit)
-          (has-inverse-equiv (
-            id ,
+    concat-swap-is-equiv : {x y z : A} → (q : y ≡ z) → Is-equiv (λ (p : x ≡ y) → p · q)
+    concat-swap-is-equiv {A} {x} {y} {z} q = ((inverseMap , section-eq), (inverseMap , retract-eq))
+      where
+        inverseMap : (x ≡ z) → (x ≡ y)
+        inverseMap r = r · q ⁻¹
+
+        section-eq : (λ p → p · q) ∘ inverseMap ~ id
+        section-eq refl = begin
+          refl · (q ⁻¹) · q   ≡⟨⟩
+          q ⁻¹ · q            ≡⟨ ·-linv q ⟩
+          refl                ∎
+
+        retract-eq : inverseMap ∘ (λ p → p · q) ~ id
+        retract-eq refl = begin
+          refl · q · q ⁻¹   ≡⟨⟩
+          q · q ⁻¹          ≡⟨ ·-rinv q ⟩
+          refl              ∎
+
+    tr-is-equiv : (B : A → Set) → {x y : A} → (p : x ≡ y) → Is-equiv (tr B p)
+    tr-is-equiv B {x} {y} p = ((inverseMap , section-eq), (inverseMap , retract-eq))
+      where
+        inverseMap : B y → B x
+        inverseMap = tr B (p ⁻¹)
+
+        section-eq : (tr B p) ∘ inverseMap ~ id
+        section-eq by = begin
+          (tr B p ∘ inverseMap) by      ≡⟨⟩
+          tr B p (tr B (p ⁻¹) by)       ≡⟨← tr-concat (p ⁻¹) _ _ ⟩
+          tr B (p ⁻¹ · p) by            ≡⟨ ap (λ e → tr B e by) (·-linv p) ⟩
+          tr B refl by                  ≡⟨⟩
+          id by                         ∎
+
+        retract-eq : inverseMap ∘ (tr B p) ~ id
+        retract-eq by = begin
+          (inverseMap ∘ (tr B p)) by    ≡⟨⟩
+          tr B (p ⁻¹) (tr B p by)       ≡⟨← tr-concat p _ _ ⟩
+          tr B (p · p ⁻¹) by            ≡⟨ ap (λ e → tr B e by) (·-rinv p) ⟩
+          tr B refl by                  ≡⟨⟩
+          id by                         ∎
+
+  -- exercise 9.2
+  module _ where
+    open EmptyBasic
+    open Eq-Bool
+    open ≡-Reasoning
+
+    const-bool-not-equiv : (b : Bool) → ¬ Is-equiv (λ (b' : Bool) → const b b')
+    const-bool-not-equiv true ((g , G), _) = false-neq-true (inverse (G false {-- : true ≡ false --}))
+    const-bool-not-equiv false ((g , G), _) = false-neq-true (G true)
+
+    Bool-≄-Unit : Bool ≄ Unit
+    Bool-≄-Unit (equiv , ((g , G), (h , H))) =
+      const-bool-not-equiv
+        (h unit)
+        (has-inverse-equiv (
+          id ,
+          (λ b → begin
+            (const (h unit) ∘ id) b    ≡⟨⟩
+            h unit                     ≡⟨ ap h (UnitEquality.any-units-eq unit (equiv b)) ⟩
+            h (equiv b)                ≡⟨ H b ⟩
+            id b                       ∎),
+          (λ b → begin
+            (id ∘ (const (h unit))) b  ≡⟨⟩
+            h unit                     ≡⟨ ap h (UnitEquality.any-units-eq unit (equiv b)) ⟩
+            h (equiv b)                ≡⟨ H b ⟩
+            id b                       ∎)
+        ))
+
+    open +₀-Basic
+    open EmptyBasic
+
+    Inhabited-≄-Empty : {A : Set} → (a : A) → A ≄ Empty
+    Inhabited-≄-Empty a eqv = absurd ((eqv .Σ.fst) a)
+
+    ≃-comm-+₀ : {A B : Set} → A +₀ B ≃ B +₀ A
+    ≃-comm-+₀ =
+      (swap-+₀ ,
+        (has-inverse-equiv (
+          swap-+₀ ,
+          (λ { (left _) → refl ; (right _) → refl }),
+          (λ { (left _) → refl ; (right _) → refl }))))
+
+    ≃-+₀-both : {A B C D : Set} → (A ≃ C) → (B ≃ D) → (A +₀ B ≃ C +₀ D)
+    ≃-+₀-both (f , (fs , fS), (fr , fR)) (g , (gs , gS), (gr , gR)) =
+      (< f +₀ g > ,
+        ((λ { (left c) → left (fs c) ; (right d) → right (gs d) }) , (λ { (left c) → ap left (fS c) ; (right d) → ap right (gS d) })) ,
+        ((λ { (left c) → left (fr c) ; (right d) → right (gr d) }) , (λ { (left c) → ap left (fR c) ; (right d) → ap right (gR d) }))
+      )
+
+    Empty-≃-lunit : {A : Set} → Empty +₀ A ≃ A
+    Empty-≃-lunit =
+      (
+        (λ { (left emp) → absurd emp ; (right a) → a }),
+        (has-inverse-equiv (
+          right ,
+          (λ a → refl),
+          (λ { (left emp) → absurd emp ; (right a) → refl }))))
+
+    Empty-≃-runit : {A : Set} → A +₀ Empty ≃ A
+    Empty-≃-runit {A} = begin-≃
+      A +₀ Empty     ≃⟨ ≃-comm-+₀ ⟩
+      Empty +₀ A     ≃⟨ Empty-≃-lunit ⟩
+      A              ∎-≃
+
+    Nat≃+Unit-then-Nat≃ : {A : Set} → (forward : Nat → A +₀ Unit) → Has-inverse forward → Σ (Nat → A) Has-inverse
+    Nat≃+Unit-then-Nat≃ {A} forward (backward , Sect , Retr) =
+      (forward' , (backward' , forward'∘backward'~id , backward'∘forward'~id))
+      where open Lt-Nat.Symbolic
+            open Leq-Nat.Symbolic
+
+            pointToEliminate = backward (right unit)
+
+            forward-is-unit-only-at-pointToEliminate : (n : Nat) → (forward n ≡ right unit) → (n ≡ pointToEliminate)
+            forward-is-unit-only-at-pointToEliminate n fn≡unit =
+              begin
+                n                      ≡⟨← (Retr n) ⟩
+                backward (forward n)   ≡⟨ ap backward (fn≡unit) ⟩
+                backward (right unit)  ≡⟨⟩
+                pointToEliminate       ∎
+            
+            blackward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
+            blackward-left-is-not-pointToEliminate a pt≡bla =
+              let ru≡la = begin
+                    (right unit)                     ≡⟨← (Sect (right unit)) ⟩
+                    forward (backward (right unit))  ≡⟨ ap forward pt≡bla ⟩
+                    forward (backward (left a))      ≡⟨ Sect (left a) ⟩
+                    left a                           ∎
+              in Eq-Copr.left-neq-right (inverse ru≡la)
+
+            extract-a-from-forward-cases : (n : Nat) → (n≠pt : n ≢ pointToEliminate) → (copr : A +₀ Unit) → (forward n ≡ copr) → A
+            extract-a-from-forward-cases n n≠pt =
+              ind-+₀ {A} {Unit} {λ copr → forward n ≡ copr → A}
+                (λ a _ → a)
+                (λ { unit eq → absurd (n≠pt (forward-is-unit-only-at-pointToEliminate n eq)) })
+            extract-a-from-forward : (n : Nat) → (n ≢ pointToEliminate) → A
+            extract-a-from-forward n n≠pt = extract-a-from-forward-cases n n≠pt (forward n) refl
+
+            extract-a-from-forward-eq-forward : (n : Nat) → {n≠pt : n ≢ pointToEliminate} → left (extract-a-from-forward n n≠pt) ≡ forward n
+            extract-a-from-forward-eq-forward n {n≠pt} =
+              ind-+₀ {A} {Unit} {λ copr → forward n ≡ copr → left (extract-a-from-forward n n≠pt) ≡ forward n}
+                (λ a eq → begin
+                  left (extract-a-from-forward n n≠pt)                            ≡⟨⟩
+                  left (extract-a-from-forward-cases n n≠pt (forward n) refl)     ≡⟨ ap left (transport-equality-fn (forward n) (extract-a-from-forward-cases n n≠pt) eq) ⟩
+                  left (extract-a-from-forward-cases n n≠pt (left a) eq)          ≡⟨⟩
+                  left a                                                          ≡⟨← eq ⟩
+                  forward n                                                       ∎
+                )
+                (λ { unit eq → absurd (n≠pt (forward-is-unit-only-at-pointToEliminate n eq)) })
+                (forward n) refl
+              where
+                transport-equality-fn : {X P : Set} → (x : X) → (depfn : (z : X) → (x ≡ z) → P) → {y : X} → (q : x ≡ y) → depfn x refl ≡ depfn y q
+                transport-equality-fn x d refl = refl
+
+            forward'-cases : (n : Nat) → ((n < pointToEliminate) +₀ (pointToEliminate ≤ n)) → A
+            forward'-cases n =
+              λ {
+                (left n<pt) →
+                  extract-a-from-forward n (Lt-Nat.lt-then-neq n _ n<pt)
+              ; (right pt≤n) →
+                  extract-a-from-forward (succ n)
+                    (≢-inverse
+                      (Lt-Nat.lt-then-neq pointToEliminate (succ n)
+                        (Lt-Nat.leq-then-lt-succ pointToEliminate n pt≤n)))
+              }
+            forward' : Nat → A
+            forward' n = Lt-Nat.by-comparing-lt-or-geq n pointToEliminate (forward'-cases n)
+
+            backward'-cases : (res : Nat) → ((res ≤ pointToEliminate) +₀ (pointToEliminate < res)) → Nat
+            backward'-cases res =
+              λ {
+                (left res≤pt) → res
+              ; (right pt<res) → NatBasic.predOrZero res
+              }
+            backward' : A → Nat
+            backward' a = let result = backward (left a) in Lt-Nat.by-comparing-leq-or-gt result pointToEliminate (backward'-cases result)
+
+            left∘forward'≡forward-if-<pt : (n : Nat) → (n < pointToEliminate) → (left (forward' n) ≡ forward n)
+            left∘forward'≡forward-if-<pt n n<pt = begin
+              left (forward' n)                    ≡⟨ ap left (Lt-Nat.by-comparing-lt-or-geq-lt-case n n<pt) ⟩
+              left (forward'-cases n (left n<pt))  ≡⟨⟩
+              left (extract-a-from-forward n _)    ≡⟨ extract-a-from-forward-eq-forward n ⟩
+              forward n                            ∎
+
+            left∘forward'≡forward∘succ-if-≥pt : (n : Nat) → (pointToEliminate ≤ n) → (left (forward' n) ≡ forward (succ n))
+            left∘forward'≡forward∘succ-if-≥pt n n≥pt = begin
+              left (forward' n)                          ≡⟨ ap left (Lt-Nat.by-comparing-lt-or-geq-geq-case n n≥pt) ⟩
+              left (forward'-cases n (right n≥pt))       ≡⟨⟩
+              left (extract-a-from-forward (succ n) _)   ≡⟨ extract-a-from-forward-eq-forward (succ n) ⟩
+              forward (succ n)                           ∎
+            
+            backward'≡predOrZero∘backward∘left-if-bla>pt : (a : A) → (pointToEliminate < backward (left a)) → (backward' a ≡ NatBasic.predOrZero (backward (left a)))
+            backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt = begin
+              backward' a                              ≡⟨ Lt-Nat.by-comparing-leq-or-gt-gt-case (backward (left a)) bla>pt ⟩
+              NatBasic.predOrZero (backward (left a))  ∎
+
+            backward'≡backward∘left-if-bla≤pt : (a : A) → (backward (left a) ≤ pointToEliminate) → (backward' a ≡ backward (left a))
+            backward'≡backward∘left-if-bla≤pt a bla≤pt = begin
+              backward' a        ≡⟨ Lt-Nat.by-comparing-leq-or-gt-leq-case (backward (left a)) bla≤pt ⟩
+              backward (left a)  ∎
+            
+            backward'<pt-then-backward∘left≤pt : (a : A) → (backward' a < pointToEliminate) → (backward (left a) ≤ pointToEliminate)
+            backward'<pt-then-backward∘left≤pt a b'a<pt =
+              Lt-Nat.by-comparing-leq-or-gt (backward (left a)) pointToEliminate λ {
+                (left bla≤pt) → bla≤pt
+              ; (right bla>pt) →
+                  let (predbla , succ-predbla) = Lt-Nat.gt-something-then-exists-pred (backward (left a)) {pointToEliminate} bla>pt
+                      b'a≡predOrZero-bla = backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt
+                      predOrZero-bla≥pt = Lt-Nat.lt-then-leq-predOrZero pointToEliminate (backward (left a)) bla>pt
+                      predOrZero-bla<pt = tr (λ e → e < pointToEliminate) b'a≡predOrZero-bla b'a<pt
+                  in absurd ((Lt-Nat.lt-biimpl-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate).Σ.fst predOrZero-bla<pt predOrZero-bla≥pt)
+              }
+            backward'≥pt-then-backward∘left>pt : (a : A) → (pointToEliminate ≤ backward' a) → (pointToEliminate < backward (left a))
+            backward'≥pt-then-backward∘left>pt a b'a≥pt =
+              Lt-Nat.by-comparing-leq-or-gt (backward (left a)) pointToEliminate λ {
+                (left bla≤pt) →
+                  let b'a≡bla = backward'≡backward∘left-if-bla≤pt a bla≤pt
+                      bla≥pt = tr (λ e → pointToEliminate ≤ e) b'a≡bla b'a≥pt
+                  in Lt-Nat.leq-and-neq-then-lt pointToEliminate (backward (left a)) bla≥pt (blackward-left-is-not-pointToEliminate a)
+              ; (right bla>pt) → bla>pt
+              }
+
+            n<pt-then-blf'a≤pt : (n : Nat) → (n < pointToEliminate) → (backward (left (forward' n)) ≤ pointToEliminate)
+            n<pt-then-blf'a≤pt n n<pt =
+              let lhs≡n = begin
+                    backward (left (forward' n))    ≡⟨ ap backward (left∘forward'≡forward-if-<pt n n<pt) ⟩
+                    backward (forward n)            ≡⟨ Retr n ⟩
+                    n                               ∎
+              in Lt-Nat.as-leq (backward (left (forward' n))) pointToEliminate
+                  (tr (λ e → e < pointToEliminate) (inverse lhs≡n) n<pt)
+
+            n≥pt-then-blf'a>pt : (n : Nat) → (pointToEliminate ≤ n) → (pointToEliminate < backward (left (forward' n)))
+            n≥pt-then-blf'a>pt n n≥pt =
+              let rhs≡sn = begin
+                    backward (left (forward' n))  ≡⟨ ap backward (left∘forward'≡forward∘succ-if-≥pt n n≥pt) ⟩
+                    backward (forward (succ n))   ≡⟨ Retr (succ n) ⟩
+                    succ n                        ∎
+              in tr (λ e → pointToEliminate < e) (inverse rhs≡sn) (Lt-Nat.leq-then-lt-succ pointToEliminate n n≥pt)
+
+            forward'∘backward'~id : (a : A) → (forward' (backward' a) ≡ a)
+            forward'∘backward'~id a =
+              Eq-Copr.+₀-left-inj {A} {Unit} (
+                Lt-Nat.by-comparing-lt-or-geq (backward' a) (pointToEliminate) λ {
+                  (left b'a<pt) → begin
+                    left (forward' (backward' a)) ≡⟨ left∘forward'≡forward-if-<pt (backward' a) b'a<pt ⟩
+                    forward (backward' a)         ≡⟨ ap forward (backward'≡backward∘left-if-bla≤pt a (backward'<pt-then-backward∘left≤pt a b'a<pt)) ⟩
+                    forward (backward (left a))   ≡⟨ Sect (left a) ⟩
+                    left a                        ∎
+                ; (right b'a≥pt) →
+                  let bla>pt = backward'≥pt-then-backward∘left>pt a b'a≥pt
+                      (pred-bla , succ-pred-bla) = Lt-Nat.gt-something-then-exists-pred (backward (left a)) {pointToEliminate} bla>pt
+                  in begin
+                    left (forward' (backward' a))                             ≡⟨ left∘forward'≡forward∘succ-if-≥pt (backward' a) b'a≥pt ⟩
+                    forward (succ (backward' a))                              ≡⟨ ap (forward ∘ succ) (backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt) ⟩
+                    forward (succ (NatBasic.predOrZero (backward (left a))))  ≡⟨ ap (forward ∘ succ ∘ NatBasic.predOrZero) succ-pred-bla ⟩
+                    forward (succ (NatBasic.predOrZero (succ pred-bla)))      ≡⟨ ap (forward ∘ succ) (NatEquality.predOrZero-succ pred-bla) ⟩
+                    forward (succ pred-bla)                                   ≡⟨ ap forward (inverse succ-pred-bla) ⟩
+                    forward (backward (left a))                               ≡⟨ Sect (left a) ⟩
+                    left a                                                    ∎
+                }
+              )
+
+            backward'∘forward'~id : (n : Nat) → (backward' (forward' n) ≡ n)
+            backward'∘forward'~id n =
+              Lt-Nat.by-comparing-lt-or-geq n pointToEliminate λ {
+                (left n<pt) → begin
+                  backward' (forward' n)       ≡⟨ backward'≡backward∘left-if-bla≤pt (forward' n) (n<pt-then-blf'a≤pt n n<pt) ⟩
+                  backward (left (forward' n)) ≡⟨ ap backward (left∘forward'≡forward-if-<pt n n<pt) ⟩
+                  backward (forward n)         ≡⟨ Retr n ⟩
+                  n                            ∎
+              ; (right n≥pt) → begin
+                  backward' (forward' n)                             ≡⟨ backward'≡predOrZero∘backward∘left-if-bla>pt (forward' n) (n≥pt-then-blf'a>pt n n≥pt) ⟩
+                  NatBasic.predOrZero (backward (left (forward' n))) ≡⟨ ap (NatBasic.predOrZero ∘ backward) (left∘forward'≡forward∘succ-if-≥pt n n≥pt) ⟩
+                  NatBasic.predOrZero (backward (forward (succ n)))  ≡⟨ ap NatBasic.predOrZero (Retr (succ n)) ⟩
+                  NatBasic.predOrZero (succ n)                       ≡⟨ NatEquality.predOrZero-succ n ⟩
+                  n                                                  ∎
+              }
+
+
+    Nat-≄-Fin : (k : Nat) → Nat ≄ Fin k
+    Nat-≄-Fin zero = Inhabited-≄-Empty zero
+    Nat-≄-Fin (succ k) (Nat≃Fink+Unit , is-equiv) =
+      let (inv , is-inverse) = Nat≃+Unit-then-Nat≃ Nat≃Fink+Unit (equiv-has-inverse is-equiv)
+      in Nat-≄-Fin k (inv , has-inverse-equiv is-inverse)
+
+  -- exercise 9.3 (see diagrams/exercise-9.3.drawio.svg for pictorial proof)
+  module _ where
+    open ≡-Reasoning
+    open Homotopy
+    open Homotopy.Symbolic
+    open Homotopy.Reasoning
+    
+    is-equiv-preserved-by-homotopy : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f → Is-equiv g
+    is-equiv-preserved-by-homotopy {A} {B} {f} {g} FG ((s , S), (r , R)) =
+      ((s , (lwhisker (FG ⁻¹ₕₜₚ) s ·ₕₜₚ S)),
+        (r , (rwhisker r (FG ⁻¹ₕₜₚ) ·ₕₜₚ R)))
+
+    homotope-implies-is-equiv-biimpl : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f ↔ Is-equiv g
+    homotope-implies-is-equiv-biimpl {A} {B} {f} {g} FG =
+      (is-equiv-preserved-by-homotopy FG , is-equiv-preserved-by-homotopy (FG ⁻¹ₕₜₚ))
+
+    sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retr-of f)) → Is-retr-of f g
+    sect-with-retr-is-retr {A} {B} {f} {g} gsect retr = equiv-has-inverse ((g , gsect), retr) .Σ.snd .Σ.snd
+
+    homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →
+                                              ≃-inverse-map (e , ee) ~ ≃-inverse-map (e' , ee')
+    homotopic-equiv-has-homotopic-inverses {A} {B} {e} {e'} ((g , seq), retr) ((g' , seq'), _) H =
+      begin-htpy
+        g               ~⟨⟩
+        g ∘ id          ~⟨ rwhisker g (seq' ⁻¹ₕₜₚ) ⟩
+        g ∘ (e' ∘ g')   ~⟨⟩
+        g ∘ e' ∘ g'     ~⟨ rwhisker g (lwhisker (H ⁻¹ₕₜₚ) g') ⟩
+        g ∘ e ∘ g'      ~⟨ lwhisker (sect-with-retr-is-retr seq retr) g' ⟩
+        id ∘ g'         ~⟨⟩
+        g'              ∎-htpy
+
+  -- exercise 9.4
+  module _ where
+    open ≡-Reasoning
+    open Homotopy
+    open Homotopy.Symbolic
+    open Homotopy.Reasoning
+
+    -- exercise 9.4.a
+    section-of-first-map-commutes-inverted-triangle : {A B X : Set} →
+                                                      {h : A → B} → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                                      ((s , S) : Sect h) → g ~ f ∘ s
+    section-of-first-map-commutes-inverted-triangle {A} {B} {X} {h} {f} g H (s , S) =
+      begin-htpy
+        g             ~⟨⟩
+        g ∘ id        ~⟨ rwhisker g (S ⁻¹ₕₜₚ) ⟩
+        g ∘ (h ∘ s)   ~⟨⟩
+        g ∘ h ∘ s     ~⟨ lwhisker (H ⁻¹ₕₜₚ) s ⟩
+        f ∘ s         ∎-htpy
+
+    Sect-comp-then-Sect-latter : {A B X : Set} →
+                                  (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                  ((fs , fS) : Sect f) → Sect g
+    Sect-comp-then-Sect-latter {A} {B} {X} h {f} g H (fs , fS) =
+      (h ∘ fs , (begin-htpy
+        g ∘ (h ∘ fs)   ~⟨⟩
+        g ∘ h ∘ fs     ~⟨ lwhisker (H ⁻¹ₕₜₚ) fs ⟩
+        f ∘ fs         ~⟨ fS ⟩
+        id             ∎-htpy
+      ))
+
+    comp-of-maps-with-sections-has-section : {A B X : Set} →
+                                              {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                              ((hs , hS) : Sect h) → ((gs , gS) : Sect g) → Sect f
+    comp-of-maps-with-sections-has-section {A} {B} {X} {h} {f} {g} H (hs , hS) (gs , gS) =
+      (hs ∘ gs , (begin-htpy
+        f ∘ (hs ∘ gs)        ~⟨ lwhisker H (hs ∘ gs) ⟩
+        g ∘ h ∘ (hs ∘ gs)    ~⟨ rwhisker g (lwhisker hS gs) ⟩
+        g ∘ id ∘ gs          ~⟨⟩
+        g ∘ gs               ~⟨ gS ⟩
+        id                   ∎-htpy
+      ))
+
+    -- exercise 9.4.b ; this is dual to (a)
+    retr-of-second-map-commutes-inverted-triangle : {A B X : Set} →
+                                                    (h : A → B) → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                                    ((gr , gR) : Retr g) → h ~ gr ∘ f
+    retr-of-second-map-commutes-inverted-triangle {A} {B} {X} h {f} {g} H (gr , gR) =
+      begin-htpy
+        h              ~⟨⟩
+        id ∘ h         ~⟨ lwhisker (gR ⁻¹ₕₜₚ) h ⟩
+        (gr ∘ g) ∘ h   ~⟨⟩
+        gr ∘ g ∘ h     ~⟨ rwhisker gr (H ⁻¹ₕₜₚ) ⟩
+        gr ∘ f         ∎-htpy
+    
+    Retr-comp-then-Retr-former : {A B X : Set} →
+                                  (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                  ((fr , fR) : Retr f) → Retr h
+    Retr-comp-then-Retr-former {A} {B} {X} h {f} g H (fr , fR) =
+      (fr ∘ g , (begin-htpy
+        (fr ∘ g) ∘ h    ~⟨⟩
+        fr ∘ (g ∘ h)    ~⟨ rwhisker fr (H ⁻¹ₕₜₚ) ⟩
+        fr ∘ f          ~⟨ fR ⟩
+        id              ∎-htpy
+      ))
+    
+    comp-of-maps-with-retr-has-retr : {A B X : Set} →
+                                      {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                      ((hr , hR) : Retr h) → ((gr , gR) : Retr g) → Retr f
+    comp-of-maps-with-retr-has-retr {A} {B} {X} {h} {f} {g} H (hr , hR) (gr , gR) =
+      (hr ∘ gr , (begin-htpy
+        (hr ∘ gr) ∘ f         ~⟨ rwhisker (hr ∘ gr) H ⟩
+        (hr ∘ gr) ∘ (g ∘ h)   ~⟨ rwhisker hr (lwhisker gR h) ⟩
+        hr ∘ h                ~⟨ hR ⟩
+        id                    ∎-htpy
+      ))
+
+    -- exercise 9.4.c
+    former-and-comp-are-equivs-then-latter-is-equiv : {A B X : Set} →
+                                                      {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                                      Is-equiv h → Is-equiv f → Is-equiv g
+    former-and-comp-are-equivs-then-latter-is-equiv {A} {B} {X} {h} {f} {g} H h-eqv f-eqv =
+      let
+        (h⁻¹ , h⁻¹-eqv) = ≃-inverse (h , h-eqv)
+        fh⁻¹~g : f ∘ h⁻¹ ~ g
+        fh⁻¹~g =
+          begin-htpy
+            f ∘ h⁻¹         ~⟨ lwhisker H (h⁻¹) ⟩
+            g ∘ h ∘ h⁻¹     ~⟨ rwhisker g (≃-inverse-map-is-sect-of-original (h , h-eqv)) ⟩
+            g ∘ id          ~⟨⟩
+            g               ∎-htpy
+      in
+        is-equiv-preserved-by-homotopy fh⁻¹~g (comp-equivs-is-equiv f-eqv h⁻¹-eqv)
+
+    latter-and-comp-are-equivs-then-former-is-equiv : {A B X : Set} →
+                                                      (h : A → B) → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                                      Is-equiv g → Is-equiv f → Is-equiv h
+    latter-and-comp-are-equivs-then-former-is-equiv {A} {B} {X} h {f} {g} H g-eqv f-eqv =
+      let
+        (g⁻¹ , g⁻¹-eqv) = ≃-inverse (g , g-eqv)
+        g⁻¹f~h : g⁻¹ ∘ f ~ h
+        g⁻¹f~h =
+          begin-htpy
+            g⁻¹ ∘ f         ~⟨ rwhisker g⁻¹ H ⟩
+            g⁻¹ ∘ (g ∘ h)   ~⟨ lwhisker (≃-inverse-map-is-retr-of-original (g , g-eqv)) h ⟩
+            id ∘ h          ~⟨⟩
+            h               ∎-htpy
+      in
+        is-equiv-preserved-by-homotopy g⁻¹f~h (comp-equivs-is-equiv g⁻¹-eqv f-eqv)
+    
+    sect-of-equiv-is-equiv : {A B : Set} → (f : A → B) → (((s , S) , _) : Is-equiv f) → Is-equiv s
+    sect-of-equiv-is-equiv f eqv = ≃-inverse-map-is-equiv (f , eqv)
+
+    retr-of-equiv-is-equiv : {A B : Set} → (f : A → B) → ((_ , (r , R)) : Is-equiv f) → Is-equiv r
+    retr-of-equiv-is-equiv f eqv@(_ , (r , R)) =
+      -- We use id ~ r ∘ f and that id and f are equivalences
+      former-and-comp-are-equivs-then-latter-is-equiv
+        (R ⁻¹ₕₜₚ) eqv id-is-equiv
+
+  -- exercise 9.5
+  module _ where
+    -- exercise 9.5.a
+    swap-ΣΣ-fn : {A B : Set} → {C : A → B → Set} → Σ A (λ a → Σ B (λ b → C a b)) → Σ B (λ b → Σ A (λ a → C a b))
+    swap-ΣΣ-fn (a , (b , c)) = (b , (a , c))
+    swap-ΣΣ : {A B : Set} → {C : A → B → Set} → Σ A (λ a → Σ B (λ b → C a b)) ≃ Σ B (λ b → Σ A (λ a → C a b))
+    swap-ΣΣ =
+      (
+        swap-ΣΣ-fn ,
+        has-inverse-equiv (
+          swap-ΣΣ-fn ,
+          (λ { (b , (a , c)) → refl }) ,
+          (λ { (a , (b , c)) → refl })
+        )
+      )
+
+    -- exercise 9.5.b
+    swap-ΣΣ-families-fn : {A : Set} → {B C : A → Set} →
+                          Σ (Σ A B) (λ u → C (u .Σ.fst)) → Σ (Σ A C) (λ v → B (v .Σ.fst))
+    swap-ΣΣ-families-fn ((a , b) , c) = ((a , c) , b)
+    swap-ΣΣ-families : {A : Set} → {B C : A → Set} →
+                        Σ (Σ A B) (λ u → C (u .Σ.fst)) ≃ Σ (Σ A C) (λ v → B (v .Σ.fst))
+    swap-ΣΣ-families =
+      (
+        swap-ΣΣ-families-fn ,
+        has-inverse-equiv (
+          swap-ΣΣ-families-fn ,
+          (λ { ((a , c) , b) → refl }) ,
+          (λ { ((a , b) , c) → refl })
+        )
+      )
+
+  -- exercise 9.6
+  module _ where
+    open +₀-Basic
+
+    +₀-functorial-id : {A B : Set} → (< id {A} +₀ id {B} >) ~ id {A +₀ B}
+    +₀-functorial-id = λ { (left a) → refl ; (right b) → refl }
+
+    +₀-functorial-comp : {A A' A'' B B' B'' : Set} →
+                          (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
+                          <(f' ∘ f) +₀ (g' ∘ g)> ~ (< f' +₀ g' > ∘ < f +₀ g >)
+    +₀-functorial-comp f f' g g' = λ { (left a) → refl ; (right b) → refl }
+
+    +₀-homotopy : {A A' B B' : Set} →
+                  {f f' : A → A'} → {g g' : B → B'} → (H : f ~ f') → (K : g ~ g') →
+                  < f +₀ g > ~ < f' +₀ g' >
+    +₀-homotopy H K = λ { (left a) → ap left (H a) ; (right b) → ap right (K b) }
+
+    +₀-equiv : {A A' B B' : Set} →
+                {f : A → A'} → {g : B → B'} → Is-equiv f → Is-equiv g →
+                Is-equiv < f +₀ g >
+    +₀-equiv {A} {A'} {B} {B'} {f} {g} ((fs , fS) , (fr , fR)) ((gs , gS) , (gr , gR)) =
+      (
+        (< fs +₀ gs > , λ { (left a) → ap left (fS a) ; (right b) → ap right (gS b) }),
+        (< fr +₀ gr > , λ { (left a) → ap left (fR a) ; (right b) → ap right (gR b) })
+      )
+
+  -- exercise 9.7
+  module _ where
+    <_×₀_> : {A B A' B' : Set} → (A → A') → (B → B') → (A × B) → (A' × B')
+    < f ×₀ g > (a , b) = (f a , g b)
+
+    ×₀-functorial-id : {A B : Set} → (< id {A} ×₀ id {B} >) ~ id {A × B}
+    ×₀-functorial-id = λ { (a , b) → refl }
+
+    ×₀-functorial-comp : {A A' A'' B B' B'' : Set} →
+                          (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
+                          <(f' ∘ f) ×₀ (g' ∘ g)> ~ (< f' ×₀ g' > ∘ < f ×₀ g >)
+    ×₀-functorial-comp f f' g g' = λ { (a , b) → refl }
+
+    ×₀-homotopy : {A A' B B' : Set} →
+                  {f f' : A → A'} → {g g' : B → B'} → (H : f ~ f') → (K : g ~ g') →
+                  < f ×₀ g > ~ < f' ×₀ g' >
+    ×₀-homotopy {A} {A'} {B} {B'} {f} {f'} {g} {g'} H K =
+      λ { (a , b) → 
+        begin
+          < f ×₀ g > (a , b)   ≡⟨⟩
+          (f a , g b)          ≡⟨ ap2 (λ x y → (x , y)) (H a) (K b) ⟩
+          (f' a , g' b)        ≡⟨⟩
+          < f' ×₀ g' > (a , b) ∎
+      }
+
+    ×₀-equiv-then-conditionally-equivs : {A A' B B' : Set} →
+                                         {f : A → A'} → {g : B → B'} → Is-equiv < f ×₀ g > →
+                                         (B' → Is-equiv f) × (A' → Is-equiv g)
+    ×₀-equiv-then-conditionally-equivs {A} {A'} {B} {B'} {f} {g} eqv =
+      let
+        f×₀g = < f ×₀ g >
+        (f×₀g⁻¹ , invS , invR) = equiv-has-inverse eqv
+        f⁻¹-at = λ (b' : B') (a' : A') → f×₀g⁻¹ (a' , b') .Σ.fst
+        g⁻¹-at = λ (a' : A') (b' : B') → f×₀g⁻¹ (a' , b') .Σ.snd
+
+        f⁻¹-is-sectionof-f = λ (b' : B') (a' : A') → begin
+          f (f⁻¹-at b' a')                   ≡⟨⟩
+          f (f×₀g⁻¹ (a' , b') .Σ.fst)        ≡⟨⟩
+          (f×₀g (f×₀g⁻¹ (a' , b'))) .Σ.fst   ≡⟨ ap Σ.fst (invS (a' , b')) ⟩
+          (a' , b') .Σ.fst                   ≡⟨⟩
+          a'                                 ∎
+        g⁻¹-is-sectionof-g = λ (a' : A') (b' : B') → begin
+          g (g⁻¹-at a' b')                   ≡⟨⟩
+          g (f×₀g⁻¹ (a' , b') .Σ.snd)        ≡⟨⟩
+          (f×₀g (f×₀g⁻¹ (a' , b'))) .Σ.snd   ≡⟨ ap Σ.snd (invS (a' , b')) ⟩
+          (a' , b') .Σ.snd                   ≡⟨⟩
+          b'                                 ∎
+      in
+      (
+        (λ b' →
+          has-inverse-equiv (
+            f⁻¹-at b' ,
+            f⁻¹-is-sectionof-f b' ,
+            (λ a → begin
+              f⁻¹-at b' (f a)                              ≡⟨⟩
+              f×₀g⁻¹ (f a , b') .Σ.fst                     ≡⟨← ap (λ x → f×₀g⁻¹ ((f a) , x) .Σ.fst) (g⁻¹-is-sectionof-g (f a) b') ⟩
+              f×₀g⁻¹ (f a , g (g⁻¹-at (f a) b')) .Σ.fst    ≡⟨⟩
+              f×₀g⁻¹ (f×₀g (a , g⁻¹-at (f a) b')) .Σ.fst   ≡⟨ ap Σ.fst (invR _) ⟩
+              (a , g⁻¹-at (f a) b') .Σ.fst                 ≡⟨⟩
+              a                                            ∎
+            )
+          )
+        ),
+        (λ a' →
+          has-inverse-equiv (
+            g⁻¹-at a' ,
+            g⁻¹-is-sectionof-g a' ,
             (λ b → begin
-              (const (h unit) ∘ id) b    ≡⟨⟩
-              h unit                     ≡⟨ ap h (UnitEquality.any-units-eq unit (equiv b)) ⟩
-              h (equiv b)                ≡⟨ H b ⟩
-              id b                       ∎),
-            (λ b → begin
-              (id ∘ (const (h unit))) b  ≡⟨⟩
-              h unit                     ≡⟨ ap h (UnitEquality.any-units-eq unit (equiv b)) ⟩
-              h (equiv b)                ≡⟨ H b ⟩
-              id b                       ∎)
-          ))
+              g⁻¹-at a' (g b)                              ≡⟨⟩
+              f×₀g⁻¹ (a' , g b) .Σ.snd                     ≡⟨← ap (λ x → f×₀g⁻¹ (x , g b) .Σ.snd) (f⁻¹-is-sectionof-f (g b) a') ⟩
+              f×₀g⁻¹ (f (f⁻¹-at (g b) a') , g b) .Σ.snd    ≡⟨⟩
+              f×₀g⁻¹ (f×₀g (f⁻¹-at (g b) a' , b)) .Σ.snd   ≡⟨ ap Σ.snd (invR _) ⟩
+              (f⁻¹-at (g b) a' , b) .Σ.snd                 ≡⟨⟩
+              b                                            ∎
+            )
+          )
+        )
+      )
 
-      open +₁-Basic
-      open EmptyBasic
-
-      Inhabited-≄-Empty : {A : Set} → (a : A) → A ≄ Empty
-      Inhabited-≄-Empty a eqv = absurd ((eqv .Σ.fst) a)
-
-      ≃-comm-+₁ : {A B : Set} → A +₁ B ≃ B +₁ A
-      ≃-comm-+₁ =
-        (swap-+₁ ,
-          (has-inverse-equiv (
-            swap-+₁ ,
-            (λ { (left _) → refl ; (right _) → refl }),
-            (λ { (left _) → refl ; (right _) → refl }))))
-
-      ≃-+₁-both : {A B C D : Set} → (A ≃ C) → (B ≃ D) → (A +₁ B ≃ C +₁ D)
-      ≃-+₁-both (f , (fs , fS), (fr , fR)) (g , (gs , gS), (gr , gR)) =
-        (< f +₁ g > ,
-          ((λ { (left c) → left (fs c) ; (right d) → right (gs d) }) , (λ { (left c) → ap left (fS c) ; (right d) → ap right (gS d) })) ,
-          ((λ { (left c) → left (fr c) ; (right d) → right (gr d) }) , (λ { (left c) → ap left (fR c) ; (right d) → ap right (gR d) }))
+    conditionally-equivs-then-×₀-equiv : {A A' B B' : Set} →
+                                         {f : A → A'} → {g : B → B'} → (B' → Is-equiv f) → (A' → Is-equiv g) →
+                                         Is-equiv < f ×₀ g >
+    conditionally-equivs-then-×₀-equiv {A} {A'} {B} {B'} {f} {g} f-cond-eqv g-cond-eqv =
+      let
+        f⁻¹×₀g⁻¹ =
+          (λ { (a' , b') → 
+            let (f⁻¹ , _ , _) = equiv-has-inverse (f-cond-eqv b')
+                (g⁻¹ , _ , _) = equiv-has-inverse (g-cond-eqv a')
+            in (f⁻¹ a' , g⁻¹ b')
+          })
+      in
+        has-inverse-equiv (
+          f⁻¹×₀g⁻¹ ,
+          (λ { (a' , b') → 
+            let (f⁻¹ , f⁻¹-S , _) = equiv-has-inverse (f-cond-eqv b')
+                (g⁻¹ , g⁻¹-S , _) = equiv-has-inverse (g-cond-eqv a')
+            in begin
+              < f ×₀ g > (f⁻¹×₀g⁻¹ (a' , b'))  ≡⟨⟩
+              (f (f⁻¹ a') , g (g⁻¹ b'))        ≡⟨ ap2 (λ x y → (x , y)) (f⁻¹-S a') (g⁻¹-S b') ⟩
+              (a' , b')                        ∎
+          }),
+          (λ { (a , b) → 
+            let (f⁻¹ , _ , f⁻¹-Retr) = equiv-has-inverse (f-cond-eqv (g b))
+                (g⁻¹ , _ , g⁻¹-Retr) = equiv-has-inverse (g-cond-eqv (f a))
+            in begin
+              f⁻¹×₀g⁻¹ (< f ×₀ g > (a , b))  ≡⟨⟩
+              (f⁻¹ (f a) , g⁻¹ (g b))        ≡⟨ ap2 (λ x y → (x , y)) (f⁻¹-Retr a) (g⁻¹-Retr b) ⟩
+              (a , b)                        ∎
+          })
         )
 
-      Empty-≃-lunit : {A : Set} → Empty +₁ A ≃ A
-      Empty-≃-lunit =
-        (
-          (λ { (left emp) → absurd emp ; (right a) → a }),
-          (has-inverse-equiv (
-            right ,
-            (λ a → refl),
-            (λ { (left emp) → absurd emp ; (right a) → refl }))))
-
-      Empty-≃-runit : {A : Set} → A +₁ Empty ≃ A
-      Empty-≃-runit {A} = begin-≃
-        A +₁ Empty     ≃⟨ ≃-comm-+₁ ⟩
-        Empty +₁ A     ≃⟨ Empty-≃-lunit ⟩
-        A              ∎-≃
-
-      Nat≃+Unit-then-Nat≃ : {A : Set} → (forward : Nat → A +₁ Unit) → Has-inverse forward → Σ (Nat → A) Has-inverse
-      Nat≃+Unit-then-Nat≃ {A} forward (backward , Sect , Retr) =
-        (forward' , (backward' , forward'∘backward'~id , backward'∘forward'~id))
-        where open Lt-Nat.Symbolic
-              open Leq-Nat.Symbolic
-
-              pointToEliminate = backward (right unit)
-
-              forward-is-unit-only-at-pointToEliminate : (n : Nat) → (forward n ≡ right unit) → (n ≡ pointToEliminate)
-              forward-is-unit-only-at-pointToEliminate n fn≡unit =
-                begin
-                  n                      ≡⟨← (Retr n) ⟩
-                  backward (forward n)   ≡⟨ ap backward (fn≡unit) ⟩
-                  backward (right unit)  ≡⟨⟩
-                  pointToEliminate       ∎
-              
-              blackward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
-              blackward-left-is-not-pointToEliminate a pt≡bla =
-                let ru≡la = begin
-                      (right unit)                     ≡⟨← (Sect (right unit)) ⟩
-                      forward (backward (right unit))  ≡⟨ ap forward pt≡bla ⟩
-                      forward (backward (left a))      ≡⟨ Sect (left a) ⟩
-                      left a                           ∎
-                in Eq-Copr.left-neq-right (inverse ru≡la)
-
-              extract-a-from-forward-cases : (n : Nat) → (n≠pt : n ≢ pointToEliminate) → (copr : A +₁ Unit) → (forward n ≡ copr) → A
-              extract-a-from-forward-cases n n≠pt =
-                ind-+₁ {A} {Unit} {λ copr → forward n ≡ copr → A}
-                  (λ a _ → a)
-                  (λ { unit eq → absurd (n≠pt (forward-is-unit-only-at-pointToEliminate n eq)) })
-              extract-a-from-forward : (n : Nat) → (n ≢ pointToEliminate) → A
-              extract-a-from-forward n n≠pt = extract-a-from-forward-cases n n≠pt (forward n) refl
-
-              extract-a-from-forward-eq-forward : (n : Nat) → {n≠pt : n ≢ pointToEliminate} → left (extract-a-from-forward n n≠pt) ≡ forward n
-              extract-a-from-forward-eq-forward n {n≠pt} =
-                ind-+₁ {A} {Unit} {λ copr → forward n ≡ copr → left (extract-a-from-forward n n≠pt) ≡ forward n}
-                  (λ a eq → begin
-                    left (extract-a-from-forward n n≠pt)                            ≡⟨⟩
-                    left (extract-a-from-forward-cases n n≠pt (forward n) refl)     ≡⟨ ap left (transport-equality-fn (forward n) (extract-a-from-forward-cases n n≠pt) eq) ⟩
-                    left (extract-a-from-forward-cases n n≠pt (left a) eq)          ≡⟨⟩
-                    left a                                                          ≡⟨← eq ⟩
-                    forward n                                                       ∎
-                  )
-                  (λ { unit eq → absurd (n≠pt (forward-is-unit-only-at-pointToEliminate n eq)) })
-                  (forward n) refl
-                where
-                  transport-equality-fn : {X P : Set} → (x : X) → (depfn : (z : X) → (x ≡ z) → P) → {y : X} → (q : x ≡ y) → depfn x refl ≡ depfn y q
-                  transport-equality-fn x d refl = refl
-
-              forward'-cases : (n : Nat) → ((n < pointToEliminate) +₁ (pointToEliminate ≤ n)) → A
-              forward'-cases n =
-                λ {
-                  (left n<pt) →
-                    extract-a-from-forward n (Lt-Nat.lt-then-neq n _ n<pt)
-                ; (right pt≤n) →
-                    extract-a-from-forward (succ n)
-                      (≢-inverse
-                        (Lt-Nat.lt-then-neq pointToEliminate (succ n)
-                          (Lt-Nat.leq-then-lt-succ pointToEliminate n pt≤n)))
-                }
-              forward' : Nat → A
-              forward' n = Lt-Nat.by-comparing-lt-or-geq n pointToEliminate (forward'-cases n)
-
-              backward'-cases : (res : Nat) → ((res ≤ pointToEliminate) +₁ (pointToEliminate < res)) → Nat
-              backward'-cases res =
-                λ {
-                  (left res≤pt) → res
-                ; (right pt<res) → NatBasic.predOrZero res
-                }
-              backward' : A → Nat
-              backward' a = let result = backward (left a) in Lt-Nat.by-comparing-leq-or-gt result pointToEliminate (backward'-cases result)
-
-              left∘forward'≡forward-if-<pt : (n : Nat) → (n < pointToEliminate) → (left (forward' n) ≡ forward n)
-              left∘forward'≡forward-if-<pt n n<pt = begin
-                left (forward' n)                    ≡⟨ ap left (Lt-Nat.by-comparing-lt-or-geq-lt-case n n<pt) ⟩
-                left (forward'-cases n (left n<pt))  ≡⟨⟩
-                left (extract-a-from-forward n _)    ≡⟨ extract-a-from-forward-eq-forward n ⟩
-                forward n                            ∎
-
-              left∘forward'≡forward∘succ-if-≥pt : (n : Nat) → (pointToEliminate ≤ n) → (left (forward' n) ≡ forward (succ n))
-              left∘forward'≡forward∘succ-if-≥pt n n≥pt = begin
-                left (forward' n)                          ≡⟨ ap left (Lt-Nat.by-comparing-lt-or-geq-geq-case n n≥pt) ⟩
-                left (forward'-cases n (right n≥pt))       ≡⟨⟩
-                left (extract-a-from-forward (succ n) _)   ≡⟨ extract-a-from-forward-eq-forward (succ n) ⟩
-                forward (succ n)                           ∎
-              
-              backward'≡predOrZero∘backward∘left-if-bla>pt : (a : A) → (pointToEliminate < backward (left a)) → (backward' a ≡ NatBasic.predOrZero (backward (left a)))
-              backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt = begin
-                backward' a                              ≡⟨ Lt-Nat.by-comparing-leq-or-gt-gt-case (backward (left a)) bla>pt ⟩
-                NatBasic.predOrZero (backward (left a))  ∎
-
-              backward'≡backward∘left-if-bla≤pt : (a : A) → (backward (left a) ≤ pointToEliminate) → (backward' a ≡ backward (left a))
-              backward'≡backward∘left-if-bla≤pt a bla≤pt = begin
-                backward' a        ≡⟨ Lt-Nat.by-comparing-leq-or-gt-leq-case (backward (left a)) bla≤pt ⟩
-                backward (left a)  ∎
-              
-              backward'<pt-then-backward∘left≤pt : (a : A) → (backward' a < pointToEliminate) → (backward (left a) ≤ pointToEliminate)
-              backward'<pt-then-backward∘left≤pt a b'a<pt =
-                Lt-Nat.by-comparing-leq-or-gt (backward (left a)) pointToEliminate λ {
-                  (left bla≤pt) → bla≤pt
-                ; (right bla>pt) →
-                    let (predbla , succ-predbla) = Lt-Nat.gt-something-then-exists-pred (backward (left a)) {pointToEliminate} bla>pt
-                        b'a≡predOrZero-bla = backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt
-                        predOrZero-bla≥pt = Lt-Nat.lt-then-leq-predOrZero pointToEliminate (backward (left a)) bla>pt
-                        predOrZero-bla<pt = tr (λ e → e < pointToEliminate) b'a≡predOrZero-bla b'a<pt
-                    in absurd ((Lt-Nat.lt-biimpl-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate).Σ.fst predOrZero-bla<pt predOrZero-bla≥pt)
-                }
-              backward'≥pt-then-backward∘left>pt : (a : A) → (pointToEliminate ≤ backward' a) → (pointToEliminate < backward (left a))
-              backward'≥pt-then-backward∘left>pt a b'a≥pt =
-                Lt-Nat.by-comparing-leq-or-gt (backward (left a)) pointToEliminate λ {
-                  (left bla≤pt) →
-                    let b'a≡bla = backward'≡backward∘left-if-bla≤pt a bla≤pt
-                        bla≥pt = tr (λ e → pointToEliminate ≤ e) b'a≡bla b'a≥pt
-                    in Lt-Nat.leq-and-neq-then-lt pointToEliminate (backward (left a)) bla≥pt (blackward-left-is-not-pointToEliminate a)
-                ; (right bla>pt) → bla>pt
-                }
-
-              n<pt-then-blf'a≤pt : (n : Nat) → (n < pointToEliminate) → (backward (left (forward' n)) ≤ pointToEliminate)
-              n<pt-then-blf'a≤pt n n<pt =
-                let lhs≡n = begin
-                      backward (left (forward' n))    ≡⟨ ap backward (left∘forward'≡forward-if-<pt n n<pt) ⟩
-                      backward (forward n)            ≡⟨ Retr n ⟩
-                      n                               ∎
-                in Lt-Nat.as-leq (backward (left (forward' n))) pointToEliminate
-                    (tr (λ e → e < pointToEliminate) (inverse lhs≡n) n<pt)
-
-              n≥pt-then-blf'a>pt : (n : Nat) → (pointToEliminate ≤ n) → (pointToEliminate < backward (left (forward' n)))
-              n≥pt-then-blf'a>pt n n≥pt =
-                let rhs≡sn = begin
-                      backward (left (forward' n))  ≡⟨ ap backward (left∘forward'≡forward∘succ-if-≥pt n n≥pt) ⟩
-                      backward (forward (succ n))   ≡⟨ Retr (succ n) ⟩
-                      succ n                        ∎
-                in tr (λ e → pointToEliminate < e) (inverse rhs≡sn) (Lt-Nat.leq-then-lt-succ pointToEliminate n n≥pt)
-
-              forward'∘backward'~id : (a : A) → (forward' (backward' a) ≡ a)
-              forward'∘backward'~id a =
-                Eq-Copr.+₁-left-inj {A} {Unit} (
-                  Lt-Nat.by-comparing-lt-or-geq (backward' a) (pointToEliminate) λ {
-                    (left b'a<pt) → begin
-                      left (forward' (backward' a)) ≡⟨ left∘forward'≡forward-if-<pt (backward' a) b'a<pt ⟩
-                      forward (backward' a)         ≡⟨ ap forward (backward'≡backward∘left-if-bla≤pt a (backward'<pt-then-backward∘left≤pt a b'a<pt)) ⟩
-                      forward (backward (left a))   ≡⟨ Sect (left a) ⟩
-                      left a                        ∎
-                  ; (right b'a≥pt) →
-                    let bla>pt = backward'≥pt-then-backward∘left>pt a b'a≥pt
-                        (pred-bla , succ-pred-bla) = Lt-Nat.gt-something-then-exists-pred (backward (left a)) {pointToEliminate} bla>pt
-                    in begin
-                      left (forward' (backward' a))                             ≡⟨ left∘forward'≡forward∘succ-if-≥pt (backward' a) b'a≥pt ⟩
-                      forward (succ (backward' a))                              ≡⟨ ap (forward ∘ succ) (backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt) ⟩
-                      forward (succ (NatBasic.predOrZero (backward (left a))))  ≡⟨ ap (forward ∘ succ ∘ NatBasic.predOrZero) succ-pred-bla ⟩
-                      forward (succ (NatBasic.predOrZero (succ pred-bla)))      ≡⟨ ap (forward ∘ succ) (NatEquality.predOrZero-succ pred-bla) ⟩
-                      forward (succ pred-bla)                                   ≡⟨ ap forward (inverse succ-pred-bla) ⟩
-                      forward (backward (left a))                               ≡⟨ Sect (left a) ⟩
-                      left a                                                    ∎
-                  }
-                )
-
-              backward'∘forward'~id : (n : Nat) → (backward' (forward' n) ≡ n)
-              backward'∘forward'~id n =
-                Lt-Nat.by-comparing-lt-or-geq n pointToEliminate λ {
-                  (left n<pt) → begin
-                    backward' (forward' n)       ≡⟨ backward'≡backward∘left-if-bla≤pt (forward' n) (n<pt-then-blf'a≤pt n n<pt) ⟩
-                    backward (left (forward' n)) ≡⟨ ap backward (left∘forward'≡forward-if-<pt n n<pt) ⟩
-                    backward (forward n)         ≡⟨ Retr n ⟩
-                    n                            ∎
-                ; (right n≥pt) → begin
-                    backward' (forward' n)                             ≡⟨ backward'≡predOrZero∘backward∘left-if-bla>pt (forward' n) (n≥pt-then-blf'a>pt n n≥pt) ⟩
-                    NatBasic.predOrZero (backward (left (forward' n))) ≡⟨ ap (NatBasic.predOrZero ∘ backward) (left∘forward'≡forward∘succ-if-≥pt n n≥pt) ⟩
-                    NatBasic.predOrZero (backward (forward (succ n)))  ≡⟨ ap NatBasic.predOrZero (Retr (succ n)) ⟩
-                    NatBasic.predOrZero (succ n)                       ≡⟨ NatEquality.predOrZero-succ n ⟩
-                    n                                                  ∎
-                }
-
-
-      Nat-≄-Fin : (k : Nat) → Nat ≄ Fin k
-      Nat-≄-Fin zero = Inhabited-≄-Empty zero
-      Nat-≄-Fin (succ k) (Nat≃Fink+Unit , is-equiv) =
-        let (inv , is-inverse) = Nat≃+Unit-then-Nat≃ Nat≃Fink+Unit (equiv-has-inverse is-equiv)
-        in Nat-≄-Fin k (inv , has-inverse-equiv is-inverse)
-
-    -- exercise 9.3 (see diagrams/exercise-9.3.drawio.svg for pictorial proof)
-    module _ where
-      open ≡-Reasoning
-      open Homotopy
-      open Homotopy.Symbolic
-      open Homotopy.Reasoning
-      
-      is-equiv-preserved-by-homotopy : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f → Is-equiv g
-      is-equiv-preserved-by-homotopy {A} {B} {f} {g} FG ((s , S), (r , R)) =
-        ((s , (lwhisker (FG ⁻¹ₕₜₚ) s ·ₕₜₚ S)),
-         (r , (rwhisker r (FG ⁻¹ₕₜₚ) ·ₕₜₚ R)))
-
-      homotope-implies-is-equiv-biimpl : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f ↔ Is-equiv g
-      homotope-implies-is-equiv-biimpl {A} {B} {f} {g} FG =
-        (is-equiv-preserved-by-homotopy FG , is-equiv-preserved-by-homotopy (FG ⁻¹ₕₜₚ))
-
-      sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retr-of f)) → Is-retr-of f g
-      sect-with-retr-is-retr {A} {B} {f} {g} gsect retr = equiv-has-inverse ((g , gsect), retr) .Σ.snd .Σ.snd
-
-      homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →
-                                               ≃-inverse-map (e , ee) ~ ≃-inverse-map (e' , ee')
-      homotopic-equiv-has-homotopic-inverses {A} {B} {e} {e'} ((g , seq), retr) ((g' , seq'), _) H =
-        begin-htpy
-          g               ~⟨⟩
-          g ∘ id          ~⟨ rwhisker g (seq' ⁻¹ₕₜₚ) ⟩
-          g ∘ (e' ∘ g')   ~⟨⟩
-          g ∘ e' ∘ g'     ~⟨ rwhisker g (lwhisker (H ⁻¹ₕₜₚ) g') ⟩
-          g ∘ e ∘ g'      ~⟨ lwhisker (sect-with-retr-is-retr seq retr) g' ⟩
-          id ∘ g'         ~⟨⟩
-          g'              ∎-htpy
-
-    -- exercise 9.4
-    module _ where
-      open ≡-Reasoning
-      open Homotopy
-      open Homotopy.Symbolic
-      open Homotopy.Reasoning
-
-      private variable
-        A B X : Set
-        h : A → B
-        f : A → X
-        g : B → X
+  -- TODO: exercise 9.8
+  -- TODO: exercise 9.9

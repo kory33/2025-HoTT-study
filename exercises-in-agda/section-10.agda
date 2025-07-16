@@ -395,7 +395,7 @@ module _ where
   module _ where
     open EmptyBasic
 
-    inhabited-sum-is-not-contr : {A B : Set} → A → B → ¬ Is-contr (A +₁ B)
+    inhabited-sum-is-not-contr : {A B : Set} → A → B → ¬ Is-contr (A +₀ B)
     inhabited-sum-is-not-contr _ b (left c , C) = Eq-Copr.left-neq-right (C (right b))
     inhabited-sum-is-not-contr a _ (right c , C) = Eq-Copr.left-neq-right ((C (left a)) ⁻¹)
 
