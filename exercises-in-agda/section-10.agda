@@ -385,11 +385,32 @@ module _ where
   const-unit-is-equiv-then-contr : {A : Set} → Is-equiv (λ (a : A) → const unit a) → Is-contr A
   const-unit-is-equiv-then-contr {A} (_ , retr) = retraction-preserves-contr retr Unit-Is-contr
 
+  map-to-unit-is-equiv-then-contr : {A : Set} → {f : A → Unit} → Is-equiv f → Is-contr A
+  map-to-unit-is-equiv-then-contr {A} {f} eqv =
+    const-unit-is-equiv-then-contr (
+      is-equiv-preserved-by-homotopy (λ a →
+        let (_ , C) = Unit-Is-contr
+        in inverse (C (f a))
+      ) eqv
+    )
+
   contr-then-const-unit-is-equiv : {A : Set} → Is-contr A → Is-equiv (λ (a : A) → const unit a)
   contr-then-const-unit-is-equiv {A} (ac , C) =
     has-inverse-equiv ((λ _ → ac) , (λ { unit → refl }) , C)
 
-  -- TODO: exercise 10.3.b
+  cod-of-equiv-is-contr-then-dom-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr B → Is-contr A
+  cod-of-equiv-is-contr-then-dom-is-contr {A} {B} {f} f-eqv b-contr =
+    map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv b-contr) f-eqv)
+
+  dom-of-equiv-is-contr-then-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr A → Is-contr B
+  dom-of-equiv-is-contr-then-cod-is-contr {A} {B} {f} f-eqv a-contr =
+    map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv a-contr) (≃-inverse-map-is-equiv (f , f-eqv)))
+
+  any-map-between-contr-types-is-equiv : {A B : Set} → Is-contr A → Is-contr B → (f : A → B) → Is-equiv f
+  any-map-between-contr-types-is-equiv {A} {B} a-contr b-contr f =
+    latter-and-comp-are-equivs-then-former-is-equiv f (λ a → refl)
+      (contr-then-const-unit-is-equiv b-contr)
+      (contr-then-const-unit-is-equiv a-contr)
 
   -- exercise 10.4
   module _ where
@@ -454,3 +475,110 @@ module _ where
           tr B ((C a)⁻¹) y    ≡⟨ ap (λ p → tr B (p ⁻¹) y) (untangled-contr-at-centre contr) ⟩
           tr B ((refl) ⁻¹) y  ≡⟨⟩
           y                   ∎
+
+  -- exercise 10.7
+  module _ where
+    pr1-of : {A : Set} → (B : A → Set) → Σ A B → A
+    pr1-of {A} B = Σ.fst
+
+    -- exercise 10.7.a
+    tr-from-fib-pr1-is-equiv : {A : Set} → {B : A → Set} → (a : A) → Is-equiv (id {fib (pr1-of B) a → B a} (λ { ((x , y) , p) → tr B p y }))
+    tr-from-fib-pr1-is-equiv {A} {B} a =
+      has-inverse-equiv (
+        (λ y → ((a , y) , refl)) ,
+        (λ y → refl) ,
+        (λ { ((x , y) , refl) → refl })
+      )
+    
+    Is-contr-fam : {A : Set} → (B : A → Set) → Set
+    Is-contr-fam {A} B = (a : A) → Is-contr (B a)
+
+    -- exercise 10.7.b, (i) → (ii)
+    pr1-equiv-then-contractible-family : {A : Set} → {B : A → Set} → Is-equiv (pr1-of B) → Is-contr-fam B
+    pr1-equiv-then-contractible-family {A} {B} eqv a =
+      let
+        pr1-is-contr : Is-contr-fn (pr1-of B)
+        pr1-is-contr = Is-equiv-then-is-contr (pr1-of B) eqv
+
+        fib-pr1-is-contr : Is-contr (fib (pr1-of B) a)
+        fib-pr1-is-contr = pr1-is-contr a
+      in dom-of-equiv-is-contr-then-cod-is-contr (tr-from-fib-pr1-is-equiv a) fib-pr1-is-contr
+
+    -- exercise 10.7.b, (ii) → (i)
+    contractible-family-then-pr1-is-equiv : {A : Set} → {B : A → Set} → Is-contr-fam B → Is-equiv (pr1-of B)
+    contractible-family-then-pr1-is-equiv {A} {B} is-contr-b =
+      let
+        fib-pr1-is-contr : (a : A) → Is-contr (fib (pr1-of B) a)
+        fib-pr1-is-contr a =
+          let (y , C) = is-contr-b a
+          in  (((a , y) , refl) , λ { ((.a , y') , refl) → ap (λ y'' → ((a , y'') , refl)) (C y') })
+      in
+        contr-fn-then-equiv (pr1-of B) fib-pr1-is-contr
+
+    -- exercise 10.7.c, (i) → (ii)
+    dep-pairing-is-equiv-then-is-contr-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
+                                              Is-equiv (λ (x : A) → (x , b x)) → Is-contr-fam B
+    dep-pairing-is-equiv-then-is-contr-fam {A} {B} b eqv =
+      let
+        dep-pairing : A → Σ A B
+        dep-pairing = λ (x : A) → (x , b x)
+
+        inv-pairing : Σ A B → A
+        inv-pairing = ≃-inverse-map (dep-pairing , eqv)
+
+        inv-pairing~pr1 : inv-pairing ~ pr1-of B
+        inv-pairing~pr1 =
+          λ { (x , y) →
+            let pairing-inv-pairing-xy≡xy = ≃-inverse-map-is-sect-of-original (dep-pairing , eqv) (x , y)
+                inv-pairing-xy≡x = ap Σ.fst pairing-inv-pairing-xy≡xy
+            in
+              begin
+                inv-pairing (x , y) ≡⟨ inv-pairing-xy≡x ⟩
+                x                   ≡⟨⟩
+                pr1-of B (x , y)    ∎
+          }
+      in
+        pr1-equiv-then-contractible-family (
+          is-equiv-preserved-by-homotopy inv-pairing~pr1
+            (≃-inverse-map-is-equiv (dep-pairing , eqv))
+        )
+
+    -- exercise 10.7.c, (ii) → (i)
+    is-contr-fam-then-dep-pairing-is-equiv : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
+                                              Is-contr-fam B → Is-equiv (λ (x : A) → (x , b x))
+    is-contr-fam-then-dep-pairing-is-equiv {A} {B} b is-contr-b =
+      has-inverse-equiv (
+        pr1-of B ,
+        (λ { (x , y) →
+          begin
+            ((λ (x : A) → (x , b x)) ∘ (pr1-of B)) (x , y) ≡⟨⟩
+            (x , b x)                                      ≡⟨ ap (λ y' → (x , y')) (two-points-eq-in-contr-type (is-contr-b x) (b x) y) ⟩
+            (x , y)                                        ≡⟨⟩
+            id (x , y)                                     ∎
+        }) ,
+        (λ a → refl)
+      )
+
+  -- exercise 10.8
+  module _ where
+    open Equivalence.Symbolic
+
+    fiber-decomposition-map : {A B : Set} → (f : A → B) → (a : A) → Σ B (λ y → fib f y)
+    fiber-decomposition-map {A} {B} f a = ((f a) , (a , refl))
+
+    fiber-decomposition : {A B : Set} → (f : A → B) → A ≃ (Σ B (λ y → fib f y))
+    fiber-decomposition {A} {B} f =
+      (
+        fiber-decomposition-map f ,
+        has-inverse-equiv (
+          (λ { (b , (a , p)) → a }) ,
+          (λ { (b , (a , refl)) → refl }) ,
+          (λ a → refl)
+        )
+      )
+    
+    fib-replacement : {A B : Set} → (f : A → B) → (Σ B (λ y → fib f y)) → B
+    fib-replacement f = Σ.fst
+
+    fiber-decomposition-fib-replacement : {A B : Set} → (f : A → B) → f ~ ((fib-replacement f) ∘ (fiber-decomposition-map f))
+    fiber-decomposition-fib-replacement {A} {B} f a = refl
