@@ -125,7 +125,7 @@ module _ where
 
   -- 11.2.2 (ii) ↔ (iii)
   fundamental-thm-of-identity-types-id-sys : {A : Set} → {a : A} → {B : A → Set} → (b : B a) →
-                                                      Is-contr (Σ A B) ↔-poly (is-identity-system-at a B b)
+                                             Is-contr (Σ A B) ↔-poly (is-identity-system-at a B b)
   fundamental-thm-of-identity-types-id-sys {A} {a} {B} b =
     begin-↔-poly
       Is-contr (Σ A B)                                                     ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
