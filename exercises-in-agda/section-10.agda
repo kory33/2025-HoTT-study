@@ -355,8 +355,8 @@ module _ where
     in ((g , G' , H) , K)
 
   -- 10.4.6
-  Is-equiv-then-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr-fn f
-  Is-equiv-then-is-contr {A} {B} {f} is-eqv =
+  Is-equiv-then-is-contr-fn : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr-fn f
+  Is-equiv-then-is-contr-fn {A} {B} {f} is-eqv =
     let
       has-inv     = equiv-has-inverse is-eqv
       is-coh-inv  = Has-inverse-then-Is-coh-invertible f has-inv
@@ -364,14 +364,14 @@ module _ where
     in is-contr-fn
 
   Is-equiv-iff-is-contr-fn : {A B : Set} → {f : A → B} → (Is-equiv f ↔ Is-contr-fn f)
-  Is-equiv-iff-is-contr-fn = (Is-equiv-then-is-contr , contr-fn-then-equiv)
+  Is-equiv-iff-is-contr-fn = (Is-equiv-then-is-contr-fn , contr-fn-then-equiv)
 
   -- 10.4.7
   inverse-paths-type-is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → x ≡ a))
   inverse-paths-type-is-contr {A} a =
     let
       id-is-contr-fn : Is-contr-fn id
-      id-is-contr-fn = Is-equiv-then-is-contr Equivalence.id-is-equiv
+      id-is-contr-fn = Is-equiv-then-is-contr-fn Equivalence.id-is-equiv
     in id-is-contr-fn a -- `Σ A (λ x → x ≡ a)` is judgementally equal to `fib id a`
 
   -- exercise 10.1
@@ -522,7 +522,7 @@ module _ where
     pr1-equiv-then-contractible-family {A} {B} eqv a =
       let
         fib-pr1-is-contr : Is-contr (fib (pr1-of B) a)
-        fib-pr1-is-contr = Is-equiv-then-is-contr eqv a
+        fib-pr1-is-contr = Is-equiv-then-is-contr-fn eqv a
       in dom-of-equiv-is-contr-then-cod-is-contr (tr-from-fib-pr1-is-equiv a) fib-pr1-is-contr
 
     -- exercise 10.7.b, (ii) → (i)
@@ -537,9 +537,9 @@ module _ where
         contr-fn-then-equiv fib-pr1-is-contr
 
     -- exercise 10.7.c, (i) → (ii)
-    dep-pairing-is-equiv-then-is-contr-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
+    dep-pairing-Is-equiv-then-is-contr-fn-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
                                               Is-equiv (λ (x : A) → (x , b x)) → Is-contr-fam B
-    dep-pairing-is-equiv-then-is-contr-fam {A} {B} b dep-pairing-is-eqv =
+    dep-pairing-Is-equiv-then-is-contr-fn-fam {A} {B} b dep-pairing-is-eqv =
       let
         dep-pairing : A → Σ A B
         dep-pairing = λ (x : A) → (x , b x)

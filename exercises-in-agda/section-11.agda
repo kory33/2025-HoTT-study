@@ -60,7 +60,7 @@ module _ where
     contr-fn-then-equiv (λ t →
       cod-of-equiv-is-contr-then-dom-is-contr
         (has-inverse-equiv (ψ t , G t , H t))
-        (Is-equiv-then-is-contr f-is-eqv (Σ.fst t))
+        (Is-equiv-then-is-contr-fn f-is-eqv (Σ.fst t))
     )
     where
       φ : (t : Σ B C) → fib (lem-11-1-4.mapleft f C) t → fib f (Σ.fst t)
@@ -151,3 +151,51 @@ module _ where
       ev-pair-sect : (P : (x : A) → B x → Set) → Sect (ev-pair P)
       ev-pair-sect P = ((λ { f (x , y) → f x y }) , λ f → refl)
 
+
+  -- subsection 11.3
+  module _ where
+    open Eq-Nat
+
+    -- 11.3.1
+    Eq-Nat-refl-is-equiv : (m n : Nat) → Is-equiv (eq-then-obseq m n)
+    Eq-Nat-refl-is-equiv m =
+      Σ.snd (fundamental-thm-of-identity-types (eq-then-obseq m)) (contr m)
+      where
+        γ : (m : Nat) → (n : Nat) → (e : Eq-Nat m n) → (m , Eq-Nat-refl m) ≡ (n , e)
+        γ zero zero unit = refl
+        γ zero (succ n) ()
+        γ (succ m) zero ()
+        γ (succ m) (succ n) e = -- want : (succ m , Eq-Nat-refl (succ m)) ≡ (succ n , e)
+          ap (λ { (n , e) → (succ n , e) })
+             (γ m n e)          --      : (m , Eq-Nat-refl m) ≡ (n , e) 
+                                -- ... since Eq-Nat-refl (succ m) = Eq-Nat-refl m, this typechecks
+
+        contr : (m : Nat) → Is-contr (Σ Nat (λ n → Eq-Nat m n))
+        contr m = ((m , Eq-Nat-refl m) , (λ { (n , e) → γ m n e }))
+
+  -- subsection 11.4
+  module _ where
+    Is-emb : {A B : Set} → (f : A → B) → Set
+    Is-emb {A} {B} f = (x y : A) → Is-equiv (ap f {x} {y})
+
+    _↪_ : Set → Set → Set
+    A ↪ B = Σ (A → B) Is-emb
+
+    is-equiv-then-is-emb : {A B : Set} → {e : A → B} → Is-equiv e → Is-emb e
+    is-equiv-then-is-emb {A} {B} {e} e-eqv x =
+      Σ.snd (fundamental-thm-of-identity-types (λ y → ap e {x} {y})) contr
+      where
+        fib-e-ex-is-contr : Is-contr (fib e (e x))
+        fib-e-ex-is-contr = Is-equiv-then-is-contr-fn e-eqv (e x)
+
+        flipped-is-contr : Is-contr (Σ A (λ y → e y ≡ e x))
+        flipped-is-contr = fib-e-ex-is-contr -- Σ A (λ y → e y ≡ e x) = fib e (e x)
+
+        contr : Is-contr (Σ A (λ y → e x ≡ e y))
+        contr =
+          Σ.fst (
+            dom-of-equiv-is-contr-iff-cod-is-contr (
+               Σ.fst (is-family-of-equivs-iff-tot-is-equiv (λ y e → inverse e))
+                (λ y → EqualityOps.inv-is-equiv)
+            )
+          ) flipped-is-contr
