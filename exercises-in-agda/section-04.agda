@@ -260,18 +260,52 @@ module _ where
   A ↔ B = (A → B) × (B → A)
 
   module ↔-Basic where
-    flip-biimpl : {A B : Set} → (A ↔ B) → (B ↔ A)
-    flip-biimpl (a→b , b→a) = (b→a , a→b)
+    flip-iff : {A B : Set} → (A ↔ B) → (B ↔ A)
+    flip-iff (a→b , b→a) = (b→a , a→b)
 
-    trans : {A B C : Set} → (A ↔ B) → (B ↔ C) → (A ↔ C)
-    trans (a→b , b→a) (b→c , c→b) = ((b→c ∘ a→b), (b→a ∘ c→b))
+    trans-iff : {A B C : Set} → (A ↔ B) → (B ↔ C) → (A ↔ C)
+    trans-iff (a→b , b→a) (b→c , c→b) = ((b→c ∘ a→b), (b→a ∘ c→b))
 
-    prod : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
-    prod (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
+    prod-iff : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
+    prod-iff (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
+
+    depfn-iff : {A : Set} → {B C : A → Set} → (foralla : (x : A) → (B x ↔ C x)) →
+                ((x : A) → B x) ↔ ((x : A) → C x)
+    depfn-iff foralla = ((λ f x → Σ.fst (foralla x) (f x)) , λ f x → Σ.snd (foralla x) (f x))
+
+    uncurry-iff : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
+                  (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
+    uncurry-iff = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
 
     open EmptyBasic
-    neg-both : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
-    neg-both (a→b , b→a) = ((contrapose b→a), (contrapose a→b))
+    neg-iff : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
+    neg-iff (a→b , b→a) = ((contrapose b→a), (contrapose a→b))
+
+  module ↔-Reasoning where
+    open ↔-Basic public
+
+    infix  1 begin-↔_
+    infixr 2 step-↔-∣ step-↔-⟩ step-↔-⟩⁻¹
+    infix  3 _∎-↔
+
+    begin-↔_ : {x y : Set} → (x ↔ y) → (x ↔ y)
+    begin-↔ x↔y = x↔y
+
+    step-↔-∣ : (x : Set) → {y : Set} → (x ↔ y) → (x ↔ y)
+    step-↔-∣ x x↔y = x↔y
+
+    step-↔-⟩ : (x : Set) → {y z : Set} → (y ↔ z) → (x ↔ y) → (x ↔ z)
+    step-↔-⟩ x y↔z x↔y = trans-iff x↔y y↔z
+
+    step-↔-⟩⁻¹ : (x : Set) → {y z : Set} → (y ↔ z) → (y ↔ x) → (x ↔ z)
+    step-↔-⟩⁻¹ x y↔z y↔x = trans-iff (flip-iff y↔x) y↔z
+
+    syntax step-↔-∣ x x↔y       =  x ↔⟨⟩ x↔y
+    syntax step-↔-⟩ x y↔z x↔y   =  x ↔⟨ x↔y ⟩ y↔z
+    syntax step-↔-⟩⁻¹ x y↔z y↔x =  x ↔⟨← y↔x ⟩ y↔z
+
+    _∎-↔ : (x : Set) → (x ↔ x)
+    x ∎-↔  =  (id , id)
 
   module exercise-4-3 where
     open EmptyBasic

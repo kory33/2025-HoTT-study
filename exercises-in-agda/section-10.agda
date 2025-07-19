@@ -108,8 +108,8 @@ module _ where
   open Σ
 
   -- 10.3.5
-  contr-fn-then-equiv : {A B : Set} → (f : A → B) → Is-contr-fn f → Is-equiv f
-  contr-fn-then-equiv {A} {B} f contr =
+  contr-fn-then-equiv : {A B : Set} → {f : A → B} → Is-contr-fn f → Is-equiv f
+  contr-fn-then-equiv {A} {B} {f} contr =
     let
       gG : (y : B) → fib f y
       gG y = contr y .fst
@@ -351,20 +351,23 @@ module _ where
     in ((g , G' , H) , K)
 
   -- 10.4.6
-  Is-equiv-then-is-contr : {A B : Set} → (f : A → B) → Is-equiv f → Is-contr-fn f
-  Is-equiv-then-is-contr {A} {B} f is-eqv =
+  Is-equiv-then-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr-fn f
+  Is-equiv-then-is-contr {A} {B} {f} is-eqv =
     let
       has-inv     = equiv-has-inverse is-eqv
       is-coh-inv  = Has-inverse-then-Is-coh-invertible f has-inv
       is-contr-fn = coh-invertible-then-contr-fn f is-coh-inv
     in is-contr-fn
 
+  Is-equiv-iff-is-contr-fn : {A B : Set} → {f : A → B} → (Is-equiv f ↔ Is-contr-fn f)
+  Is-equiv-iff-is-contr-fn = (Is-equiv-then-is-contr , contr-fn-then-equiv)
+
   -- 10.4.7
   inverse-paths-type-is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → x ≡ a))
   inverse-paths-type-is-contr {A} a =
     let
       id-is-contr-fn : Is-contr-fn id
-      id-is-contr-fn = Is-equiv-then-is-contr id (Equivalence.id-is-equiv)
+      id-is-contr-fn = Is-equiv-then-is-contr Equivalence.id-is-equiv
     in id-is-contr-fn a -- `Σ A (λ x → x ≡ a)` is judgementally equal to `fib id a`
 
   -- exercise 10.1
@@ -398,13 +401,23 @@ module _ where
   contr-then-const-unit-is-equiv {A} (ac , C) =
     has-inverse-equiv ((λ _ → ac) , (λ { unit → refl }) , C)
 
+  contr-iff-const-unit-is-equiv : {A : Set} → Is-contr A ↔ Is-equiv (λ (a : A) → const unit a)
+  contr-iff-const-unit-is-equiv = (contr-then-const-unit-is-equiv , const-unit-is-equiv-then-contr)
+
   cod-of-equiv-is-contr-then-dom-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr B → Is-contr A
   cod-of-equiv-is-contr-then-dom-is-contr {A} {B} {f} f-eqv b-contr =
     map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv b-contr) f-eqv)
 
   dom-of-equiv-is-contr-then-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr A → Is-contr B
   dom-of-equiv-is-contr-then-cod-is-contr {A} {B} {f} f-eqv a-contr =
-    map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv a-contr) (≃-inverse-map-is-equiv (f , f-eqv)))
+    map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv a-contr) (≃-inverse-map-is-equiv f-eqv))
+
+  dom-of-equiv-is-contr-iff-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → (Is-contr A ↔ Is-contr B)
+  dom-of-equiv-is-contr-iff-cod-is-contr f-eqv = (dom-of-equiv-is-contr-then-cod-is-contr f-eqv , cod-of-equiv-is-contr-then-dom-is-contr f-eqv)
+
+  open Equivalence.Symbolic
+  equiv-then-contr-iff-contr : {A B : Set} → (A ≃ B) → (Is-contr A ↔ Is-contr B)
+  equiv-then-contr-iff-contr (f , f-eqv) = dom-of-equiv-is-contr-iff-cod-is-contr f-eqv
 
   any-map-between-contr-types-is-equiv : {A B : Set} → Is-contr A → Is-contr B → (f : A → B) → Is-equiv f
   any-map-between-contr-types-is-equiv {A} {B} a-contr b-contr f =
@@ -497,11 +510,8 @@ module _ where
     pr1-equiv-then-contractible-family : {A : Set} → {B : A → Set} → Is-equiv (pr1-of B) → Is-contr-fam B
     pr1-equiv-then-contractible-family {A} {B} eqv a =
       let
-        pr1-is-contr : Is-contr-fn (pr1-of B)
-        pr1-is-contr = Is-equiv-then-is-contr (pr1-of B) eqv
-
         fib-pr1-is-contr : Is-contr (fib (pr1-of B) a)
-        fib-pr1-is-contr = pr1-is-contr a
+        fib-pr1-is-contr = Is-equiv-then-is-contr eqv a
       in dom-of-equiv-is-contr-then-cod-is-contr (tr-from-fib-pr1-is-equiv a) fib-pr1-is-contr
 
     -- exercise 10.7.b, (ii) → (i)
@@ -513,23 +523,23 @@ module _ where
           let (y , C) = is-contr-b a
           in  (((a , y) , refl) , λ { ((.a , y') , refl) → ap (λ y'' → ((a , y'') , refl)) (C y') })
       in
-        contr-fn-then-equiv (pr1-of B) fib-pr1-is-contr
+        contr-fn-then-equiv fib-pr1-is-contr
 
     -- exercise 10.7.c, (i) → (ii)
     dep-pairing-is-equiv-then-is-contr-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
                                               Is-equiv (λ (x : A) → (x , b x)) → Is-contr-fam B
-    dep-pairing-is-equiv-then-is-contr-fam {A} {B} b eqv =
+    dep-pairing-is-equiv-then-is-contr-fam {A} {B} b dep-pairing-is-eqv =
       let
         dep-pairing : A → Σ A B
         dep-pairing = λ (x : A) → (x , b x)
 
         inv-pairing : Σ A B → A
-        inv-pairing = ≃-inverse-map (dep-pairing , eqv)
+        inv-pairing = ≃-inverse-map-for dep-pairing-is-eqv
 
         inv-pairing~pr1 : inv-pairing ~ pr1-of B
         inv-pairing~pr1 =
           λ { (x , y) →
-            let pairing-inv-pairing-xy≡xy = ≃-inverse-map-is-sect-of-original (dep-pairing , eqv) (x , y)
+            let pairing-inv-pairing-xy≡xy = ≃-inverse-map-is-sect-of-original dep-pairing-is-eqv (x , y)
                 inv-pairing-xy≡x = ap Σ.fst pairing-inv-pairing-xy≡xy
             in
               begin
@@ -540,7 +550,7 @@ module _ where
       in
         pr1-equiv-then-contractible-family (
           is-equiv-preserved-by-homotopy inv-pairing~pr1
-            (≃-inverse-map-is-equiv (dep-pairing , eqv))
+            (≃-inverse-map-is-equiv dep-pairing-is-eqv)
         )
 
     -- exercise 10.7.c, (ii) → (i)

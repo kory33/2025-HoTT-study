@@ -734,14 +734,14 @@ module _ where
     lt-biimpl-add-left : (m n k : Nat) → (m < n) ↔ (k + m < k + n)
     lt-biimpl-add-left m n k = tr2 (λ e1 e2 → (m < n) ↔ (e1 < e2)) (add-comm m k) (add-comm n k) (lt-biimpl-add-right m n k)
 
+    open ↔-Reasoning
     lt-biimpl-mul-succ-right : (m n k : Nat) → (m < n) ↔ (m * succ k < n * succ k)
     lt-biimpl-mul-succ-right m n k =
-      ↔-Basic.trans
-        (lt-biimpl-neq-and-leq m n)
-        (↔-Basic.trans
-          (↔-Basic.prod (↔-Basic.neg-both (Nat-EqualityThroughEq-Nat.mul-inj m n k)) (Leq-Nat.leq-biimpl-mul-succ m n k))
-          (↔-Basic.flip-biimpl (lt-biimpl-neq-and-leq (m * succ k) (n * succ k)))
-        )
+      begin-↔
+        m < n                                                     ↔⟨ lt-biimpl-neq-and-leq m n ⟩
+        ¬ (m ≡ n) × (m ≤ n)                                       ↔⟨ ↔-Basic.prod-iff (↔-Basic.neg-iff (Nat-EqualityThroughEq-Nat.mul-inj m n k)) (Leq-Nat.leq-biimpl-mul-succ m n k) ⟩
+        ¬ (m * succ k ≡ n * succ k) × (m * succ k ≤ n * succ k)   ↔⟨← lt-biimpl-neq-and-leq (m * succ k) (n * succ k) ⟩
+        m * succ k < n * succ k                                   ∎-↔
     
     trans-leq : (m n k : Nat) → (m < n) → (n ≤ k) → (m < k)
     trans-leq m n k m<n n≤k =
@@ -1139,7 +1139,7 @@ module _ where
 
           equality (succ k) =
             inverse (add-same-order (succ k * m) (succ k * n) m n (
-              ↔-Basic.flip-biimpl (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
+              ↔-Basic.flip-iff (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
                 (mul-comm m (succ k))
                 (mul-comm n (succ k))
                 (leq-biimpl-mul-succ m n k)

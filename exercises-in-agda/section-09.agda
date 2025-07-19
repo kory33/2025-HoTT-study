@@ -581,27 +581,27 @@ module _ where
         K = (lwhisker H g) ⁻¹ₕₜₚ ·ₕₜₚ (rwhisker h G)
 
     -- 9.2.8
-    ≃-inverse-map : {A B : Set} → A ≃ B → (B → A)
-    ≃-inverse-map (f , (g , _), _) = g
+    ≃-inverse-map-for : {A B : Set} → {f : A → B} → Is-equiv f → (B → A)
+    ≃-inverse-map-for ((g , _), _) = g
 
-    ≃-inverse-map-is-equiv : {A B : Set} → (eqv : A ≃ B) → Is-equiv (≃-inverse-map eqv)
-    ≃-inverse-map-is-equiv (f , f-is-equiv@((g , gsect), (g' , g'retr))) =
+    ≃-inverse-map-is-equiv : {A B : Set} → {f : A → B} → (is-eqv : Is-equiv f) → Is-equiv (≃-inverse-map-for is-eqv)
+    ≃-inverse-map-is-equiv {A} {B} {f} f-is-equiv@((g , gsect), (g' , g'retr)) =
       ((f , fsect), (f , gsect))
       where
         fsect : Is-sect-of g f
         fsect = (equiv-has-inverse f-is-equiv) .Σ.snd .Σ.snd
     
-    ≃-inverse-map-is-sect-of-original : {A B : Set} → (eqv@(f , _) : A ≃ B) → Is-sect-of f (≃-inverse-map eqv)
-    ≃-inverse-map-is-sect-of-original {A} {B} (f , f-is-eqv@((g , gsect) , _)) = gsect
+    ≃-inverse-map-is-sect-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-sect-of f (≃-inverse-map-for f-is-eqv)
+    ≃-inverse-map-is-sect-of-original ((g , gsect) , _) = gsect
 
-    ≃-inverse-map-is-retr-of-original : {A B : Set} → (eqv@(f , _) : A ≃ B) → Is-retr-of f (≃-inverse-map eqv)
-    ≃-inverse-map-is-retr-of-original {A} {B} (f , f-is-eqv@((g , gsect) , _)) =
+    ≃-inverse-map-is-retr-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-retr-of f (≃-inverse-map-for f-is-eqv)
+    ≃-inverse-map-is-retr-of-original f-is-eqv@((g , _) , _) =
       let
         (_ {- should equal g -} , gsect , gretr) = equiv-has-inverse f-is-eqv
       in gretr
 
     ≃-inverse : {A B : Set} → A ≃ B → B ≃ A
-    ≃-inverse {A} {B} eqv = (≃-inverse-map eqv , ≃-inverse-map-is-equiv eqv)
+    ≃-inverse {A} {B} (_ , eqv) = (≃-inverse-map-for eqv , ≃-inverse-map-is-equiv eqv)
 
     ≃-comm : {A B : Set} → A ≃ B → B ≃ A
     ≃-comm eqv = ≃-inverse eqv
@@ -974,7 +974,7 @@ module _ where
     sect-with-retr-is-retr {A} {B} {f} {g} gsect retr = equiv-has-inverse ((g , gsect), retr) .Σ.snd .Σ.snd
 
     homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →
-                                              ≃-inverse-map (e , ee) ~ ≃-inverse-map (e' , ee')
+                                              ≃-inverse-map-for ee ~ ≃-inverse-map-for ee'
     homotopic-equiv-has-homotopic-inverses {A} {B} {e} {e'} ((g , seq), retr) ((g' , seq'), _) H =
       begin-htpy
         g               ~⟨⟩
@@ -1072,7 +1072,7 @@ module _ where
         fh⁻¹~g =
           begin-htpy
             f ∘ h⁻¹         ~⟨ lwhisker H (h⁻¹) ⟩
-            g ∘ h ∘ h⁻¹     ~⟨ rwhisker g (≃-inverse-map-is-sect-of-original (h , h-eqv)) ⟩
+            g ∘ h ∘ h⁻¹     ~⟨ rwhisker g (≃-inverse-map-is-sect-of-original h-eqv) ⟩
             g ∘ id          ~⟨⟩
             g               ∎-htpy
       in
@@ -1088,20 +1088,31 @@ module _ where
         g⁻¹f~h =
           begin-htpy
             g⁻¹ ∘ f         ~⟨ rwhisker g⁻¹ H ⟩
-            g⁻¹ ∘ (g ∘ h)   ~⟨ lwhisker (≃-inverse-map-is-retr-of-original (g , g-eqv)) h ⟩
+            g⁻¹ ∘ (g ∘ h)   ~⟨ lwhisker (≃-inverse-map-is-retr-of-original g-eqv) h ⟩
             id ∘ h          ~⟨⟩
             h               ∎-htpy
       in
         is-equiv-preserved-by-homotopy g⁻¹f~h (comp-equivs-is-equiv g⁻¹-eqv f-eqv)
     
-    sect-of-equiv-is-equiv : {A B : Set} → (f : A → B) → (((s , S) , _) : Is-equiv f) → Is-equiv s
-    sect-of-equiv-is-equiv f eqv = ≃-inverse-map-is-equiv (f , eqv)
+    sect-of-equiv-is-equiv : {A B : Set} → {f : A → B} → (((s , S) , _) : Is-equiv f) → Is-equiv s
+    sect-of-equiv-is-equiv eqv = ≃-inverse-map-is-equiv eqv
 
-    retr-of-equiv-is-equiv : {A B : Set} → (f : A → B) → ((_ , (r , R)) : Is-equiv f) → Is-equiv r
-    retr-of-equiv-is-equiv f eqv@(_ , (r , R)) =
+    retr-of-equiv-is-equiv : {A B : Set} → {f : A → B} → ((_ , (r , R)) : Is-equiv f) → Is-equiv r
+    retr-of-equiv-is-equiv eqv@(_ , (r , R)) =
       -- We use id ~ r ∘ f and that id and f are equivalences
       former-and-comp-are-equivs-then-latter-is-equiv
         (R ⁻¹ₕₜₚ) eqv id-is-equiv
+
+    -- ↔-lemmas which will be useful later on
+    latter-is-equiv-then-comp-is-equiv-iff-former-is-equiv : {A B X : Set} → (h : A → B) → {f : A → X} → {g : B → X} →
+                                                             (H : f ~ g ∘ h) → Is-equiv g → Is-equiv f ↔ Is-equiv h
+    latter-is-equiv-then-comp-is-equiv-iff-former-is-equiv {A} {B} {X} h {f} {g} H g-eqv =
+      (
+        latter-and-comp-are-equivs-then-former-is-equiv h H g-eqv ,
+        (λ f-eqv →
+          is-equiv-preserved-by-homotopy (H ⁻¹ₕₜₚ) (comp-equivs-is-equiv g-eqv f-eqv)
+        )
+      )
 
   -- exercise 9.5
   module _ where
