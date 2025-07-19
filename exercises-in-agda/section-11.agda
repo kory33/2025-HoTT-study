@@ -94,3 +94,60 @@ module _ where
       Is-equiv (lem-11-1-4.mapleft f D ∘ totalization g)    ↔⟨⟩ -- these maps are definitionally equal
       Is-equiv (totalization-over f D g)                    ∎-↔
 
+  -- 11.2.1
+  is-identity-system-at : {A : Set} → (a : A) → (B : A → Set) → (b : B a) → Set₁
+  is-identity-system-at {A} a B b =
+    (P : (x : A) → B x → Set) → Sect (λ (h : (x : A) → (y : B x) → P x y) → h a b)
+
+  identity-system-at : {A : Set} → (a : A) → Set₁
+  identity-system-at {A} a =
+    Σ-poly (A → Set) (λ B → Σ-poly (B a) (λ b → is-identity-system-at a B b))
+
+  -- 11.2.2
+  module thm-11-2-2 where
+    ind-≡-family : {A : Set} → {a : A} → (B : A → Set) → (b : B a) → (x : A) → (a ≡ x) → B x
+    ind-≡-family {A} {a} B b x refl = b
+
+  -- 11.2.2 (i) ↔ (ii)
+  fundamental-thm-of-identity-types : {A : Set} → {a : A} → {B : A → Set} → (f : (x : A) → (a ≡ x) → B x) →
+                                      is-family-of-equivs f ↔ Is-contr (Σ A B)
+  fundamental-thm-of-identity-types {A} {a} {B} f =
+    begin-↔
+      is-family-of-equivs f                                          ↔⟨ is-family-of-equivs-iff-tot-is-equiv f ⟩
+      Is-equiv (totalization f)                                      ↔⟨⟩
+      Is-equiv ((totalization f) typed (Σ A (λ x → a ≡ x) → Σ A B))  ↔⟨ dom-is-contr-then-is-equiv-iff-cod-is-contr (identity-with-an-endpoint-fixed-Is-contr a) ⟩
+      Is-contr (Σ A B)                                               ∎-↔
+
+  -- 11.2.2 corollary
+  fundamental-thm-of-identity-types-ind-≡ : {A : Set} → {a : A} → {B : A → Set} → (b : B a) →
+                                            is-family-of-equivs (thm-11-2-2.ind-≡-family B b) ↔ Is-contr (Σ A B)
+  fundamental-thm-of-identity-types-ind-≡ b = fundamental-thm-of-identity-types (thm-11-2-2.ind-≡-family _ b)
+
+  -- 11.2.2 (ii) ↔ (iii)
+  fundamental-thm-of-identity-types-id-sys : {A : Set} → {a : A} → {B : A → Set} → (b : B a) →
+                                                      Is-contr (Σ A B) ↔-poly (is-identity-system-at a B b)
+  fundamental-thm-of-identity-types-id-sys {A} {a} {B} b =
+    begin-↔-poly
+      Is-contr (Σ A B)                                                     ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
+      singleton-induction-at (a , b)                                       ↔-poly⟨⟩
+      ((P : Σ A B → Set) → Sect (ev-pt (a , b)))                           ↔-poly⟨ curry-type-family ⟩
+      ((P : (x : A) → B x → Set) → Sect (ev-pt (a , b)))                   ↔-poly⟨⟩
+      ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b ∘ ev-pair P))    ↔-poly⟨ depfn-iff (λ P →
+                                                                            Sect-former-then-Sect-comp-iff-Sect-latter
+                                                                              (ev-at-pair P a b)
+                                                                              (htpy-refl (ev-at-pair P a b ∘ ev-pair P))
+                                                                              (ev-pair-sect P)
+                                                                           ) ⟩
+      ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b))                ↔-poly⟨⟩
+      is-identity-system-at a B b                                          ∎-↔-poly
+    where
+      open ↔-poly-Reasoning
+      ev-pair : (P : (x : A) → B x → Set) → (((x , y) : Σ A B) → P x y) → (x : A) → (y : B x) → P x y
+      ev-pair P h x y = h (x , y)
+
+      ev-at-pair : (P : (x : A) → B x → Set) → (a : A) → (b : B a) → (((x : A) → (y : B x) → P x y) → P a b)
+      ev-at-pair P a b f = f a b
+
+      ev-pair-sect : (P : (x : A) → B x → Set) → Sect (ev-pair P)
+      ev-pair-sect P = ((λ { f (x , y) → f x y }) , λ f → refl)
+

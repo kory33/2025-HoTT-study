@@ -1,6 +1,12 @@
 id : {A : Set} → A → A
 id x = x
 
+-- the "type ascription" operator
+infixl 1 types
+types : (A : Set) → A → A
+types A x = x
+syntax types A x  = x typed A
+
 const : {A B : Set} → (b : B) → (a : A) → B
 const b a = b
 

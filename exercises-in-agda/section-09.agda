@@ -589,7 +589,7 @@ module _ where
       ((f , fsect), (f , gsect))
       where
         fsect : Is-sect-of g f
-        fsect = (equiv-has-inverse f-is-equiv) .Σ.snd .Σ.snd
+        fsect = Σ.snd (Σ.snd (equiv-has-inverse f-is-equiv))
     
     ≃-inverse-map-is-sect-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-sect-of f (≃-inverse-map-for f-is-eqv)
     ≃-inverse-map-is-sect-of-original ((g , gsect) , _) = gsect
@@ -742,7 +742,7 @@ module _ where
     open EmptyBasic
 
     Inhabited-≄-Empty : {A : Set} → (a : A) → A ≄ Empty
-    Inhabited-≄-Empty a eqv = absurd ((eqv .Σ.fst) a)
+    Inhabited-≄-Empty a (f , _) = absurd (f a)
 
     ≃-comm-+₀ : {A B : Set} → A +₀ B ≃ B +₀ A
     ≃-comm-+₀ =
@@ -879,7 +879,7 @@ module _ where
                       b'a≡predOrZero-bla = backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt
                       predOrZero-bla≥pt = Lt-Nat.lt-then-leq-predOrZero pointToEliminate (backward (left a)) bla>pt
                       predOrZero-bla<pt = tr (λ e → e < pointToEliminate) b'a≡predOrZero-bla b'a<pt
-                  in absurd ((Lt-Nat.lt-biimpl-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate).Σ.fst predOrZero-bla<pt predOrZero-bla≥pt)
+                  in absurd (Σ.fst (Lt-Nat.lt-biimpl-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate) predOrZero-bla<pt predOrZero-bla≥pt)
               }
             backward'≥pt-then-backward∘left>pt : (a : A) → (pointToEliminate ≤ backward' a) → (pointToEliminate < backward (left a))
             backward'≥pt-then-backward∘left>pt a b'a≥pt =
@@ -971,7 +971,7 @@ module _ where
       (is-equiv-preserved-by-homotopy FG , is-equiv-preserved-by-homotopy (FG ⁻¹ₕₜₚ))
 
     sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retr-of f)) → Is-retr-of f g
-    sect-with-retr-is-retr {A} {B} {f} {g} gsect retr = equiv-has-inverse ((g , gsect), retr) .Σ.snd .Σ.snd
+    sect-with-retr-is-retr {A} {B} {f} {g} gsect retr = Σ.snd (Σ.snd (equiv-has-inverse ((g , gsect), retr)))
 
     homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →
                                               ≃-inverse-map-for ee ~ ≃-inverse-map-for ee'
@@ -1005,8 +1005,8 @@ module _ where
         f ∘ s         ∎-htpy
 
     Sect-comp-then-Sect-latter : {A B X : Set} →
-                                  (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
-                                  ((fs , fS) : Sect f) → Sect g
+                                 (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                 ((fs , fS) : Sect f) → Sect g
     Sect-comp-then-Sect-latter {A} {B} {X} h {f} g H (fs , fS) =
       (h ∘ fs , (begin-htpy
         g ∘ (h ∘ fs)   ~⟨⟩
@@ -1026,6 +1026,12 @@ module _ where
         g ∘ gs               ~⟨ gS ⟩
         id                   ∎-htpy
       ))
+
+    Sect-former-then-Sect-comp-iff-Sect-latter : {A B X : Set} →
+                                                 {h : A → B} → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                                 Sect h → Sect f ↔ Sect g
+    Sect-former-then-Sect-comp-iff-Sect-latter {A} {B} {X} {h} {f} g H h-Sect =
+      (Sect-comp-then-Sect-latter h g H , comp-of-maps-with-sections-has-section {A} {B} {X} {h} {f} {g} H h-Sect)
 
     -- exercise 9.4.b ; this is dual to (a)
     retr-of-second-map-commutes-inverted-triangle : {A B X : Set} →
@@ -1132,10 +1138,10 @@ module _ where
 
     -- exercise 9.5.b
     swap-ΣΣ-families-fn : {A : Set} → {B C : A → Set} →
-                          Σ (Σ A B) (λ u → C (u .Σ.fst)) → Σ (Σ A C) (λ v → B (v .Σ.fst))
+                          Σ (Σ A B) (λ u → C (Σ.fst u)) → Σ (Σ A C) (λ v → B (Σ.fst v))
     swap-ΣΣ-families-fn ((a , b) , c) = ((a , c) , b)
     swap-ΣΣ-families : {A : Set} → {B C : A → Set} →
-                        Σ (Σ A B) (λ u → C (u .Σ.fst)) ≃ Σ (Σ A C) (λ v → B (v .Σ.fst))
+                        Σ (Σ A B) (λ u → C (Σ.fst u)) ≃ Σ (Σ A C) (λ v → B (Σ.fst v))
     swap-ΣΣ-families =
       (
         swap-ΣΣ-families-fn ,
@@ -1204,20 +1210,20 @@ module _ where
       let
         f×₀g = < f ×₀ g >
         (f×₀g⁻¹ , invS , invR) = equiv-has-inverse eqv
-        f⁻¹-at = λ (b' : B') (a' : A') → f×₀g⁻¹ (a' , b') .Σ.fst
-        g⁻¹-at = λ (a' : A') (b' : B') → f×₀g⁻¹ (a' , b') .Σ.snd
+        f⁻¹-at = λ (b' : B') (a' : A') → Σ.fst (f×₀g⁻¹ (a' , b'))
+        g⁻¹-at = λ (a' : A') (b' : B') → Σ.snd (f×₀g⁻¹ (a' , b'))
 
         f⁻¹-is-sectionof-f = λ (b' : B') (a' : A') → begin
           f (f⁻¹-at b' a')                   ≡⟨⟩
-          f (f×₀g⁻¹ (a' , b') .Σ.fst)        ≡⟨⟩
-          (f×₀g (f×₀g⁻¹ (a' , b'))) .Σ.fst   ≡⟨ ap Σ.fst (invS (a' , b')) ⟩
-          (a' , b') .Σ.fst                   ≡⟨⟩
+          f (Σ.fst (f×₀g⁻¹ (a' , b')))       ≡⟨⟩
+          Σ.fst (f×₀g (f×₀g⁻¹ (a' , b')))    ≡⟨ ap Σ.fst (invS (a' , b')) ⟩
+          Σ.fst (a' , b')                    ≡⟨⟩
           a'                                 ∎
         g⁻¹-is-sectionof-g = λ (a' : A') (b' : B') → begin
           g (g⁻¹-at a' b')                   ≡⟨⟩
-          g (f×₀g⁻¹ (a' , b') .Σ.snd)        ≡⟨⟩
-          (f×₀g (f×₀g⁻¹ (a' , b'))) .Σ.snd   ≡⟨ ap Σ.snd (invS (a' , b')) ⟩
-          (a' , b') .Σ.snd                   ≡⟨⟩
+          g (Σ.snd (f×₀g⁻¹ (a' , b')))       ≡⟨⟩
+          Σ.snd (f×₀g (f×₀g⁻¹ (a' , b')))    ≡⟨ ap Σ.snd (invS (a' , b')) ⟩
+          Σ.snd (a' , b')                    ≡⟨⟩
           b'                                 ∎
       in
       (
@@ -1227,10 +1233,10 @@ module _ where
             f⁻¹-is-sectionof-f b' ,
             (λ a → begin
               f⁻¹-at b' (f a)                              ≡⟨⟩
-              f×₀g⁻¹ (f a , b') .Σ.fst                     ≡⟨← ap (λ x → f×₀g⁻¹ ((f a) , x) .Σ.fst) (g⁻¹-is-sectionof-g (f a) b') ⟩
-              f×₀g⁻¹ (f a , g (g⁻¹-at (f a) b')) .Σ.fst    ≡⟨⟩
-              f×₀g⁻¹ (f×₀g (a , g⁻¹-at (f a) b')) .Σ.fst   ≡⟨ ap Σ.fst (invR _) ⟩
-              (a , g⁻¹-at (f a) b') .Σ.fst                 ≡⟨⟩
+              Σ.fst (f×₀g⁻¹ (f a , b'))                    ≡⟨← ap (λ x → Σ.fst (f×₀g⁻¹ ((f a) , x))) (g⁻¹-is-sectionof-g (f a) b') ⟩
+              Σ.fst (f×₀g⁻¹ (f a , g (g⁻¹-at (f a) b')))   ≡⟨⟩
+              Σ.fst (f×₀g⁻¹ (f×₀g (a , g⁻¹-at (f a) b')))  ≡⟨ ap Σ.fst (invR _) ⟩
+              Σ.fst (a , g⁻¹-at (f a) b')                  ≡⟨⟩
               a                                            ∎
             )
           )
@@ -1240,12 +1246,12 @@ module _ where
             g⁻¹-at a' ,
             g⁻¹-is-sectionof-g a' ,
             (λ b → begin
-              g⁻¹-at a' (g b)                              ≡⟨⟩
-              f×₀g⁻¹ (a' , g b) .Σ.snd                     ≡⟨← ap (λ x → f×₀g⁻¹ (x , g b) .Σ.snd) (f⁻¹-is-sectionof-f (g b) a') ⟩
-              f×₀g⁻¹ (f (f⁻¹-at (g b) a') , g b) .Σ.snd    ≡⟨⟩
-              f×₀g⁻¹ (f×₀g (f⁻¹-at (g b) a' , b)) .Σ.snd   ≡⟨ ap Σ.snd (invR _) ⟩
-              (f⁻¹-at (g b) a' , b) .Σ.snd                 ≡⟨⟩
-              b                                            ∎
+              g⁻¹-at a' (g b)                               ≡⟨⟩
+              Σ.snd (f×₀g⁻¹ (a' , g b))                     ≡⟨← ap (λ x → Σ.snd (f×₀g⁻¹ (x , g b))) (f⁻¹-is-sectionof-f (g b) a') ⟩
+              Σ.snd (f×₀g⁻¹ (f (f⁻¹-at (g b) a') , g b))    ≡⟨⟩
+              Σ.snd (f×₀g⁻¹ (f×₀g (f⁻¹-at (g b) a' , b)))   ≡⟨ ap Σ.snd (invR _) ⟩
+              Σ.snd (f⁻¹-at (g b) a' , b)                   ≡⟨⟩
+              b                                             ∎
             )
           )
         )

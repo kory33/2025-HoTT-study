@@ -21,6 +21,9 @@ module _ where
   untangled-contr-at-centre : {A : Set} → (contr@(c , C) : Is-contr A) → (untangle contr) c ≡ refl
   untangled-contr-at-centre (c , C) = ·-linv (C c)
 
+  recenter-contraction-at : {A : Set} → (a : A) → Is-contr A → ContractionTo a
+  recenter-contraction-at {A} a (c , C) = λ x → (C a)⁻¹ · (C x)
+
   two-points-eq-in-contr-type : {A : Set} → Is-contr A → (x y : A) → x ≡ y
   two-points-eq-in-contr-type (a , C) x y = (C x)⁻¹ · (C y)
 
@@ -41,33 +44,34 @@ module _ where
   ev-pt : {A : Set} → {B : (x : A) → Set} → (a : A) → (f : (x : A) → B x) → B a
   ev-pt a f = f a
 
-  -- 10.2.3
-  contr-then-sing-ind : {A : Set} → Is-contr A → {B : A → Set} →
-    Σ A (λ a → Σ (B a → (x : A) → B x) (λ ind-sing-a → ev-pt a ∘ ind-sing-a ~ id))
-  contr-then-sing-ind {A} contr@(a , C) {B} =
-    let
-      C = untangle contr
-      ind-sing-a : B a → (x : A) → B x
-      ind-sing-a b x = tr B (C x) b
-      comp-sing-a : ev-pt a ∘ ind-sing-a ~ id
-      comp-sing-a = λ b → begin
-        (ev-pt a ∘ ind-sing-a) b ≡⟨⟩
-        tr B (C a) b             ≡⟨ ap (λ t → tr B t b) (untangled-contr-at-centre contr) ⟩
-        tr B refl b              ≡⟨⟩
-        b                        ≡⟨⟩
-        id b                     ∎
-    in
-      (a , ind-sing-a , comp-sing-a)
+  open Equivalence
+  singleton-induction-at : {A : Set} → (a : A) → Set₁
+  singleton-induction-at {A} a = (B : A → Set) → Sect (ev-pt {A} {B} a)
 
   -- 10.2.3
-  -- To properly phrase "singleton induction" we need to use Set₁ and the corresponding
-  -- (or universe-polymorphic) Σ types, but for our purposes it suffices to consider
-  -- just one type family B(x) := a ≡ x, since that is the only induction we will use.
-  sing-ind-on-identity-then-contr : {A : Set} →
-    Σ A (λ a → Σ (a ≡ a → (x : A) → a ≡ x) (λ ind-sing-a → ev-pt a ∘ ind-sing-a ~ id)) →
-    Is-contr A
-  sing-ind-on-identity-then-contr (a , ind-sing-a , _) =
-    (a , λ x → ind-sing-a refl x)
+  contr-then-sing-ind-at : {A : Set} → (a : A) → Is-contr A → singleton-induction-at a
+  contr-then-sing-ind-at {A} a contr =
+    λ B → 
+      let
+        recenteredC = (a , recenter-contraction-at a contr)
+        C = untangle recenteredC
+        ind-sing-a : B a → (x : A) → B x
+        ind-sing-a b x = tr B (C x) b
+        comp-sing-a : ev-pt a ∘ ind-sing-a ~ id
+        comp-sing-a = λ b → begin
+          (ev-pt a ∘ ind-sing-a) b ≡⟨⟩
+          tr B (C a) b             ≡⟨ ap (λ t → tr B t b) (untangled-contr-at-centre recenteredC) ⟩
+          tr B refl b              ≡⟨⟩
+          b                        ≡⟨⟩
+          id b                     ∎
+      in
+        (ind-sing-a , comp-sing-a)
+
+  sing-ind-then-contr : {A : Set} → (a : A) → singleton-induction-at a → Is-contr A
+  sing-ind-then-contr a ind = (a , λ x → Σ.fst (ind (λ x → a ≡ x)) refl x)
+
+  is-contr-iff-sing-ind-at : {A : Set} → (a : A) → (Is-contr A) ↔-poly (singleton-induction-at a)
+  is-contr-iff-sing-ind-at {A} a = (contr-then-sing-ind-at a , sing-ind-then-contr a)
 
   -- 10.3.1
   fib : {A B : Set} → (f : A → B) → (b : B) → Set
@@ -112,11 +116,11 @@ module _ where
   contr-fn-then-equiv {A} {B} {f} contr =
     let
       gG : (y : B) → fib f y
-      gG y = contr y .fst
+      gG y = fst (contr y)
       g : B → A
-      g y = gG y .fst
+      g y = fst (gG y)
       G : (y : B) → f (g y) ≡ y
-      G y = gG y .snd
+      G y = snd (gG y)
 
       linverse : g ∘ f ~ id
       linverse x =
@@ -425,6 +429,13 @@ module _ where
       (contr-then-const-unit-is-equiv b-contr)
       (contr-then-const-unit-is-equiv a-contr)
 
+  dom-is-contr-then-is-equiv-iff-cod-is-contr : {A B : Set} → {f : A → B} → Is-contr A → Is-equiv f ↔ Is-contr B
+  dom-is-contr-then-is-equiv-iff-cod-is-contr {A} {B} {f} a-contr =
+    (
+      (λ f-eqv → dom-of-equiv-is-contr-then-cod-is-contr f-eqv a-contr) ,
+      (λ b-contr → any-map-between-contr-types-is-equiv a-contr b-contr f)
+    )
+
   -- exercise 10.4
   module _ where
     open EmptyBasic
@@ -495,7 +506,7 @@ module _ where
     pr1-of {A} B = Σ.fst
 
     -- exercise 10.7.a
-    tr-from-fib-pr1-is-equiv : {A : Set} → {B : A → Set} → (a : A) → Is-equiv (id {fib (pr1-of B) a → B a} (λ { ((x , y) , p) → tr B p y }))
+    tr-from-fib-pr1-is-equiv : {A : Set} → {B : A → Set} → (a : A) → Is-equiv ((λ { ((x , y) , p) → tr B p y }) typed (fib (pr1-of B) a → B a))
     tr-from-fib-pr1-is-equiv {A} {B} a =
       has-inverse-equiv (
         (λ y → ((a , y) , refl)) ,

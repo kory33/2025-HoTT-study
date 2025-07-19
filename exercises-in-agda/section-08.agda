@@ -124,7 +124,7 @@ module _ where
               }
 
     Nat-has-decidable-eq : Has-decidable-eq Nat
-    Nat-has-decidable-eq m n = (decide-biimpl (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)).Σ.snd (decide-Eq-Nat m n)
+    Nat-has-decidable-eq m n = Σ.snd (decide-biimpl (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)) (decide-Eq-Nat m n)
 
     Unit-has-decidable-eq : Has-decidable-eq Unit
     Unit-has-decidable-eq unit unit = left refl
@@ -160,13 +160,13 @@ module _ where
         backward (right b1) (right b2) eq = ap right eq
 
     obseq-then-eq : {A B : Set} → {x y : A +₀ B} → (Eq-Copr x y) → (x ≡ y)
-    obseq-then-eq eq = (Copr-≡-biimpl-Eq-Copr).Σ.snd eq
+    obseq-then-eq eq = Σ.snd (Copr-≡-biimpl-Eq-Copr) eq
 
     +₀-left-inj : {A : Set} → {B : Set} → {x y : A} → (left {A} {B} x ≡ left y) → (x ≡ y)
-    +₀-left-inj eq = (Copr-≡-biimpl-Eq-Copr).Σ.fst eq
+    +₀-left-inj eq = Σ.fst (Copr-≡-biimpl-Eq-Copr) eq
 
     +₀-right-inj : {A : Set} → {B : Set} → {x y : B} → (right {A} {B} x ≡ right y) → (x ≡ y)
-    +₀-right-inj eq = (Copr-≡-biimpl-Eq-Copr).Σ.fst eq
+    +₀-right-inj eq = Σ.fst (Copr-≡-biimpl-Eq-Copr) eq
 
     +₀-deceq-biimpl-both-deceq : {A B : Set} → Has-decidable-eq (A +₀ B) ↔ ((Has-decidable-eq A) × (Has-decidable-eq B))
     +₀-deceq-biimpl-both-deceq {A} {B} = (forward , backward)
@@ -201,14 +201,14 @@ module _ where
           }
 
     left-neq-right : {A : Set} → {B : Set} → {x : A} → {y : B} → ¬ (left x ≡ right y)
-    left-neq-right lxry = (Copr-≡-biimpl-Eq-Copr .Σ.fst) lxry
+    left-neq-right lxry = Σ.fst Copr-≡-biimpl-Eq-Copr lxry
 
   module _ where
     open Eq-Copr
     open Has-decidable-eq
 
     Int-has-decidable-eq : Has-decidable-eq Int
-    Int-has-decidable-eq = (+₀-deceq-biimpl-both-deceq).Σ.snd (Nat-has-decidable-eq , (+₀-deceq-biimpl-both-deceq).Σ.snd (Unit-has-decidable-eq , Nat-has-decidable-eq))
+    Int-has-decidable-eq = Σ.snd (+₀-deceq-biimpl-both-deceq) (Nat-has-decidable-eq , Σ.snd (+₀-deceq-biimpl-both-deceq) (Unit-has-decidable-eq , Nat-has-decidable-eq))
 
   Eq-Σ : {A : Set} → {B : A → Set} → (Σ A B) → (Σ A B) → Set
   Eq-Σ (a1 , b1) (a2 , b2) = Σ (a1 ≡ a2) (λ { (refl) → b1 ≡ b2 })
@@ -349,7 +349,7 @@ module _ where
               (pn , trans n N (succ N) leq-n (self-succ N)),
               (λ x px →
                 +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
-                  case (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x).Σ.snd ((Lt-Nat.lt-biimpl-succ-leq N x).Σ.fst N<x) of λ {
+                  case Σ.snd (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x) (Σ.fst (Lt-Nat.lt-biimpl-succ-leq N x) N<x) of λ {
                     (left sN<x) → sN<x
                   ; (right refl) → absurd (¬psN px)
                   }
@@ -392,7 +392,7 @@ module _ where
             ; (right m'<m'') →
               case (no-value-from-sm'-upto-m-satisfies m'' pm'') of λ {
                 (left m''≤m') → m''≤m'
-              ; (right m<m'') → absurd ((Lt-Nat.lt-biimpl-not-flip-leq m m'').Σ.fst m<m'' (mub m'' pm'')) -- impossible
+              ; (right m<m'') → absurd (Σ.fst (Lt-Nat.lt-biimpl-not-flip-leq m m'') m<m'' (mub m'' pm'')) -- impossible
               }
           }))
       ; (right ¬pm'-below-m) → absurd (¬pm'-below-m n (mub n pn) pn) -- impossible

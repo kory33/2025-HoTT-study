@@ -78,12 +78,23 @@ module _ where
     mapRightOf = swap rightMap
 
   -- 4.6
-  record Σ (A : Set) (B : A → Set) : Set where
+  open import Agda.Primitive
+  record Σ-poly {i j} (A : Set i) (B : A → Set j) : Set (i ⊔ j) where
     constructor pair
     field
       fst : A
       snd : B fst
   
+  Σ : (A : Set) → (B : A → Set) → Set
+  Σ A B = Σ-poly A B
+
+  module Σ where
+    fst : {A : Set} → {B : A → Set} → Σ A B → A
+    fst (pair x y) = x
+
+    snd : {A : Set} → {B : A → Set} → (t : Σ A B) → B (fst t)
+    snd (pair x y) = y
+
   ind-Σ : {A : Set} → {B : A → Set} → {P : (x : Σ A B) → Set} →
           ((x : A) → (y : B x) → P (pair x y)) →
           (z : Σ A B) → P z
@@ -256,26 +267,34 @@ module _ where
     false ∨ true = true
     false ∨ false = false
 
+  _↔-poly_ : {i j : Level} → Set i → Set j → Set (i ⊔ j)
+  A ↔-poly B = Σ-poly (A → B) (λ _ → B → A)
+
   _↔_ : Set → Set → Set
-  A ↔ B = (A → B) × (B → A)
+  A ↔ B = A ↔-poly B
 
   module ↔-Basic where
-    flip-iff : {A B : Set} → (A ↔ B) → (B ↔ A)
+    flip-iff : {i j : Level} → {A : Set i} → {B : Set j} → (A ↔-poly B) → (B ↔-poly A)
     flip-iff (a→b , b→a) = (b→a , a→b)
 
-    trans-iff : {A B C : Set} → (A ↔ B) → (B ↔ C) → (A ↔ C)
-    trans-iff (a→b , b→a) (b→c , c→b) = ((b→c ∘ a→b), (b→a ∘ c→b))
+    trans-iff : {i j k : Level} → {A : Set i} → {B : Set j} → {C : Set k} → (A ↔-poly B) → (B ↔-poly C) → (A ↔-poly C)
+    trans-iff (a→b , b→a) (b→c , c→b) = ((λ a → b→c (a→b a)), (λ c → b→a (c→b c)))
 
     prod-iff : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
     prod-iff (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
 
-    depfn-iff : {A : Set} → {B C : A → Set} → (foralla : (x : A) → (B x ↔ C x)) →
-                ((x : A) → B x) ↔ ((x : A) → C x)
-    depfn-iff foralla = ((λ f x → Σ.fst (foralla x) (f x)) , λ f x → Σ.snd (foralla x) (f x))
+    depfn-iff : {i j : Level} → {A : Set i} → {B C : A → Set j} → (foralla : (x : A) → (B x ↔-poly C x)) →
+                ((x : A) → B x) ↔-poly ((x : A) → C x)
+    depfn-iff foralla = ((λ f x → Σ-poly.fst (foralla x) (f x)) , λ f x → Σ-poly.snd (foralla x) (f x))
 
     uncurry-iff : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
                   (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
     uncurry-iff = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
+
+    curry-type-family : {A : Set} → {B : A → Set} → {H : (P : Σ A B → Set) → Set} →
+                        ((P : Σ A B → Set) → H P) ↔-poly
+                        ((P' : (x : A) → B x → Set) → H (λ t → P' (Σ.fst t) (Σ.snd t)))
+    curry-type-family = ((λ f P' → f (λ t → P' (Σ.fst t) (Σ.snd t))) , λ f P → f (λ x y → P (x , y)))
 
     open EmptyBasic
     neg-iff : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
@@ -306,6 +325,32 @@ module _ where
 
     _∎-↔ : (x : Set) → (x ↔ x)
     x ∎-↔  =  (id , id)
+
+  module ↔-poly-Reasoning where
+    open ↔-Basic
+
+    infix  1 begin-↔-poly_
+    infixr 2 step-↔-poly-∣ step-↔-poly-⟩ step-↔-poly-⟩⁻¹
+    infix  3 _∎-↔-poly
+
+    begin-↔-poly_ : {i j : Level} → {x : Set i} → {y : Set j} → (x ↔-poly y) → (x ↔-poly y)
+    begin-↔-poly x↔y = x↔y
+
+    step-↔-poly-∣ : {i j : Level} → (x : Set i) → {y : Set j} → (x ↔-poly y) → (x ↔-poly y)
+    step-↔-poly-∣ x x↔y = x↔y
+
+    step-↔-poly-⟩ : {i j k : Level} → (x : Set i) → {y : Set j} → {z : Set k} → (y ↔-poly z) → (x ↔-poly y) → (x ↔-poly z)
+    step-↔-poly-⟩ x y↔z x↔y = trans-iff x↔y y↔z
+
+    step-↔-poly-⟩⁻¹ : {i j k : Level} → (x : Set i) → {y : Set j} → {z : Set k} → (y ↔-poly z) → (y ↔-poly x) → (x ↔-poly z)
+    step-↔-poly-⟩⁻¹ x y↔z y↔x = trans-iff (flip-iff y↔x) y↔z
+
+    syntax step-↔-poly-∣ x x↔y       =  x ↔-poly⟨⟩ x↔y
+    syntax step-↔-poly-⟩ x y↔z x↔y   =  x ↔-poly⟨ x↔y ⟩ y↔z
+    syntax step-↔-poly-⟩⁻¹ x y↔z y↔x =  x ↔-poly⟨← y↔x ⟩ y↔z
+
+    _∎-↔-poly : {i : Level} → (x : Set i) → (x ↔-poly x)
+    x ∎-↔-poly = ((λ x → x) , (λ x → x))
 
   module exercise-4-3 where
     open EmptyBasic

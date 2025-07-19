@@ -134,7 +134,7 @@ module _ where
     Fin-≡-biimpl-Eq-Fin {succ k} x y = ((λ { refl → Eq-Fin-refl x }), backward x y)
       where
       backward : (x y : Fin (succ k)) → (Eq-Fin (succ k) x y) → (x ≡ y)
-      backward (left x) (left y) eq-fin = ap left ((Fin-≡-biimpl-Eq-Fin {k} x y).Σ.snd eq-fin)
+      backward (left x) (left y) eq-fin = ap left (Σ.snd (Fin-≡-biimpl-Eq-Fin {k} x y) eq-fin)
       backward (left x) (right unit) ()
       backward (right unit) (left y) ()
       backward (right unit) (right unit) eq-fin = refl
