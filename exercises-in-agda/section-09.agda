@@ -629,6 +629,179 @@ module _ where
 
       _∎-≃ : (A : Set) → A ≃ A
       A ∎-≃  =  ≃-refl
+    
+    -- 9.2.9
+    module _ where
+      open +₀-Basic
+      open EmptyBasic
+      open Equivalence-Reasoning
+
+      +₀-comm : {A B : Set} → A +₀ B ≃ B +₀ A
+      +₀-comm =
+        (swap-+₀ ,
+          (has-inverse-equiv (
+            swap-+₀ ,
+            (λ { (left _) → refl ; (right _) → refl }),
+            (λ { (left _) → refl ; (right _) → refl }))))
+
+      +₀-both-≃ : {A B C D : Set} → (A ≃ C) → (B ≃ D) → (A +₀ B ≃ C +₀ D)
+      +₀-both-≃ (f , (fs , fS), (fr , fR)) (g , (gs , gS), (gr , gR)) =
+        (< f +₀ g > ,
+          ((λ { (left c) → left (fs c) ; (right d) → right (gs d) }) , (λ { (left c) → ap left (fS c) ; (right d) → ap right (gS d) })) ,
+          ((λ { (left c) → left (fr c) ; (right d) → right (gr d) }) , (λ { (left c) → ap left (fR c) ; (right d) → ap right (gR d) }))
+        )
+
+      +₀-lunit : {A : Set} → Empty +₀ A ≃ A
+      +₀-lunit =
+        (
+          (  λ { (left emp) → absurd emp ; (right a) → a }),
+          (has-inverse-equiv (
+            right ,
+            (λ a → refl),
+            (λ { (left emp) → absurd emp ; (right a) → refl }))))
+
+      +₀-runit : {A : Set} → A +₀ Empty ≃ A
+      +₀-runit {A} = begin-≃
+        A +₀ Empty     ≃⟨ +₀-comm ⟩
+        Empty +₀ A     ≃⟨ +₀-lunit ⟩
+        A              ∎-≃
+
+      +₀-assoc : {A B C : Set} → (A +₀ B) +₀ C ≃ A +₀ (B +₀ C)
+      +₀-assoc =
+        (
+          (  λ { (left (left a)) → left a ; (left (right b)) → right (left b) ; (right c) → right (right c) }),
+          has-inverse-equiv (
+            (λ { (left a) → left (left a) ; (right (left b)) → left (right b) ; (right (right c)) → right c }) ,
+            (λ { (left a) → refl          ; (right (left b)) → refl           ; (right (right c)) → refl }) ,
+            (λ { (left (left a)) → refl   ; (left (right b)) → refl           ; (right c) → refl })
+          )
+        )
+
+      ×-comm : {A B : Set} → A × B ≃ B × A
+      ×-comm =
+        ((   λ { (a , b) → (b , a) }) ,
+          has-inverse-equiv (
+            (λ { (b , a) → (a , b) }) ,
+            (λ { (a , b) → refl }) ,
+            (λ { (b , a) → refl })
+          ))
+
+      ×-lzero : {A : Set} → Empty × A ≃ Empty
+      ×-lzero = ((λ { () }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { () })))
+
+      ×-rzero : {A : Set} → A × Empty ≃ Empty
+      ×-rzero = ≃-trans ×-comm ×-lzero
+
+      ×-lunit : {A : Set} → Unit × A ≃ A
+      ×-lunit =
+        (
+          (  λ { (unit , a) → a }) ,
+          has-inverse-equiv (
+            (λ { a          → (unit , a) }) ,
+            (λ { a          → refl }) ,
+            (λ { (unit , a) → refl })
+          )
+        )
+      
+      ×-runit : {A : Set} → A × Unit ≃ A
+      ×-runit = ≃-trans ×-comm ×-lunit
+
+      ×-assoc : {A B C : Set} → (A × B) × C ≃ A × (B × C)
+      ×-assoc =
+        (
+          (  λ { ((a , b) , c) → (a , (b , c)) }) ,
+          has-inverse-equiv (
+            (λ { (a , (b , c)) → ((a , b) , c) }) ,
+            (λ { (a , (b , c)) → refl }) ,
+            (λ { ((a , b) , c) → refl })
+          )
+        )
+
+      ×-ldistr-+₀ : {A B C : Set} → A × (B +₀ C) ≃ (A × B) +₀ (A × C)
+      ×-ldistr-+₀ =
+        (
+          (  λ { (a , left b) → left (a , b)   ; (a , right c)   → right (a , c) }) ,
+          has-inverse-equiv (
+            (λ { (left (a , b)) → (a , left b) ; (right (a , c)) → (a , right c) }) ,
+            (λ { (left (a , b)) → refl         ; (right (a , c)) → refl }) ,
+            (λ { (a , left b)   → refl         ; (a , right c)   → refl })
+          )
+        )
+      
+      ×-rdistr-+₀ : {A B C : Set} → (B +₀ C) × A ≃ (B × A) +₀ (C × A)
+      ×-rdistr-+₀ =
+        (
+          (  λ { (left b , a) → left (b , a)   ; (right c , a)   → right (c , a) }) ,
+          has-inverse-equiv (
+            (λ { (left (b , a)) → (left b , a) ; (right (c , a)) → (right c , a) }) ,
+            (λ { (left (b , a)) → refl         ; (right (c , a)) → refl }) ,
+            (λ { (left b , a) → refl           ; (right c , a)   → refl })
+          )
+        )
+    
+    -- 9.2.10
+    module _ where
+      open Σ-Basic
+      open EmptyBasic
+      open Equivalence-Reasoning
+
+      Σ-lzero : {B : Empty → Set} → Σ Empty B ≃ Empty
+      Σ-lzero = ((λ { () }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { () })))
+
+      Σ-rzero : {A : Set} → Σ A (λ x → Empty) ≃ Empty
+      Σ-rzero = ((λ { () }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { () })))
+
+      Σ-lunit : {B : Unit → Set} → Σ Unit B ≃ B unit
+      Σ-lunit =
+        ((   λ { (unit , b) → b }) ,
+          has-inverse-equiv (
+            (λ { b          → (unit , b) }) ,
+            (λ { b          → refl }) ,
+            (λ { (unit , b) → refl })))
+  
+      Σ-runit : {A : Set} → Σ A (λ x → Unit) ≃ A
+      Σ-runit =
+        ((   λ { (a , unit) → a }) ,
+          has-inverse-equiv (
+            (λ { a          → (a , unit) }) ,
+            (λ { a          → refl }) ,
+            (λ { (a , unit) → refl })))
+
+      Σ-assoc-uncurried : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
+                          Σ (Σ A B) C ≃ Σ A (λ x → Σ (B x) (λ y → C (x , y)))
+      Σ-assoc-uncurried =
+        ((   λ { ((x , y) , c) → (x , (y , c)) }) ,
+          has-inverse-equiv (
+            (λ { (x , (y , c)) → ((x , y) , c) }) ,
+            (λ { (x , (y , c)) → refl }) ,
+            (λ { ((x , y) , c) → refl })))
+
+      Σ-assoc-curried : {A : Set} → {B : A → Set} → {C : (x : A) → B x → Set} →
+                        Σ (Σ A B) (λ w → C (Σ.fst w) (Σ.snd w)) ≃ Σ A (λ x → Σ (B x) (λ y → C x y))
+      Σ-assoc-curried =
+        ((   λ { ((x , y) , c) → (x , (y , c)) }) ,
+          has-inverse-equiv (
+            (λ { (x , (y , c)) → ((x , y) , c) }) ,
+            (λ { (x , (y , c)) → refl }) ,
+            (λ { ((x , y) , c) → refl })))
+
+      Σ-ldistr-+₀ : {A : Set} → {B : A → Set} → {C : A → Set} →
+                    Σ A (λ x → B x +₀ C x) ≃ (Σ A B +₀ Σ A C)
+      Σ-ldistr-+₀ =
+        ((   λ { (x , left b) → left (x , b)   ; (x , right c)   → right (x , c) }) ,
+          has-inverse-equiv (
+            (λ { (left (x , b)) → (x , left b) ; (right (x , c)) → (x , right c) }) ,
+            (λ { (left (x , b)) → refl         ; (right (x , c)) → refl }) ,
+            (λ { (x , left b) → refl           ; (x , right c)   → refl })))
+
+      Σ-rdistr-+₀ : {A : Set} → {B : Set} → {C : (A +₀ B) → Set} →
+                    Σ (A +₀ B) C ≃ (Σ A (λ x → C (left x)) +₀ (Σ B (λ y → C (right y))))
+      Σ-rdistr-+₀ =
+        ((   λ { (left x , c) → left (x , c)   ; (right y , c)   → right (y , c) }) ,
+          has-inverse-equiv (
+            (λ { (left (x , c)) → (left x , c) ; (right (y , c)) → (right y , c) }) ,
+            (λ { (left (x , c)) → refl         ; (right (y , c)) → refl }) ,
+            (λ { (left x , c) → refl           ; (right y , c)   → refl })))
 
   open ≡-Basic
   open ≡-Reasoning
@@ -738,41 +911,8 @@ module _ where
             id b                       ∎)
         ))
 
-    open +₀-Basic
-    open EmptyBasic
-
     Inhabited-≄-Empty : {A : Set} → (a : A) → A ≄ Empty
     Inhabited-≄-Empty a (f , _) = absurd (f a)
-
-    ≃-comm-+₀ : {A B : Set} → A +₀ B ≃ B +₀ A
-    ≃-comm-+₀ =
-      (swap-+₀ ,
-        (has-inverse-equiv (
-          swap-+₀ ,
-          (λ { (left _) → refl ; (right _) → refl }),
-          (λ { (left _) → refl ; (right _) → refl }))))
-
-    ≃-+₀-both : {A B C D : Set} → (A ≃ C) → (B ≃ D) → (A +₀ B ≃ C +₀ D)
-    ≃-+₀-both (f , (fs , fS), (fr , fR)) (g , (gs , gS), (gr , gR)) =
-      (< f +₀ g > ,
-        ((λ { (left c) → left (fs c) ; (right d) → right (gs d) }) , (λ { (left c) → ap left (fS c) ; (right d) → ap right (gS d) })) ,
-        ((λ { (left c) → left (fr c) ; (right d) → right (gr d) }) , (λ { (left c) → ap left (fR c) ; (right d) → ap right (gR d) }))
-      )
-
-    Empty-≃-lunit : {A : Set} → Empty +₀ A ≃ A
-    Empty-≃-lunit =
-      (
-        (λ { (left emp) → absurd emp ; (right a) → a }),
-        (has-inverse-equiv (
-          right ,
-          (λ a → refl),
-          (λ { (left emp) → absurd emp ; (right a) → refl }))))
-
-    Empty-≃-runit : {A : Set} → A +₀ Empty ≃ A
-    Empty-≃-runit {A} = begin-≃
-      A +₀ Empty     ≃⟨ ≃-comm-+₀ ⟩
-      Empty +₀ A     ≃⟨ Empty-≃-lunit ⟩
-      A              ∎-≃
 
     Nat≃+Unit-then-Nat≃ : {A : Set} → (forward : Nat → A +₀ Unit) → Has-inverse forward → Σ (Nat → A) Has-inverse
     Nat≃+Unit-then-Nat≃ {A} forward (backward , Sect , Retr) =

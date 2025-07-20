@@ -159,6 +159,9 @@ module _ where
         backward (right b1) (left a2) ()
         backward (right b1) (right b2) eq = ap right eq
 
+    eq-copr-eq : {A B : Set} → {x y : A +₀ B} → (x ≡ y) → (Eq-Copr x y)
+    eq-copr-eq eq = Σ.fst (Copr-≡-biimpl-Eq-Copr) eq
+
     obseq-then-eq : {A B : Set} → {x y : A +₀ B} → (Eq-Copr x y) → (x ≡ y)
     obseq-then-eq eq = Σ.snd (Copr-≡-biimpl-Eq-Copr) eq
 

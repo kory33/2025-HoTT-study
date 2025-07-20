@@ -48,7 +48,7 @@ module _ where
   singleton-induction-at : {A : Set} → (a : A) → Set₁
   singleton-induction-at {A} a = (B : A → Set) → Sect (ev-pt {A} {B} a)
 
-  -- 10.2.3
+  -- 10.2.3 (This is stronger than 10.2.3 in the book: a : A is arbitrary with this definition)
   contr-then-sing-ind-at : {A : Set} → (a : A) → Is-contr A → singleton-induction-at a
   contr-then-sing-ind-at {A} a contr =
     λ B → 

@@ -104,53 +104,59 @@ module _ where
     Σ-poly (A → Set) (λ B → Σ-poly (B a) (λ b → is-identity-system-at a B b))
 
   -- 11.2.2
-  module thm-11-2-2 where
-    ind-≡-family : {A : Set} → {a : A} → (B : A → Set) → (b : B a) → (x : A) → (a ≡ x) → B x
-    ind-≡-family {A} {a} B b x refl = b
+  module fundamental-thm-of-identity-types {A : Set} {a : A} {B : A → Set} where
+    i : (f : (x : A) → (a ≡ x) → B x) → Set
+    i f = is-family-of-equivs f
 
-  -- 11.2.2 (i) ↔ (ii)
-  fundamental-thm-of-identity-types : {A : Set} → {a : A} → {B : A → Set} → (f : (x : A) → (a ≡ x) → B x) →
-                                      is-family-of-equivs f ↔ Is-contr (Σ A B)
-  fundamental-thm-of-identity-types {A} {a} {B} f =
-    begin-↔
-      is-family-of-equivs f                                          ↔⟨ is-family-of-equivs-iff-tot-is-equiv f ⟩
-      Is-equiv (totalization f)                                      ↔⟨⟩
-      Is-equiv ((totalization f) typed (Σ A (λ x → a ≡ x) → Σ A B))  ↔⟨ dom-is-contr-then-is-equiv-iff-cod-is-contr (identity-with-an-endpoint-fixed-Is-contr a) ⟩
-      Is-contr (Σ A B)                                               ∎-↔
+    ii  = Is-contr (Σ A B)
 
-  -- 11.2.2 corollary
-  fundamental-thm-of-identity-types-ind-≡ : {A : Set} → {a : A} → {B : A → Set} → (b : B a) →
-                                            is-family-of-equivs (thm-11-2-2.ind-≡-family B b) ↔ Is-contr (Σ A B)
-  fundamental-thm-of-identity-types-ind-≡ b = fundamental-thm-of-identity-types (thm-11-2-2.ind-≡-family _ b)
+    iii : (b : B a) → Set₁
+    iii b = is-identity-system-at a B b
 
-  -- 11.2.2 (ii) ↔ (iii)
-  fundamental-thm-of-identity-types-id-sys : {A : Set} → {a : A} → {B : A → Set} → (b : B a) →
-                                             Is-contr (Σ A B) ↔-poly (is-identity-system-at a B b)
-  fundamental-thm-of-identity-types-id-sys {A} {a} {B} b =
-    begin-↔-poly
-      Is-contr (Σ A B)                                                     ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
-      singleton-induction-at (a , b)                                       ↔-poly⟨⟩
-      ((P : Σ A B → Set) → Sect (ev-pt (a , b)))                           ↔-poly⟨ curry-type-family ⟩
-      ((P : (x : A) → B x → Set) → Sect (ev-pt (a , b)))                   ↔-poly⟨⟩
-      ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b ∘ ev-pair P))    ↔-poly⟨ depfn-iff (λ P →
-                                                                            Sect-former-then-Sect-comp-iff-Sect-latter
-                                                                              (ev-at-pair P a b)
-                                                                              (htpy-refl (ev-at-pair P a b ∘ ev-pair P))
-                                                                              (ev-pair-sect P)
-                                                                           ) ⟩
-      ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b))                ↔-poly⟨⟩
-      is-identity-system-at a B b                                          ∎-↔-poly
-    where
-      open ↔-poly-Reasoning
-      ev-pair : (P : (x : A) → B x → Set) → (((x , y) : Σ A B) → P x y) → (x : A) → (y : B x) → P x y
-      ev-pair P h x y = h (x , y)
+    i-fn↔ii : (f : (x : A) → (a ≡ x) → B x) → (i f ↔ ii)
+    i-fn↔ii f =
+      begin-↔
+        is-family-of-equivs f                                          ↔⟨ is-family-of-equivs-iff-tot-is-equiv f ⟩
+        Is-equiv (totalization f)                                      ↔⟨⟩
+        Is-equiv ((totalization f) typed (Σ A (λ x → a ≡ x) → Σ A B))  ↔⟨ dom-is-contr-then-is-equiv-iff-cod-is-contr (identity-with-an-endpoint-fixed-Is-contr a) ⟩
+        Is-contr (Σ A B)                                               ∎-↔
 
-      ev-at-pair : (P : (x : A) → B x → Set) → (a : A) → (b : B a) → (((x : A) → (y : B x) → P x y) → P a b)
-      ev-at-pair P a b f = f a b
+    ii↔iii : (b : B a) → ii ↔-poly (iii b)
+    ii↔iii b =
+      begin-↔-poly
+        Is-contr (Σ A B)                                                     ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
+        singleton-induction-at (a , b)                                       ↔-poly⟨⟩
+        ((P : Σ A B → Set) → Sect (ev-pt (a , b)))                           ↔-poly⟨ curry-type-family ⟩
+        ((P : (x : A) → B x → Set) → Sect (ev-pt (a , b)))                   ↔-poly⟨⟩
+        ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b ∘ ev-pair P))    ↔-poly⟨ depfn-iff (λ P →
+                                                                              Sect-former-then-Sect-comp-iff-Sect-latter
+                                                                                (ev-at-pair P a b)
+                                                                                (htpy-refl (ev-at-pair P a b ∘ ev-pair P))
+                                                                                (ev-pair-sect P)
+                                                                            ) ⟩
+        ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b))                ↔-poly⟨⟩
+        is-identity-system-at a B b                                          ∎-↔-poly
+      where
+        open ↔-poly-Reasoning
+        ev-pair : (P : (x : A) → B x → Set) → (((x , y) : Σ A B) → P x y) → (x : A) → (y : B x) → P x y
+        ev-pair P h x y = h (x , y)
 
-      ev-pair-sect : (P : (x : A) → B x → Set) → Sect (ev-pair P)
-      ev-pair-sect P = ((λ { f (x , y) → f x y }) , λ f → refl)
+        ev-at-pair : (P : (x : A) → B x → Set) → (a : A) → (b : B a) → (((x : A) → (y : B x) → P x y) → P a b)
+        ev-at-pair P a b f = f a b
 
+        ev-pair-sect : (P : (x : A) → B x → Set) → Sect (ev-pair P)
+        ev-pair-sect P = ((λ { f (x , y) → f x y }) , λ f → refl)
+
+    -- the most useful direction of the theorem
+    ii→i : ii → (f : (x : A) → (a ≡ x) → B x) → i f
+    ii→i ii f = Σ.snd (i-fn↔ii f) ii
+
+  module fundamental-thm-of-identity-types-ind-≡ {A : Set} {a : A} {B : A → Set} (b : B a) where
+    ind-≡-family : (x : A) → (a ≡ x) → B x
+    ind-≡-family x refl = b
+
+    corollary : is-family-of-equivs ind-≡-family ↔ Is-contr (Σ A B)
+    corollary = fundamental-thm-of-identity-types.i-fn↔ii ind-≡-family
 
   -- subsection 11.3
   module _ where
@@ -159,7 +165,7 @@ module _ where
     -- 11.3.1
     Eq-Nat-refl-is-equiv : (m n : Nat) → Is-equiv (eq-then-obseq m n)
     Eq-Nat-refl-is-equiv m =
-      Σ.snd (fundamental-thm-of-identity-types (eq-then-obseq m)) (contr m)
+      fundamental-thm-of-identity-types.ii→i (contr m) (eq-then-obseq m)
       where
         γ : (m : Nat) → (n : Nat) → (e : Eq-Nat m n) → (m , Eq-Nat-refl m) ≡ (n , e)
         γ zero zero unit = refl
@@ -183,7 +189,7 @@ module _ where
 
     is-equiv-then-is-emb : {A B : Set} → {e : A → B} → Is-equiv e → Is-emb e
     is-equiv-then-is-emb {A} {B} {e} e-eqv x =
-      Σ.snd (fundamental-thm-of-identity-types (λ y → ap e {x} {y})) contr
+      fundamental-thm-of-identity-types.ii→i contr (λ y → ap e {x} {y})
       where
         fib-e-ex-is-contr : Is-contr (fib e (e x))
         fib-e-ex-is-contr = Is-equiv-then-is-contr-fn e-eqv (e x)
@@ -199,3 +205,98 @@ module _ where
                 (λ y → EqualityOps.inv-is-equiv)
             )
           ) flipped-is-contr
+
+  -- subsection 11.5
+  module _ where
+    open Equivalence-Reasoning
+
+    open Eq-Copr
+    E = Eq-Copr
+
+    -- 11.5.4
+    eq-copr-is-contr : {A B : Set} → (s : A +₀ B) → Is-contr (Σ (A +₀ B) (Eq-Copr s))
+    eq-copr-is-contr {A} {B} (left x) =
+      Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-Is-contr x)
+      where
+        eqv : Σ (A +₀ B) (E (left x)) ≃ Σ A (λ x' → x ≡ x')
+        eqv =
+           begin-≃
+             Σ (A +₀ B) (E (left x))                                                              ≃⟨ Σ-rdistr-+₀ ⟩
+             (Σ A (λ x' → E {A} {B} (left x) (left x'))) +₀ (Σ B (λ y' → E (left x) (right y')))  ≃⟨⟩
+             (Σ A (λ x' → x ≡ x')) +₀ (Σ B (λ y' → Empty))                                        ≃⟨ +₀-both-≃ ≃-refl Σ-rzero ⟩     
+             (Σ A (λ x' → x ≡ x')) +₀ Empty                                                       ≃⟨ +₀-runit ⟩     
+             Σ A (λ x' → x ≡ x')                                                                  ∎-≃
+    eq-copr-is-contr {A} {B} (right y) =
+      Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-Is-contr y)
+      where
+        eqv : Σ (A +₀ B) (E (right y)) ≃ (Σ B (λ y' → y ≡ y'))
+        eqv =
+           begin-≃
+             Σ (A +₀ B) (E (right y))                                                               ≃⟨ Σ-rdistr-+₀ ⟩
+             (Σ A (λ x' → E (right y) (left x'))) +₀ (Σ B (λ y' → E {A} {B} (right y) (right y')))  ≃⟨⟩
+             (Σ A (λ x' → Empty)) +₀ (Σ B (λ y' → y ≡ y'))                                          ≃⟨ +₀-both-≃ Σ-rzero ≃-refl ⟩
+             Empty +₀ (Σ B (λ y' → y ≡ y'))                                                         ≃⟨ +₀-lunit ⟩     
+             (Σ B (λ y' → y ≡ y'))                                                                    ∎-≃
+
+    -- 11.5.1
+    copr-eq-equiv-eq-copr : {A B : Set} → (s t : A +₀ B) → (s ≡ t) ≃ (Eq-Copr s t)
+    copr-eq-equiv-eq-copr s t =
+      (eq-copr-eq , fundamental-thm-of-identity-types.ii→i (eq-copr-is-contr s) (λ ab → eq-copr-eq) t)
+
+    left-left-eq-equiv-eq : {A : Set} → (x x' : A) → (B : Set) →
+                            (left {A} {B} x ≡ left x') ≃ (x ≡ x')
+    left-left-eq-equiv-eq x x' B = copr-eq-equiv-eq-copr (left x) (left x')
+
+    left-right-eq-equiv-empty : {A B : Set} → (x : A) → (y : B) →
+                                (left x ≡ right y) ≃ Empty
+    left-right-eq-equiv-empty x y = copr-eq-equiv-eq-copr (left x) (right y)
+
+    right-left-eq-equiv-empty : {A B : Set} → (x : A) → (y : B) →
+                                (right y ≡ left x) ≃ Empty
+    right-left-eq-equiv-empty {A} {B} x y = copr-eq-equiv-eq-copr (right y) (left x)
+
+    right-right-eq-equiv-eq : (A : Set) → {B : Set} → (y y' : B) →
+                             (right {A} {B} y ≡ right y') ≃ (y ≡ y')
+    right-right-eq-equiv-eq A {B} y y' = copr-eq-equiv-eq-copr (right y) (right y')
+
+  -- subsection 11.6
+  module _ where
+    -- 11.6.1
+    is-dependent-identity-system-over : {A : Set} → {a : A} → {C : A → Set} → {c : C a} → (is-identity-system-at a C c) → {B : A → Set} → (b : B a) →
+                                        (D : (x : A) → B x → C x → Set) → (d : D a b c) → Set₁
+    is-dependent-identity-system-over {A} {a} {C} {c} id-sys {B} b D d = is-identity-system-at b (λ y → D a y c) d
+
+    dependent-identity-system-over : {A : Set} → {a : A} → {C : A → Set} → {c : C a} → (is-identity-system-at a C c) → {B : A → Set} → (b : B a) → Set₁
+    dependent-identity-system-over {A} {a} {C} {c} id-sys {B} b =
+      Σ-poly ((x : A) → B x → C x → Set) (λ D →
+        Σ-poly (D a b c) (λ d → is-dependent-identity-system-over id-sys b D d)
+      )
+
+    -- 11.6.2 (Structure Identity Principle)
+    module SIP {A : Set} {a : A}
+               {B : A → Set} (b : B a)
+               {C : A → Set} {c : C a} (id-sys : is-identity-system-at a C c)
+               (D : (x : A) → B x → C x → Set) (d : D a b c) where
+      i   = (f : (y : B a) → (b ≡ y) → D a y c) → is-family-of-equivs f
+      ii  = Is-contr (Σ (B a) (λ y → D a y c))
+      iii = is-dependent-identity-system-over id-sys b D d
+      iv  = (f : ((x , y) : Σ A B) → ((a , b) ≡ (x , y)) → Σ (C x) (λ z → D x y z)) → is-family-of-equivs f
+      v   = Is-contr (Σ (Σ A B) (λ { (x , y) → Σ (C x) (λ z → D x y z) }))
+      vi  = Σ-poly (Σ (C a) (D a b)) (λ cadab → is-identity-system-at (a , b) (λ { (x , y) → Σ (C x) (λ z → D x y z) }) cadab)
+
+      i↔ii : i ↔ ii
+      i↔ii =
+        ((λ i → {!   !}) , {!   !})
+
+      ii↔iii : ii ↔-poly iii
+      ii↔iii = {!   !}
+
+      iv↔v : iv ↔ v
+      iv↔v = {!   !}
+
+      v↔vi : v ↔-poly vi
+      v↔vi = {!   !}
+
+      ii↔v : ii ↔ v
+      ii↔v = {!   !}
+
