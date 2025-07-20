@@ -105,21 +105,38 @@ module _ where
 
   -- 11.2.2
   module fundamental-thm-of-identity-types {A : Set} {a : A} {B : A → Set} where
-    i : (f : (x : A) → (a ≡ x) → B x) → Set
-    i f = is-family-of-equivs f
-
+    -- i-at f is the version assumed in the book, but in fact we can show an even stronger result (ii → i),
+    -- because (i) holding at a single function f (i-at f) is actually equivalent to (i) holding at all functions (see i↔i-at-fn for proof)
+    i = (f : (x : A) → (a ≡ x) → B x) → is-family-of-equivs f
     ii  = Is-contr (Σ A B)
 
     iii : (b : B a) → Set₁
     iii b = is-identity-system-at a B b
 
-    i-fn↔ii : (f : (x : A) → (a ≡ x) → B x) → (i f ↔ ii)
-    i-fn↔ii f =
+    i-at : (f : (x : A) → (a ≡ x) → B x) → Set
+    i-at f = is-family-of-equivs f
+ 
+    i-at-fn↔ii : (f : (x : A) → (a ≡ x) → B x) → i-at f ↔ ii
+    i-at-fn↔ii f =
       begin-↔
         is-family-of-equivs f                                          ↔⟨ is-family-of-equivs-iff-tot-is-equiv f ⟩
         Is-equiv (totalization f)                                      ↔⟨⟩
         Is-equiv ((totalization f) typed (Σ A (λ x → a ≡ x) → Σ A B))  ↔⟨ dom-is-contr-then-is-equiv-iff-cod-is-contr (identity-with-an-endpoint-fixed-Is-contr a) ⟩
         Is-contr (Σ A B)                                               ∎-↔
+
+    i↔ii : (b : B a) → i ↔ ii
+    i↔ii b =
+      let
+        f₀ : (x : A) → (a ≡ x) → B x
+        f₀ = λ x p → tr B p b
+      in ((λ i → Σ.fst (i-at-fn↔ii f₀) (i f₀)) , (λ ii f → Σ.snd (i-at-fn↔ii f) ii))
+
+    i↔i-at-fn : (ba : B a) → (f : (x : A) → (a ≡ x) → B x) → i ↔ i-at f
+    i↔i-at-fn ba f =
+      begin-↔
+        i        ↔⟨ i↔ii ba ⟩
+        ii       ↔⟨← i-at-fn↔ii f ⟩
+        i-at f   ∎-↔
 
     ii↔iii : (b : B a) → ii ↔-poly (iii b)
     ii↔iii b =
@@ -147,16 +164,15 @@ module _ where
         ev-pair-sect : (P : (x : A) → B x → Set) → Sect (ev-pair P)
         ev-pair-sect P = ((λ { f (x , y) → f x y }) , λ f → refl)
 
-    -- the most useful direction of the theorem
-    ii→i : ii → (f : (x : A) → (a ≡ x) → B x) → i f
-    ii→i ii f = Σ.snd (i-fn↔ii f) ii
+    -- the most useful direction of the theorem 11.2.2
+    ii→i-at-fn : Is-contr (Σ A B) → (f : (x : A) → (a ≡ x) → B x) → is-family-of-equivs f
+    ii→i-at-fn contr@((a' , ba') , C) f = Σ.snd (i-at-fn↔ii f) contr
 
-  module fundamental-thm-of-identity-types-ind-≡ {A : Set} {a : A} {B : A → Set} (b : B a) where
-    ind-≡-family : (x : A) → (a ≡ x) → B x
-    ind-≡-family x refl = b
+    ind-≡-family : (b : B a) → (x : A) → (a ≡ x) → B x
+    ind-≡-family b x refl = b
 
-    corollary : is-family-of-equivs ind-≡-family ↔ Is-contr (Σ A B)
-    corollary = fundamental-thm-of-identity-types.i-fn↔ii ind-≡-family
+    corollary : (b : B a) → is-family-of-equivs (ind-≡-family b) ↔ Is-contr (Σ A B)
+    corollary b = i-at-fn↔ii (ind-≡-family b)
 
   -- subsection 11.3
   module _ where
@@ -165,7 +181,7 @@ module _ where
     -- 11.3.1
     Eq-Nat-refl-is-equiv : (m n : Nat) → Is-equiv (eq-then-obseq m n)
     Eq-Nat-refl-is-equiv m =
-      fundamental-thm-of-identity-types.ii→i (contr m) (eq-then-obseq m)
+      fundamental-thm-of-identity-types.ii→i-at-fn (contr m) (eq-then-obseq m)
       where
         γ : (m : Nat) → (n : Nat) → (e : Eq-Nat m n) → (m , Eq-Nat-refl m) ≡ (n , e)
         γ zero zero unit = refl
@@ -189,7 +205,7 @@ module _ where
 
     is-equiv-then-is-emb : {A B : Set} → {e : A → B} → Is-equiv e → Is-emb e
     is-equiv-then-is-emb {A} {B} {e} e-eqv x =
-      fundamental-thm-of-identity-types.ii→i contr (λ y → ap e {x} {y})
+      fundamental-thm-of-identity-types.ii→i-at-fn contr (λ y → ap e {x} {y})
       where
         fib-e-ex-is-contr : Is-contr (fib e (e x))
         fib-e-ex-is-contr = Is-equiv-then-is-contr-fn e-eqv (e x)
@@ -241,7 +257,7 @@ module _ where
     -- 11.5.1
     copr-eq-equiv-eq-copr : {A B : Set} → (s t : A +₀ B) → (s ≡ t) ≃ (Eq-Copr s t)
     copr-eq-equiv-eq-copr s t =
-      (eq-copr-eq , fundamental-thm-of-identity-types.ii→i (eq-copr-is-contr s) (λ ab → eq-copr-eq) t)
+      (eq-copr-eq , fundamental-thm-of-identity-types.ii→i-at-fn (eq-copr-is-contr s) (λ ab → eq-copr-eq) t)
 
     left-left-eq-equiv-eq : {A : Set} → (x x' : A) → (B : Set) →
                             (left {A} {B} x ≡ left x') ≃ (x ≡ x')
@@ -276,10 +292,13 @@ module _ where
     module SIP {A : Set} {a : A}
                {B : A → Set} (b : B a)
                {C : A → Set} {c : C a} (id-sys : is-identity-system-at a C c)
-               (D : (x : A) → B x → C x → Set) (d : D a b c) where
+               (D : (x : A) → B x → C x → Set) where
       i   = (f : (y : B a) → (b ≡ y) → D a y c) → is-family-of-equivs f
       ii  = Is-contr (Σ (B a) (λ y → D a y c))
-      iii = is-dependent-identity-system-over id-sys b D d
+
+      iii : (d : D a b c) → Set₁
+      iii d = is-dependent-identity-system-over id-sys b D d
+
       iv  = (f : ((x , y) : Σ A B) → ((a , b) ≡ (x , y)) → Σ (C x) (λ z → D x y z)) → is-family-of-equivs f
       v   = Is-contr (Σ (Σ A B) (λ { (x , y) → Σ (C x) (λ z → D x y z) }))
       vi  = Σ-poly (Σ (C a) (D a b)) (λ cadab → is-identity-system-at (a , b) (λ { (x , y) → Σ (C x) (λ z → D x y z) }) cadab)
@@ -288,8 +307,8 @@ module _ where
       i↔ii =
         ((λ i → {!   !}) , {!   !})
 
-      ii↔iii : ii ↔-poly iii
-      ii↔iii = {!   !}
+      ii↔iii : (d : D a b c) → ii ↔-poly (iii d)
+      ii↔iii d = {!   !}
 
       iv↔v : iv ↔ v
       iv↔v = {!   !}
