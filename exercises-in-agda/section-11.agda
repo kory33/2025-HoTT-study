@@ -168,6 +168,9 @@ module _ where
     ii→i-at-fn : Is-contr (Σ A B) → (f : (x : A) → (a ≡ x) → B x) → is-family-of-equivs f
     ii→i-at-fn contr@((a' , ba') , C) f = Σ.snd (i-at-fn↔ii f) contr
 
+    is-contr-then-has-identity-system-at-any-pt : Is-contr (Σ A B) → (b : B a) → is-identity-system-at a B b
+    is-contr-then-has-identity-system-at-any-pt contr b = Σ-poly.fst (ii↔iii b) contr
+
     ind-≡-family : (b : B a) → (x : A) → (a ≡ x) → B x
     ind-≡-family b x refl = b
 
@@ -252,7 +255,7 @@ module _ where
              (Σ A (λ x' → E (right y) (left x'))) +₀ (Σ B (λ y' → E {A} {B} (right y) (right y')))  ≃⟨⟩
              (Σ A (λ x' → Empty)) +₀ (Σ B (λ y' → y ≡ y'))                                          ≃⟨ +₀-both-≃ Σ-rzero ≃-refl ⟩
              Empty +₀ (Σ B (λ y' → y ≡ y'))                                                         ≃⟨ +₀-lunit ⟩     
-             (Σ B (λ y' → y ≡ y'))                                                                    ∎-≃
+             (Σ B (λ y' → y ≡ y'))                                                                  ∎-≃
 
     -- 11.5.1
     copr-eq-equiv-eq-copr : {A B : Set} → (s t : A +₀ B) → (s ≡ t) ≃ (Eq-Copr s t)
@@ -290,8 +293,8 @@ module _ where
 
     -- 11.6.2 (Structure Identity Principle)
     module SIP {A : Set} {a : A}
-               {B : A → Set} (b : B a)
-               {C : A → Set} {c : C a} (id-sys : is-identity-system-at a C c)
+               (B : A → Set) (b : B a)
+               (C : A → Set) {c : C a} (id-sys : is-identity-system-at a C c)
                (D : (x : A) → B x → C x → Set) where
       open Equivalence-Reasoning
 
@@ -343,3 +346,51 @@ module _ where
               Σ (B a) (λ y → D a y c)   ∎-≃
           )
         )
+      
+      ii→iv : (d : D a b c) → ii → iv
+      ii→iv d = (Σ.snd (iv↔v d)) ∘ (Σ.fst ii↔v)
+
+    -- 11.6.3
+    fib-eq-≃-fib-apf-concat : {A B : Set} → (f : A → B) → (b : B) →
+                              ((x , p) (y , q) : fib f b) → ((x , p) ≡ (y , q)) ≃ fib (ap f) (p · q ⁻¹)
+    fib-eq-≃-fib-apf-concat {A} {B} f b (x , p) =
+      (λ { (y , q) → (_ , eqvs-is-family-of-equivs (y , q)) })
+      where
+        eqvs : ((y , q) : fib f b) → ((x , p) ≡ (y , q)) → Σ (x ≡ y) (λ α → ap f α ≡ p · q ⁻¹)
+        eqvs _ refl = (refl , (inverse (≡-Basic.·-rinv p)))
+
+        equivalence : Σ (f x ≡ b) (λ q → ap f refl ≡ p · q ⁻¹) ≃ Σ (f x ≡ b) (λ q → p ≡ q)
+        equivalence =
+          let
+            forward : (q : f x ≡ b) → refl ≡ p · q ⁻¹ → p ≡ q
+            forward = λ { refl α → (α · (·-runit p))⁻¹ }
+            backward : (q : f x ≡ b) → p ≡ q → refl ≡ p · q ⁻¹
+            backward = λ { refl α → ((·-runit p) · α) ⁻¹ }
+          in (_ ,
+            Σ.fst (is-family-of-equivs-iff-tot-is-equiv forward) (λ { refl →
+              has-inverse-equiv (
+                backward refl ,
+                (λ { refl → refl }) ,
+                (λ r → begin
+                  (backward refl ∘ (λ z → forward refl z)) r      ≡⟨⟩
+                  backward refl (forward refl r)                  ≡⟨⟩
+                  ((·-runit p) · (forward refl r))⁻¹              ≡⟨⟩
+                  ((·-runit p) · (r · (·-runit p))⁻¹)⁻¹           ≡⟨ ap (λ s → ((·-runit p) · s)⁻¹) (≡-Basic1.distr-inv-concat r (·-runit p)) ⟩
+                  ((·-runit p) · ((·-runit p)⁻¹ · r ⁻¹))⁻¹        ≡⟨ ap (λ s → s ⁻¹) (unassoc (·-runit p) _ _) ⟩
+                  ((·-runit p) · (·-runit p)⁻¹ · r ⁻¹)⁻¹          ≡⟨ ap (λ s → (s · r ⁻¹)⁻¹) (·-rinv (·-runit p)) ⟩
+                  (refl · r ⁻¹)⁻¹                                 ≡⟨⟩
+                  (r ⁻¹)⁻¹                                        ≡⟨ ≡-Basic1.inv-inv r ⟩
+                  r                                               ∎
+                )
+              )
+            } )
+          )
+
+        eqvs-is-family-of-equivs =
+          SIP.ii→iv
+            (λ (y : A) → f y ≡ b) p
+            (λ (y : A) → x ≡ y) (fundamental-thm-of-identity-types.is-contr-then-has-identity-system-at-any-pt (identity-with-an-endpoint-fixed-Is-contr x) refl)
+            (λ (y : A) (q : f y ≡ b) (α : x ≡ y) → ap f α ≡ p · q ⁻¹) (inverse (≡-Basic.·-rinv p))
+            (Σ.snd (equiv-then-contr-iff-contr equivalence) (identity-with-an-endpoint-fixed-Is-contr _))
+            eqvs
+
