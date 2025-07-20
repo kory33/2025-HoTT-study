@@ -115,7 +115,7 @@ module _ where
 
     i-at : (f : (x : A) → (a ≡ x) → B x) → Set
     i-at f = is-family-of-equivs f
- 
+
     i-at-fn↔ii : (f : (x : A) → (a ≡ x) → B x) → i-at f ↔ ii
     i-at-fn↔ii f =
       begin-↔
@@ -293,6 +293,8 @@ module _ where
                {B : A → Set} (b : B a)
                {C : A → Set} {c : C a} (id-sys : is-identity-system-at a C c)
                (D : (x : A) → B x → C x → Set) where
+      open Equivalence-Reasoning
+
       i   = (f : (y : B a) → (b ≡ y) → D a y c) → is-family-of-equivs f
       ii  = Is-contr (Σ (B a) (λ y → D a y c))
 
@@ -301,21 +303,43 @@ module _ where
 
       iv  = (f : ((x , y) : Σ A B) → ((a , b) ≡ (x , y)) → Σ (C x) (λ z → D x y z)) → is-family-of-equivs f
       v   = Is-contr (Σ (Σ A B) (λ { (x , y) → Σ (C x) (λ z → D x y z) }))
-      vi  = Σ-poly (Σ (C a) (D a b)) (λ cadab → is-identity-system-at (a , b) (λ { (x , y) → Σ (C x) (λ z → D x y z) }) cadab)
 
-      i↔ii : i ↔ ii
-      i↔ii =
-        ((λ i → {!   !}) , {!   !})
+      -- we will fix the point of the identity system to be (c , d), although the book leaves this implicit
+      vi : (d : D a b c) → Set₁
+      vi d = is-identity-system-at (a , b) (λ { (x , y) → Σ (C x) (λ z → D x y z) }) (c , d)
+
+      i↔ii : (d : D a b c) → i ↔ ii
+      i↔ii d = fundamental-thm-of-identity-types.i↔ii d
 
       ii↔iii : (d : D a b c) → ii ↔-poly (iii d)
-      ii↔iii d = {!   !}
+      ii↔iii d = fundamental-thm-of-identity-types.ii↔iii d
 
-      iv↔v : iv ↔ v
-      iv↔v = {!   !}
+      iv↔v : (d : D a b c) → iv ↔ v
+      iv↔v d = fundamental-thm-of-identity-types.i↔ii (c , d)
 
-      v↔vi : v ↔-poly vi
-      v↔vi = {!   !}
+      v↔vi : (d : D a b c) → v ↔-poly (vi d)
+      v↔vi d = fundamental-thm-of-identity-types.ii↔iii (c , d)
 
       ii↔v : ii ↔ v
-      ii↔v = {!   !}
-
+      ii↔v =
+        equiv-then-contr-iff-contr (
+          ≃-comm (
+            begin-≃
+              Σ (Σ A B) (λ { (x , y) → Σ (C x) (λ z → D x y z) })
+                  ≃⟨ (
+                    (λ { ((x , y) , (z , d)) → ((x , z) , (y , d)) }) ,
+                    has-inverse-equiv (
+                      (λ { ((x , z) , (y , d)) → ((x , y) , (z , d)) }) ,
+                      (λ { ((x , y) , (z , d)) → refl }) ,
+                      (λ { ((x , z) , (y , d)) → refl })
+                    )
+                  ) ⟩
+              Σ (Σ A C) (λ { (x , z) → Σ (B x) (λ y → D x y z) })
+                  ≃⟨
+                    Σ-≃-sections-at-base-center (_ ,
+                      recenter-contraction-at (a , c) (
+                        Σ-poly.snd (fundamental-thm-of-identity-types.ii↔iii c) id-sys))
+                  ⟩
+              Σ (B a) (λ y → D a y c)   ∎-≃
+          )
+        )

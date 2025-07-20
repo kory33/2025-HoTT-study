@@ -500,6 +500,10 @@ module _ where
           tr B ((refl) ⁻¹) y  ≡⟨⟩
           y                   ∎
 
+  Σ-≃-sections-at-base-center : {A : Set} → ((a , C) : Is-contr A) → {B : A → Set} → Σ A B ≃ B a
+  Σ-≃-sections-at-base-center {A} contr {B} =
+    ≃-comm (_ , base-is-contr-then-pair-with-base-is-equiv contr)
+
   -- exercise 10.7
   module _ where
     pr1-of : {A : Set} → (B : A → Set) → Σ A B → A
