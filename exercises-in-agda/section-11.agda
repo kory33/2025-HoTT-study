@@ -50,6 +50,16 @@ module _ where
       Is-contr-fn (totalization f)                                       ↔⟨← Is-equiv-iff-is-contr-fn ⟩
       Is-equiv (totalization f)                                          ∎-↔
 
+  pointwise-equiv-then-tot-equiv : {A : Set} → {B C : A → Set} → (equivs : (x : A) → B x ≃ C x) → (Σ A B ≃ Σ A C)
+  pointwise-equiv-then-tot-equiv {A} {B} {C} equivs =
+    let
+      equiv-fns : (x : A) → B x → C x
+      equiv-fns x = Σ.fst (equivs x)
+      equiv-fns-is-family-of-equivs : is-family-of-equivs equiv-fns
+      equiv-fns-is-family-of-equivs x = Σ.snd (equivs x)
+    in
+      (totalization equiv-fns , Σ.fst (is-family-of-equivs-iff-tot-is-equiv equiv-fns) equiv-fns-is-family-of-equivs)
+
   -- 11.1.4
   module lem-11-1-4 where
     mapleft : {A B : Set} → (f : A → B) → (C : B → Set) → Σ A (λ a → C (f a)) → Σ B C
@@ -404,21 +414,20 @@ module _ where
     left-is-emb : (A B : Set) → Is-emb (left {A} {B})
     left-is-emb A B x y =
       let
-        (ap-left' , ap-left'-is-eqv) = ≃-comm (left-left-eq-equiv-eq x y B)
-        htpy : ap-left' ~ ap (left {A} {B})
-        htpy = λ { refl → refl }
-          -- TODO: If we compute everything we would certainly get that the function implementing left-left-eq-equiv-eq is
-          --       homotopic to (ap left), but this proof does not at all explain how that is the case...
-          --       What intermediary lemma could we state to make this more clear?
-      in is-equiv-preserved-by-homotopy htpy ap-left'-is-eqv
+        equiv : Σ A (λ z → left x ≡ left z) ≃ Σ A (λ z → x ≡ z)
+        equiv = pointwise-equiv-then-tot-equiv (λ z → left-left-eq-equiv-eq x z B)
+        contr : Is-contr (Σ A (λ z → left x ≡ left z))
+        contr = Σ.snd (equiv-then-contr-iff-contr equiv) (identity-with-an-endpoint-fixed-Is-contr x)
+      in fundamental-thm-of-identity-types.ii→i-at-fn contr (λ _ → ap (left {A} {B})) y
 
     right-is-emb : (A B : Set) → Is-emb (right {A} {B})
     right-is-emb A B x y =
       let
-        (ap-right' , ap-right'-is-eqv) = ≃-comm (right-right-eq-equiv-eq A {B} x y)
-        htpy : ap-right' ~ ap (right {A} {B})
-        htpy = λ { refl → refl }
-      in is-equiv-preserved-by-homotopy htpy ap-right'-is-eqv
+        equiv : Σ B (λ z → right x ≡ right z) ≃ Σ B (λ z → x ≡ z)
+        equiv = pointwise-equiv-then-tot-equiv (λ z → right-right-eq-equiv-eq A x z)
+        contr : Is-contr (Σ B (λ z → right x ≡ right z))
+        contr = Σ.snd (equiv-then-contr-iff-contr equiv) (identity-with-an-endpoint-fixed-Is-contr x)
+      in fundamental-thm-of-identity-types.ii→i-at-fn contr (λ _ → ap (right {A} {B})) y
 
     open EmptyBasic
 
@@ -451,13 +460,8 @@ module _ where
                            let e⁻¹ = ≃-inverse-map-for e-eqv in (e x ≡ y) ≃ (x ≡ e⁻¹ y)
     equivalence-ladjoint {A} {B} (e , e-eqv) x y =
       let
-        e⁻¹           = ≃-inverse-map-for e-eqv
-        (S , R)       = ≃-inverse-map-is-inverse-of-original e-eqv
-        -- NOTE: instead of improving the section of e, we will improve the retraction of e
-        --       so that proving the universality of counit of this adjunction, as required by the exercise, will be easier.
-        --       TODO: Then, can we prove the universality of unit?
-        --             (i.e. that for all q : x ≡ e⁻¹ y, (R x) · (ap e⁻¹ (ladj⁻¹ q)) ≡ q ?)
-        --             Does that even hold?
+        e⁻¹               = ≃-inverse-map-for e-eqv
+        (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
         (R' , R'e⁻¹~e⁻¹S) = improve-section-of-inverse-to-be-coherent e⁻¹ (e , R , S)
         Se~eR'            = Is-coh-invertible-then-inverse-is-coh-invertible e⁻¹ e R' S R'e⁻¹~e⁻¹S
 
@@ -498,23 +502,12 @@ module _ where
                                                    (ladj , ladj-eqv) = equivalence-ladjoint (e , e-eqv) x y
                                                in ((ap e (ladj p)) · (S y) ≡ p)
     equivalence-ladjoint-counit-universality {A} {B} (e , e-eqv) x y refl =
-      let e⁻¹               = ≃-inverse-map-for e-eqv
-          (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
-          (R' , R'e⁻¹~e⁻¹S) = improve-section-of-inverse-to-be-coherent e⁻¹ (e , R , S)
-          (ladj , ladj-eqv) = equivalence-ladjoint (e , e-eqv) x y
-          Se~eR'            = Is-coh-invertible-then-inverse-is-coh-invertible e⁻¹ e R' S R'e⁻¹~e⁻¹S
-
-          (_ , (_ , ladj-Retr)) = ladj-eqv
+      let (ladj , (Sect , (_ , ladj-Retr))) = equivalence-ladjoint (e , e-eqv) x y
       in
-        -- NOTE: this proof is exactly the same as ladj-Retr refl, and in fact, replacing this begin-∎ proof with (ladj-Retr refl) works.
-        begin
-          (ap e (ladj refl)) · (S y)                   ≡⟨⟩
-          (ap e ((R' x)⁻¹ · (ap e⁻¹ refl))) · (S y)    ≡⟨⟩
-          (ap e ((R' x)⁻¹ · refl)) · (S y)             ≡⟨ ap (λ c → (ap e c) · (S y)) (·-runit _)  ⟩
-          (ap e ((R' x)⁻¹)) · (S y)                    ≡⟨⟩ -- by path-induction y = e x
-          (ap e ((R' x)⁻¹)) · (S (e x))                ≡⟨ ap (λ s → s · (S (e x))) (ap-inv e (R' x)) ⟩
-          (ap e (R' x))⁻¹ · (S (e x))                  ≡⟨ ≡-Basic1.inv-con-eq-refl (Se~eR' x) ⟩
-          refl                                         ∎
+        -- if you look closely, you will see that
+        --   (equivalence-ladjoint.backward ∘ equivalence-ladjoint.forward) refl ≡ refl
+        -- is exactly what we want, and that is already proven in the definition of equivalence-ladjoint.
+        ladj-Retr refl
 
   -- TODO: exercise 11.3
   -- TODO: exercise 11.4
