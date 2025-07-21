@@ -570,8 +570,11 @@ module _ where
     ≃-trans (f , f-eqv) (g , g-eqv) = (g ∘ f , comp-equivs-is-equiv g-eqv f-eqv)
 
     -- 9.2.6
+    Is-inverse-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
+    Is-inverse-of {A} {B} f g = Is-sect-of f g × Is-retraction-of f g
+
     Has-inverse : {A B : Set} → (f : A → B) → Set
-    Has-inverse {A} {B} f = Σ (B → A) (λ g → (f ∘ g ~ id) × (g ∘ f ~ id))
+    Has-inverse {A} {B} f = Σ (B → A) (Is-inverse-of f)
 
     has-inverse-equiv : {A B : Set} → {f : A → B} → Has-inverse f → Is-equiv f
     has-inverse-equiv (g , FG , GF) = ((g , FG), (g , GF))
@@ -603,6 +606,10 @@ module _ where
       let
         (_ {- should equal g -} , gsect , gretr) = equiv-has-inverse f-is-eqv
       in gretr
+
+    ≃-inverse-map-is-inverse-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-inverse-of f (≃-inverse-map-for f-is-eqv)
+    ≃-inverse-map-is-inverse-of-original f-is-eqv =
+      (≃-inverse-map-is-sect-of-original f-is-eqv , ≃-inverse-map-is-retr-of-original f-is-eqv)
 
     ≃-inverse : {A B : Set} → A ≃ B → B ≃ A
     ≃-inverse {A} {B} (_ , eqv) = (≃-inverse-map-for eqv , ≃-inverse-map-is-equiv eqv)

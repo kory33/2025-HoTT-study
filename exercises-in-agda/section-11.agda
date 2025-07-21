@@ -445,7 +445,77 @@ module _ where
         ))
       )
 
-  -- TODO: exercise 11.2
+  -- exercise 11.2
+  module _ where
+    equivalence-ladjoint : {A B : Set} → ((e , e-eqv) : A ≃ B) → (x : A) → (y : B) →
+                           let e⁻¹ = ≃-inverse-map-for e-eqv in (e x ≡ y) ≃ (x ≡ e⁻¹ y)
+    equivalence-ladjoint {A} {B} (e , e-eqv) x y =
+      let
+        e⁻¹           = ≃-inverse-map-for e-eqv
+        (S , R)       = ≃-inverse-map-is-inverse-of-original e-eqv
+        -- NOTE: instead of improving the section of e, we will improve the retraction of e
+        --       so that proving the universality of counit of this adjunction, as required by the exercise, will be easier.
+        --       TODO: Then, can we prove the universality of unit?
+        --             (i.e. that for all q : x ≡ e⁻¹ y, (R x) · (ap e⁻¹ (ladj⁻¹ q)) ≡ q ?)
+        --             Does that even hold?
+        (R' , R'e⁻¹~e⁻¹S) = improve-section-of-inverse-to-be-coherent e⁻¹ (e , R , S)
+        Se~eR'            = Is-coh-invertible-then-inverse-is-coh-invertible e⁻¹ e R' S R'e⁻¹~e⁻¹S
+
+        forward : (e x ≡ y) → (x ≡ e⁻¹ y)
+        forward p = (R' x)⁻¹ · (ap e⁻¹ p)
+
+        backward : (x ≡ e⁻¹ y) → (e x ≡ y)
+        backward p = (ap e p) · (S y)
+      in
+        (
+          forward ,
+          has-inverse-equiv (
+            backward ,
+            (λ { refl → begin
+              (forward ∘ backward) refl                         ≡⟨⟩
+              (R' x)⁻¹ · (ap e⁻¹ ((ap e refl) · (S y)))         ≡⟨⟩
+              (R' x)⁻¹ · (ap e⁻¹ (refl · (S y)))                ≡⟨⟩
+              (R' x)⁻¹ · (ap e⁻¹ (S y))                         ≡⟨⟩ -- x = e⁻¹ y thanks to path-induction
+              (R' (e⁻¹ y))⁻¹ · (ap e⁻¹ (S y))                   ≡⟨ ≡-Basic1.inv-con-eq-refl (inverse (R'e⁻¹~e⁻¹S y)) ⟩
+              refl                                              ∎
+            }) ,
+            (λ { refl → begin
+              (backward ∘ forward) refl                  ≡⟨⟩
+              backward ((R' x)⁻¹ · (ap e⁻¹ refl))        ≡⟨⟩
+              backward ((R' x)⁻¹ · refl)                 ≡⟨ ap backward (·-runit ((R' x)⁻¹)) ⟩
+              backward ((R' x)⁻¹)                        ≡⟨⟩
+              (ap e ((R' x)⁻¹)) · (S y)                  ≡⟨⟩ -- y = e x thanks to path-induction
+              (ap e ((R' x)⁻¹)) · (S (e x))              ≡⟨ ap (λ s → s · (S (e x))) (ap-inv e (R' x)) ⟩
+              (ap e (R' x))⁻¹ · (S (e x))                ≡⟨ ≡-Basic1.inv-con-eq-refl (Se~eR' x) ⟩
+              refl                                       ∎
+            })
+          )
+        )
+    
+    equivalence-ladjoint-counit-universality : {A B : Set} → ((e , e-eqv) : A ≃ B) → (x : A) → (y : B) → (p : e x ≡ y) →
+                                               let e⁻¹               = ≃-inverse-map-for e-eqv
+                                                   (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
+                                                   (ladj , ladj-eqv) = equivalence-ladjoint (e , e-eqv) x y
+                                               in ((ap e (ladj p)) · (S y) ≡ p)
+    equivalence-ladjoint-counit-universality {A} {B} (e , e-eqv) x y refl =
+      let e⁻¹               = ≃-inverse-map-for e-eqv
+          (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
+          (R' , R'e⁻¹~e⁻¹S) = improve-section-of-inverse-to-be-coherent e⁻¹ (e , R , S)
+          (ladj , ladj-eqv) = equivalence-ladjoint (e , e-eqv) x y
+          Se~eR'            = Is-coh-invertible-then-inverse-is-coh-invertible e⁻¹ e R' S R'e⁻¹~e⁻¹S
+
+          (_ , (_ , ladj-Retr)) = ladj-eqv
+      in
+        -- NOTE: this proof is exactly the same as ladj-Retr refl, and in fact, replacing this begin-∎ proof with (ladj-Retr refl) works.
+        begin
+          (ap e (ladj refl)) · (S y)                   ≡⟨⟩
+          (ap e ((R' x)⁻¹ · (ap e⁻¹ refl))) · (S y)    ≡⟨⟩
+          (ap e ((R' x)⁻¹ · refl)) · (S y)             ≡⟨ ap (λ c → (ap e c) · (S y)) (·-runit _)  ⟩
+          (ap e ((R' x)⁻¹)) · (S y)                    ≡⟨⟩ -- by path-induction y = e x
+          (ap e ((R' x)⁻¹)) · (S (e x))                ≡⟨ ap (λ s → s · (S (e x))) (ap-inv e (R' x)) ⟩
+          (ap e (R' x))⁻¹ · (S (e x))                  ≡⟨ ≡-Basic1.inv-con-eq-refl (Se~eR' x) ⟩
+          refl                                         ∎
+
   -- TODO: exercise 11.3
   -- TODO: exercise 11.4
   -- TODO: exercise 11.5

@@ -223,6 +223,10 @@ module _ where
               (p · q ≡ r) → (q ≡ p ⁻¹ · r)
     inv-con refl q r pqr = pqr
 
+    inv-con-eq-refl : {A : Set} → {x y : A} → {p q : x ≡ y} →
+                      (p ≡ q) → (q ⁻¹ · p ≡ refl)
+    inv-con-eq-refl {A} {x} {y} {p} {q} refl = ·-linv q
+
     con-inv : {A : Set} → {x y z : A} → (p : x ≡ y) → (q : y ≡ z) → (r : x ≡ z) →
               (p · q ≡ r) → (p ≡ r · q ⁻¹)
     con-inv p refl r pq≡r =
