@@ -45,15 +45,15 @@ module _ where
                   (x ≢ y) → (y ≢ x)
       ≢-inverse x≢y y≡x = x≢y (inverse y≡x)
 
-    assoc : {A : Set} → {x y z w : A} →
-            (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) →
-            p · q · r ≡ p · (q · r)
-    assoc refl p r = refl
+    ·-assoc : {A : Set} → {x y z w : A} →
+              (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) →
+              p · q · r ≡ p · (q · r)
+    ·-assoc refl p r = refl
 
-    unassoc : {A : Set} → {x y z w : A} →
-             (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) →
-             p · (q · r) ≡ p · q · r
-    unassoc p q r = inverse (assoc p q r)
+    ·-unassoc : {A : Set} → {x y z w : A} →
+                (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) →
+                p · (q · r) ≡ p · q · r
+    ·-unassoc p q r = inverse (·-assoc p q r)
 
     ·-lunit : {A : Set} → {x y : A} →
               (p : x ≡ y) → refl · p ≡ p
@@ -258,23 +258,23 @@ module _ where
       
       α₁ : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →
            ((p · q) · r) · s ≡ (p · (q · r)) · s
-      α₁ p q r s = ap (λ x → x · s) (assoc p q r)
+      α₁ p q r s = ap (λ x → x · s) (·-assoc p q r)
 
       α₂ : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →
            (p · (q · r)) · s ≡ p · ((q · r) · s)
-      α₂ p q r s = assoc p (q · r) s
+      α₂ p q r s = ·-assoc p (q · r) s
 
       α₃ : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →
            p · ((q · r) · s) ≡ p · (q · (r · s))
-      α₃ p q r s = ap (λ x → p · x) (assoc q r s)
+      α₃ p q r s = ap (λ x → p · x) (·-assoc q r s)
 
       α₄ : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →
            ((p · q) · r) · s ≡ (p · q) · (r · s)
-      α₄ p q r s = assoc (p · q) r s
+      α₄ p q r s = ·-assoc (p · q) r s
 
       α₅ : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →
            (p · q) · (r · s) ≡ p · (q · (r · s))
-      α₅ p q r s = assoc p q (r · s)
+      α₅ p q r s = ·-assoc p q (r · s)
 
       -- exercise 5.4.b
       pentagon : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →

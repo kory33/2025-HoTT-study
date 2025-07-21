@@ -161,10 +161,10 @@ module _ where
   comm-htpy f H x = begin
     H (f x)                           ≡⟨← (·-runit (H (f x))) ⟩
     H (f x) · refl                    ≡⟨← ap (λ p → H (f x) · p) (·-rinv (H x)) ⟩
-    H (f x) · (H x · (H x)⁻¹)         ≡⟨ unassoc (H (f x)) (H x) ((H x)⁻¹) ⟩
+    H (f x) · (H x · (H x)⁻¹)         ≡⟨ ·-unassoc (H (f x)) (H x) ((H x)⁻¹) ⟩
     H (f x) · H x · (H x)⁻¹           ≡⟨← ap (λ p → H (f x) · p · (H x)⁻¹) (ap-id (H x)) ⟩
     H (f x) · ap id (H x) · (H x)⁻¹   ≡⟨← ap (λ p → p · (H x)⁻¹) (nat-htpy H (H x)) ⟩
-    ap f (H x) · H x · (H x)⁻¹        ≡⟨ assoc (ap f (H x)) (H x) ((H x)⁻¹) ⟩
+    ap f (H x) · H x · (H x)⁻¹        ≡⟨ ·-assoc (ap f (H x)) (H x) ((H x)⁻¹) ⟩
     ap f (H x) · (H x · (H x)⁻¹)      ≡⟨ ap (λ p → ap f (H x) · p) (·-rinv (H x)) ⟩
     ap f (H x) · refl                 ≡⟨ ·-runit _ ⟩
     ap f (H x)                        ∎

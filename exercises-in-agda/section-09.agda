@@ -180,7 +180,7 @@ module _ where
       --     │              │     
       --     f              f     
       ·ₕₜₚ-assoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ K ·ₕₜₚ L ~ H ·ₕₜₚ (K ·ₕₜₚ L)
-      ·ₕₜₚ-assoc H K L x = assoc (H x) (K x) (L x)
+      ·ₕₜₚ-assoc H K L x = ·-assoc (H x) (K x) (L x)
 
       ·ₕₜₚ-unassoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ (K ·ₕₜₚ L) ~ H ·ₕₜₚ K ·ₕₜₚ L
       ·ₕₜₚ-unassoc H K L = (·ₕₜₚ-assoc H K L) ⁻¹ₕₜₚ
@@ -842,14 +842,14 @@ module _ where
 
         section-eq : (_·_ p) ∘ inverseMap ~ id
         section-eq q = begin
-          p · (p ⁻¹ · q) ≡⟨ unassoc p (p ⁻¹) q ⟩
+          p · (p ⁻¹ · q) ≡⟨ ·-unassoc p (p ⁻¹) q ⟩
           p · p ⁻¹ · q   ≡⟨ ap (λ e → e · q) (·-rinv p) ⟩
           refl · q       ≡⟨⟩
           q              ∎
 
         retract-eq : inverseMap ∘ (_·_ p) ~ id
         retract-eq q = begin
-          p ⁻¹ · (p · q) ≡⟨ unassoc (p ⁻¹) p q ⟩
+          p ⁻¹ · (p · q) ≡⟨ ·-unassoc (p ⁻¹) p q ⟩
           p ⁻¹ · p · q   ≡⟨ ap (λ e → e · q) (·-linv p) ⟩
           refl · q       ≡⟨⟩
           q              ∎

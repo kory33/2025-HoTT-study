@@ -386,7 +386,7 @@ module _ where
                   backward refl (forward refl r)                  ≡⟨⟩
                   ((·-runit p) · (forward refl r))⁻¹              ≡⟨⟩
                   ((·-runit p) · (r · (·-runit p))⁻¹)⁻¹           ≡⟨ ap (λ s → ((·-runit p) · s)⁻¹) (≡-Basic1.distr-inv-concat r (·-runit p)) ⟩
-                  ((·-runit p) · ((·-runit p)⁻¹ · r ⁻¹))⁻¹        ≡⟨ ap (λ s → s ⁻¹) (unassoc (·-runit p) _ _) ⟩
+                  ((·-runit p) · ((·-runit p)⁻¹ · r ⁻¹))⁻¹        ≡⟨ ap (λ s → s ⁻¹) (·-unassoc (·-runit p) _ _) ⟩
                   ((·-runit p) · (·-runit p)⁻¹ · r ⁻¹)⁻¹          ≡⟨ ap (λ s → (s · r ⁻¹)⁻¹) (·-rinv (·-runit p)) ⟩
                   (refl · r ⁻¹)⁻¹                                 ≡⟨⟩
                   (r ⁻¹)⁻¹                                        ≡⟨ ≡-Basic1.inv-inv r ⟩
@@ -509,7 +509,68 @@ module _ where
         -- is exactly what we want, and that is already proven in the definition of equivalence-ladjoint.
         ladj-Retr refl
 
-  -- TODO: exercise 11.3
+  -- exercise 11.3
+  module _ where
+    homotopy-ap-homotopy : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) → (ap f {x} {y}) ~ (λ p → H x · ap g p · ((H y) ⁻¹))
+    homotopy-ap-homotopy {A} {B} {f} {g} x y H refl =
+      begin
+        ap f refl                     ≡⟨⟩
+        refl                          ≡⟨← ·-rinv (H x) ⟩
+        H x · ((H y) ⁻¹)              ≡⟨⟩
+        H x · (refl · ((H y) ⁻¹))     ≡⟨ ·-unassoc (H x) _ _ ⟩
+        H x · refl · ((H y) ⁻¹)       ≡⟨⟩
+        H x · ap g refl · ((H y) ⁻¹)  ∎
+
+    is-equiv-preserved-by-·-left : {A B : Set} → {x y : A} → {x' y' : B} →
+                                   {path-fn : x ≡ y → x' ≡ y'} → {z : B} → (p : z ≡ x') →
+                                   Is-equiv path-fn → Is-equiv (λ q → p · path-fn q)
+    is-equiv-preserved-by-·-left {A} {B} {x} {y} {f} {path-fn} {z} refl path-fn-eqv = path-fn-eqv
+
+    is-equiv-preserved-by-·-right : {A B : Set} → {x y : A} → {x' y' : B} →
+                                    {path-fn : x ≡ y → x' ≡ y'} → {z : B} → (p : y' ≡ z) →
+                                    Is-equiv path-fn → Is-equiv (λ q → path-fn q · p)
+    is-equiv-preserved-by-·-right {A} {B} {x} {y} {f} {g} {path-fn} {z} refl ((s , S) , (r , R)) =
+      (
+        (s , λ x'≡y' → begin
+          ((λ q → path-fn q · refl) ∘ s) x'≡y'     ≡⟨⟩
+          path-fn (s x'≡y') · refl                 ≡⟨ ·-runit _ ⟩
+          path-fn (s x'≡y')                        ≡⟨ S _ ⟩
+          x'≡y'                                    ∎
+        ),
+        (r , λ x'≡y' → begin
+          (r ∘ (λ q → path-fn q · refl)) x'≡y'     ≡⟨⟩
+          r (path-fn x'≡y' · refl)                 ≡⟨ ap r (·-runit _) ⟩
+          r (path-fn x'≡y')                        ≡⟨ R _ ⟩
+          x'≡y'                                    ∎
+        )
+      )
+
+    is-emb-preserved-by-homotopy : {A B : Set} → {f g : A → B} → (H : f ~ g) → (Is-emb f → Is-emb g)
+    is-emb-preserved-by-homotopy {A} {B} {f} {g} H f-emb x y =
+      let
+        is-equiv-Hx·apg·Hy⁻¹ : Is-equiv (λ p → H x · ap g p · ((H y) ⁻¹))
+        is-equiv-Hx·apg·Hy⁻¹ = is-equiv-preserved-by-homotopy (homotopy-ap-homotopy x y H) (f-emb x y)
+
+        is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy : Is-equiv (λ p → ((H x) ⁻¹) · (H x · ap g p · ((H y) ⁻¹) · H y))
+        is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy =
+          is-equiv-preserved-by-·-left ((H x) ⁻¹) (
+            is-equiv-preserved-by-·-right (H y) is-equiv-Hx·apg·Hy⁻¹
+          )
+
+        Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg : (λ p → ((H x) ⁻¹) · (H x · ap g p · ((H y) ⁻¹) · H y)) ~ ap g
+        Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg =
+          (λ { refl → begin
+            H x ⁻¹ · (H x · ap g refl · H y ⁻¹ · H y)   ≡⟨⟩
+            H x ⁻¹ · (H x · refl · H y ⁻¹ · H y)        ≡⟨ ap (λ c → H x ⁻¹ · (c · H y ⁻¹ · H y)) (·-runit _) ⟩
+            H x ⁻¹ · (H x · H y ⁻¹ · H y)               ≡⟨ ap (λ c → H x ⁻¹ · c) (·-assoc (H x) _ _) ⟩
+            H x ⁻¹ · (H x · (H y ⁻¹ · H y))             ≡⟨ ap (λ c → H x ⁻¹ · (H x · c)) (·-linv (H y)) ⟩
+            H x ⁻¹ · (H x · refl)                       ≡⟨ ap (λ c → H x ⁻¹ · c) (·-runit _) ⟩
+            H x ⁻¹ · H x                                ≡⟨ ·-linv (H x) ⟩
+            refl                                        ≡⟨⟩
+            ap g refl                                   ∎
+          })
+      in is-equiv-preserved-by-homotopy Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy
+
   -- TODO: exercise 11.4
   -- TODO: exercise 11.5
   -- TODO: exercise 11.6
