@@ -283,8 +283,8 @@ module _ where
 
   -- 10.4.5
   improve-section-of-inverse-to-be-coherent : {A B : Set} → (f : A → B) →
-                                                       ((g , G , H) : Has-inverse f) →
-                                                       (Σ (f ∘ g ~ id) (λ G' → lwhisker G' f ~ rwhisker f H))
+                                              ((g , G , H) : Has-inverse f) →
+                                              (Σ (f ∘ g ~ id) (λ G' → lwhisker G' f ~ rwhisker f H))
   improve-section-of-inverse-to-be-coherent {A} {B} f (g , G , H) =
     let
       -- ╭───────────[G]╮ 
