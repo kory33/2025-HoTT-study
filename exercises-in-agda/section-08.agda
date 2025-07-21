@@ -206,6 +206,9 @@ module _ where
     left-neq-right : {A : Set} → {B : Set} → {x : A} → {y : B} → ¬ (left x ≡ right y)
     left-neq-right lxry = Σ.fst Copr-≡-biimpl-Eq-Copr lxry
 
+    right-neq-left : {A : Set} → {B : Set} → {x : A} → {y : B} → ¬ (right y ≡ left x)
+    right-neq-left rylx = left-neq-right (inverse rylx)
+
   module _ where
     open Eq-Copr
     open Has-decidable-eq

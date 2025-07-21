@@ -514,11 +514,15 @@ module _ where
       Sect : {A B : Set} → (f : A → B) → Set
       Sect {A} {B} f = Σ (B → A) (Is-sect-of f)
 
-      Is-retr-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
-      Is-retr-of f g = g ∘ f ~ id
+      Is-retraction-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
+      Is-retraction-of f g = g ∘ f ~ id
 
       Retr : {A B : Set} → (f : A → B) → Set
-      Retr {A} {B} f = Σ (B → A) (Is-retr-of f)
+      Retr {A} {B} f = Σ (B → A) (Is-retraction-of f)
+
+      -- "A is a retract of B"
+      Is-retract-of : (A B : Set) → Set
+      Is-retract-of A B = Σ (A → B) (λ f → Retr f)
 
       Is-equiv : {A B : Set} → (f : A → B) → Set
       Is-equiv {A} {B} f = Sect f × Retr f
@@ -594,7 +598,7 @@ module _ where
     ≃-inverse-map-is-sect-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-sect-of f (≃-inverse-map-for f-is-eqv)
     ≃-inverse-map-is-sect-of-original ((g , gsect) , _) = gsect
 
-    ≃-inverse-map-is-retr-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-retr-of f (≃-inverse-map-for f-is-eqv)
+    ≃-inverse-map-is-retr-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-retraction-of f (≃-inverse-map-for f-is-eqv)
     ≃-inverse-map-is-retr-of-original f-is-eqv@((g , _) , _) =
       let
         (_ {- should equal g -} , gsect , gretr) = equiv-has-inverse f-is-eqv
@@ -1110,7 +1114,7 @@ module _ where
     homotope-implies-is-equiv-biimpl {A} {B} {f} {g} FG =
       (is-equiv-preserved-by-homotopy FG , is-equiv-preserved-by-homotopy (FG ⁻¹ₕₜₚ))
 
-    sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retr-of f)) → Is-retr-of f g
+    sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retraction-of f)) → Is-retraction-of f g
     sect-with-retr-is-retr {A} {B} {f} {g} gsect retr = Σ.snd (Σ.snd (equiv-has-inverse ((g , gsect), retr)))
 
     homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →

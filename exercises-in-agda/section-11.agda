@@ -394,3 +394,145 @@ module _ where
             (Σ.snd (equiv-then-contr-iff-contr equivalence) (identity-with-an-endpoint-fixed-Is-contr _))
             eqvs
 
+  -- exercise 11.1
+  module _ where
+    -- 11.1.a
+    empty-map-is-emb : {A : Set} → (f : Empty → A) → Is-emb f
+    empty-map-is-emb {A} f ()
+
+    -- 11.1.b
+    left-is-emb : (A B : Set) → Is-emb (left {A} {B})
+    left-is-emb A B x y =
+      let
+        (ap-left' , ap-left'-is-eqv) = ≃-comm (left-left-eq-equiv-eq x y B)
+        htpy : ap-left' ~ ap (left {A} {B})
+        htpy = λ { refl → refl }
+          -- TODO: If we compute everything we would certainly get that the function implementing left-left-eq-equiv-eq is
+          --       homotopic to (ap left), but this proof does not at all explain how that is the case...
+          --       What intermediary lemma could we state to make this more clear?
+      in is-equiv-preserved-by-homotopy htpy ap-left'-is-eqv
+
+    right-is-emb : (A B : Set) → Is-emb (right {A} {B})
+    right-is-emb A B x y =
+      let
+        (ap-right' , ap-right'-is-eqv) = ≃-comm (right-right-eq-equiv-eq A {B} x y)
+        htpy : ap-right' ~ ap (right {A} {B})
+        htpy = λ { refl → refl }
+      in is-equiv-preserved-by-homotopy htpy ap-right'-is-eqv
+
+    open EmptyBasic
+
+    -- 11.1.c
+    left-is-equiv-iff-right-type-is-empty : (A B : Set) → Is-equiv (left {A} {B}) ↔ is-empty B
+    left-is-equiv-iff-right-type-is-empty A B =
+      (
+        (λ { ((s , S) , _) b → Eq-Copr.left-neq-right (S (right b)) }) ,
+        (λ ¬B → has-inverse-equiv (
+          (λ { (left a) → a    ; (right b) → absurd (¬B b) }) ,
+          (λ { (left a) → refl ; (right b) → absurd (¬B b) }) ,
+          (λ a → refl)
+        ))
+      )
+    
+    right-is-equiv-iff-left-type-is-empty : (A B : Set) → Is-equiv (right {A} {B}) ↔ is-empty A
+    right-is-equiv-iff-left-type-is-empty A B =
+      (
+        (λ { ((s , S) , _) a → Eq-Copr.right-neq-left (S (left a)) }) ,
+        (λ ¬A → has-inverse-equiv (
+          (λ { (left a) → absurd (¬A a) ; (right b) → b }) ,
+          (λ { (left a) → absurd (¬A a) ; (right b) → refl }) ,
+          (λ b → refl)
+        ))
+      )
+
+  -- TODO: exercise 11.2
+  -- TODO: exercise 11.3
+  -- TODO: exercise 11.4
+  -- TODO: exercise 11.5
+  -- TODO: exercise 11.6
+  -- TODO: exercise 11.7
+
+  -- exercise 11.8
+  module _ where
+    -- 11.8.a
+    pointwise-homotopic-then-tot-homotopic : {A : Set} → {B C : A → Set} →
+                                             (f g : (x : A) → B x → C x) →
+                                             (H : (x : A) → f x ~ g x) →
+                                             (totalization f ~ totalization g)
+    pointwise-homotopic-then-tot-homotopic {A} {B} {C} f g H =
+      λ { (x , b) → begin
+        totalization f (x , b)  ≡⟨⟩
+        (x , f x b)             ≡⟨ ap (λ c → (x , c)) (H x b) ⟩
+        (x , g x b)             ≡⟨⟩
+        totalization g (x , b)  ∎
+      }
+    
+    -- 11.8.b
+    tot-comp : {A : Set} → {B C D : A → Set} →
+               (f : (x : A) → B x → C x) → (g : (x : A) → C x → D x) →
+               (totalization (λ x → g x ∘ f x) ~ totalization g ∘ totalization f)
+    tot-comp {A} {B} {C} {D} f g =
+      λ { (x , b) → begin
+        totalization (λ x → g x ∘ f x) (x , b)     ≡⟨⟩
+        (x , g x (f x b))                          ≡⟨⟩
+        (totalization g ∘ totalization f) (x , b)  ∎
+      }
+    
+    -- 11.8.c
+    tot-id : {A : Set} → {B : A → Set} → (totalization (λ x → id {B x}) ~ id)
+    tot-id = λ { (x , b) → refl }
+
+    open Equivalence.Symbolic
+
+    fibers-retract-then-total-space-retracts : {A : Set} → {B C : A → Set} →
+                                               (retrs : (x : A) → Is-retract-of (B x) (C x)) →
+                                               Is-retract-of (Σ A B) (Σ A C)
+    fibers-retract-then-total-space-retracts {A} {B} {C} retrs =
+      let
+        fns : (x : A) → B x → C x
+        fns x = let (f , _) = retrs x in f
+
+        retr-fns : (x : A) → C x → B x
+        retr-fns x = let (_ , (r , _)) = retrs x in r
+      in
+        (
+          totalization fns ,
+          totalization retr-fns ,
+          λ { (x , b) →
+            let (_ , (_ , R)) = retrs x
+            in begin
+              (totalization retr-fns ∘ totalization fns) (x , b)   ≡⟨⟩
+              (x , retr-fns x (fns x b))                           ≡⟨ ap (λ c → (x , c)) (R b) ⟩
+              (x , b)                                              ∎
+          }
+        )
+
+    -- 11.8.d
+    retracts-of-identities-is-equiv-to-identities : {A : Set} → (a : A) → {B : A → Set} →
+                                                    (retrs : (x : A) → Is-retract-of (B x) (a ≡ x)) →
+                                                    (x : A) → (let (_ , r , _) = retrs x in Is-equiv r)
+    retracts-of-identities-is-equiv-to-identities {A} a {B} retrs x =
+      fundamental-thm-of-identity-types.ii→i-at-fn
+        (retract-of-contr-is-contr
+          (fibers-retract-then-total-space-retracts retrs)
+          (identity-with-an-endpoint-fixed-Is-contr a))
+        (λ x → let (_ , (r , _)) = retrs x in r)
+        x
+
+    -- 11.8.e
+    identity-to-fiber-has-section-then-is-family-of-equivs : {A : Set} → (a : A) → {B : A → Set} →
+                                                             (f : (x : A) → a ≡ x → B x) →
+                                                             (sects : (x : A) → Sect (f x)) →
+                                                             is-family-of-equivs f
+    identity-to-fiber-has-section-then-is-family-of-equivs {A} a {B} f sects =
+      retracts-of-identities-is-equiv-to-identities
+        a
+        (λ x → let (s , S) = sects x in (s , f x , S))
+
+  -- 11.9
+  ap-f-has-section-then-f-is-emb : {A B : Set} → (f : A → B) → ((x y : A) → Sect (ap f {x} {y})) → Is-emb f
+  ap-f-has-section-then-f-is-emb {A} {B} f sects x =
+    identity-to-fiber-has-section-then-is-family-of-equivs x (λ y → ap f {x} {y}) (sects x)
+
+  -- TODO: exercise 11.10
+  -- TODO: exercise 11.11

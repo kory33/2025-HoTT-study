@@ -388,6 +388,9 @@ module _ where
       a          ∎
     )
 
+  retract-of-contr-is-contr : {A B : Set} → Is-retract-of A B → Is-contr B → Is-contr A
+  retract-of-contr-is-contr {A} {B} (f , retrf) contr = retraction-preserves-contr retrf contr
+
   -- exercise 10.3.a
   const-unit-is-equiv-then-contr : {A : Set} → Is-equiv (λ (a : A) → const unit a) → Is-contr A
   const-unit-is-equiv-then-contr {A} (_ , retr) = retraction-preserves-contr retr Unit-Is-contr
