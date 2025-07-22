@@ -210,12 +210,14 @@ module _ where
 
   -- subsection 11.4
   module _ where
+    -- 11.4.1
     Is-emb : {A B : Set} → (f : A → B) → Set
     Is-emb {A} {B} f = (x y : A) → Is-equiv (ap f {x} {y})
 
     _↪_ : Set → Set → Set
     A ↪ B = Σ (A → B) Is-emb
 
+    -- 11.4.2
     is-equiv-then-is-emb : {A B : Set} → {e : A → B} → Is-equiv e → Is-emb e
     is-equiv-then-is-emb {A} {B} {e} e-eqv x =
       fundamental-thm-of-identity-types.ii→i-at-fn contr (λ y → ap e {x} {y})
@@ -535,15 +537,35 @@ module _ where
 
   -- exercise 11.3
   module _ where
-    homotopy-ap-homotopy : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) → (ap f {x} {y}) ~ (λ p → H x · ap g p · ((H y) ⁻¹))
-    homotopy-ap-homotopy {A} {B} {f} {g} x y H refl =
+    homotope-ap : {A B : Set} → (f g : A → B) → (H : f ~ g) → {x y : A} → (x ≡ y) → (f x ≡ f y)
+    homotope-ap {A} {B} f g H {x} {y} p = H x · ap g p · ((H y) ⁻¹)
+
+    homotope-ap-refl-eq-refl : {A B : Set} → {f g : A → B} → (H : f ~ g) → {x : A} → homotope-ap f g H {x} {x} refl ≡ refl
+    homotope-ap-refl-eq-refl {A} {B} {f} {g} H {x} =
       begin
-        ap f refl                     ≡⟨⟩
-        refl                          ≡⟨← ·-rinv (H x) ⟩
-        H x · ((H y) ⁻¹)              ≡⟨⟩
-        H x · (refl · ((H y) ⁻¹))     ≡⟨ ·-unassoc (H x) _ _ ⟩
-        H x · refl · ((H y) ⁻¹)       ≡⟨⟩
-        H x · ap g refl · ((H y) ⁻¹)  ∎
+        homotope-ap f g H {x} {x} refl   ≡⟨⟩
+        H x · ap g refl · ((H x) ⁻¹)     ≡⟨⟩
+        H x · refl · ((H x) ⁻¹)          ≡⟨ ·-assoc (H x) _ _ ⟩
+        H x · (refl · ((H x) ⁻¹))        ≡⟨⟩
+        H x · ((H x) ⁻¹)                 ≡⟨ ·-rinv (H x) ⟩
+        refl                             ∎
+
+    homotope-ap-homotopy : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) → (ap f {x} {y}) ~ (homotope-ap f g H)
+    homotope-ap-homotopy {A} {B} {f} {g} x y H refl =
+      begin
+        ap f refl                ≡⟨⟩
+        refl                     ≡⟨← homotope-ap-refl-eq-refl H ⟩
+        homotope-ap f g H refl   ∎
+
+    -- We will show: Is-equiv (ap f) ⇒ Is-equiv (homotope-ap f g H) ⇒ Is-equiv (ap g).
+    -- The middle type is Is-equiv (λ p → H x · ap g p · ((H y) ⁻¹)),
+    -- so we'll prove two lemmas to "unwrap" surrounding equalities (H x and (H y) ⁻¹).
+
+    is-emb-then-homotope-ap-is-equiv : {A B : Set} → {f g : A → B} → (H : f ~ g) → Is-emb f → (x y : A) → Is-equiv (homotope-ap f g H {x} {y})
+    is-emb-then-homotope-ap-is-equiv {A} {B} {f} {g} H f-emb x y =
+      is-equiv-preserved-by-homotopy
+        (homotope-ap-homotopy x y H)
+        (f-emb x y)
 
     is-equiv-preserved-by-·-left : {A B : Set} → {x y : A} → {x' y' : B} →
                                    {path-fn : x ≡ y → x' ≡ y'} → {z : B} → (p : z ≡ x') →
@@ -569,16 +591,14 @@ module _ where
         )
       )
 
-    is-emb-preserved-by-homotopy : {A B : Set} → {f g : A → B} → (H : f ~ g) → (Is-emb f → Is-emb g)
-    is-emb-preserved-by-homotopy {A} {B} {f} {g} H f-emb x y =
+    homotope-ap-is-equiv-then-ap-target-is-equiv : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) → 
+                                                   Is-equiv (homotope-ap f g H {x} {y}) → Is-equiv (ap g {x} {y})
+    homotope-ap-is-equiv-then-ap-target-is-equiv {A} {B} {f} {g} x y H is-equiv-homotope-ap =
       let
-        is-equiv-Hx·apg·Hy⁻¹ : Is-equiv (λ p → H x · ap g p · ((H y) ⁻¹))
-        is-equiv-Hx·apg·Hy⁻¹ = is-equiv-preserved-by-homotopy (homotopy-ap-homotopy x y H) (f-emb x y)
-
         is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy : Is-equiv (λ p → ((H x) ⁻¹) · (H x · ap g p · ((H y) ⁻¹) · H y))
         is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy =
           is-equiv-preserved-by-·-left ((H x) ⁻¹) (
-            is-equiv-preserved-by-·-right (H y) is-equiv-Hx·apg·Hy⁻¹
+            is-equiv-preserved-by-·-right (H y) is-equiv-homotope-ap
           )
 
         Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg : (λ p → ((H x) ⁻¹) · (H x · ap g p · ((H y) ⁻¹) · H y)) ~ ap g
@@ -595,8 +615,117 @@ module _ where
           })
       in is-equiv-preserved-by-homotopy Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy
 
-  -- TODO: exercise 11.4
-  -- TODO: exercise 11.5
+    is-emb-preserved-by-homotopy : {A B : Set} → {f g : A → B} → (H : f ~ g) → (Is-emb f → Is-emb g)
+    is-emb-preserved-by-homotopy {A} {B} {f} {g} H f-emb x y =
+      homotope-ap-is-equiv-then-ap-target-is-equiv x y H
+        (is-emb-then-homotope-ap-is-equiv H f-emb x y)
+
+    open Homotopy.HomotopyGroupoidSymbolic
+    homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv : {A B : Set} → {f g : A → B} → (H : f ~ g) → {x y : A} →
+                                                        Is-equiv (homotope-ap f g H {x} {y}) →
+                                                        Is-equiv (homotope-ap g f (H ⁻¹ₕₜₚ) {x} {y})
+    homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv {A} {B} {f} {g} H {x} {y} is-equiv-homotope-ap =
+      let
+        ap-g-is-eqv : Is-equiv (ap g {x} {y})
+        ap-g-is-eqv = homotope-ap-is-equiv-then-ap-target-is-equiv x y H is-equiv-homotope-ap
+
+        ap-g~homotope-ap-Hinv : ap g {x} {y} ~ homotope-ap g f (H ⁻¹ₕₜₚ)
+        ap-g~homotope-ap-Hinv = homotope-ap-homotopy x y (H ⁻¹ₕₜₚ)
+      in is-equiv-preserved-by-homotopy ap-g~homotope-ap-Hinv ap-g-is-eqv
+
+  -- exercise 11.4
+  module _ where
+    open Homotopy.HomotopyGroupoidSymbolic
+
+    comp-embs-is-emb : {A B C : Set} → {g : B → C} → {f : A → B} → Is-emb g → Is-emb f → Is-emb (g ∘ f)
+    comp-embs-is-emb {A} {B} {C} {g} {f} g-emb f-emb x y =
+      is-equiv-preserved-by-homotopy (λ { refl → refl }) (comp-equivs-is-equiv (g-emb (f x) (f y)) (f-emb x y))
+
+    -- 11.4.a
+    latter-is-emb-then-comp-is-emb-iff-former-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
+                                                        (H : f ~ g ∘ h) → (Is-emb g) → (Is-emb f ↔ Is-emb h)
+    latter-is-emb-then-comp-is-emb-iff-former-is-emb {A} {B} {X} h {g} {f} H g-emb =
+      (
+        (λ f-emb x y →
+          let
+            (apg⁻¹ , apg⁻¹-S , apg⁻¹-R) = equiv-has-inverse (g-emb (h x) (h y))
+
+            -- We expect, morally, that apg⁻¹ ∘ ap f ~ ap h and that the LHS to be an equivalence.
+            -- The issue is that the LHS in the expression above is ill-typed, so we instead assert:
+            homotopy : apg⁻¹ ∘ (homotope-ap (g ∘ h) f (H ⁻¹ₕₜₚ)) ~ ap h
+            homotopy =
+              (λ { refl → begin
+                (apg⁻¹ ∘ (homotope-ap (g ∘ h) f (H ⁻¹ₕₜₚ))) refl   ≡⟨⟩
+                apg⁻¹ (homotope-ap (g ∘ h) f (H ⁻¹ₕₜₚ) refl)       ≡⟨ ap apg⁻¹ (homotope-ap-refl-eq-refl (H ⁻¹ₕₜₚ)) ⟩
+                apg⁻¹ refl                                         ≡⟨⟩
+                apg⁻¹ (ap g refl)                                  ≡⟨ apg⁻¹-R refl ⟩
+                refl                                               ∎
+              })
+            apg⁻¹-is-eqv = has-inverse-equiv (ap g , apg⁻¹-R , apg⁻¹-S)
+            homotope-ap-H⁻¹-is-eqv =
+              homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv H (
+                is-emb-then-homotope-ap-is-equiv H f-emb x y
+              )
+          in is-equiv-preserved-by-homotopy homotopy (comp-equivs-is-equiv apg⁻¹-is-eqv homotope-ap-H⁻¹-is-eqv)
+        ) ,
+        (λ h-emb → is-emb-preserved-by-homotopy (H ⁻¹ₕₜₚ) (comp-embs-is-emb g-emb h-emb))
+      )
+
+    -- 11.4.b
+    former-is-eqv-then-comp-is-emb-iff-latter-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
+                                                       (H : f ~ g ∘ h) → Is-equiv h → (Is-emb g ↔ Is-emb f)
+    former-is-eqv-then-comp-is-emb-iff-latter-is-emb {A} {B} {X} h {g} {f} H h-eqv =
+      let
+        h⁻¹ = ≃-inverse-map-for h-eqv
+        f∘h⁻¹~g : f ∘ h⁻¹ ~ g
+        f∘h⁻¹~g b =
+          begin
+            (f ∘ h⁻¹) b    ≡⟨⟩
+            f (h⁻¹ b)      ≡⟨ H (h⁻¹ b) ⟩
+            g (h (h⁻¹ b))  ≡⟨ ap g (≃-inverse-map-is-sect-of-original h-eqv b) ⟩
+            g b            ∎
+      in
+        (
+          (λ g-emb → is-emb-preserved-by-homotopy (H ⁻¹ₕₜₚ) (comp-embs-is-emb g-emb (is-equiv-then-is-emb h-eqv))) ,
+          (λ f-emb → is-emb-preserved-by-homotopy (f∘h⁻¹~g) (comp-embs-is-emb f-emb (is-equiv-then-is-emb (≃-inverse-map-is-equiv h-eqv))))
+        )
+
+  -- exercise 11.5
+  module _ where
+    sect-comp-to-sect-latter : {A B C : Set} → (g : B → C) → (f : A → B) →
+                               Sect (g ∘ f) → Sect g
+    sect-comp-to-sect-latter {A} {B} {C} g f (s , S) = (f ∘ s , S)
+
+    retr-comp-to-retr-former : {A B C : Set} → (g : B → C) → (f : A → B) →
+                               Retr (g ∘ f) → Retr f
+    retr-comp-to-retr-former {A} {B} {C} g f (r , R) = (r ∘ g , R)
+
+    sect-comp-and-latter-is-emb-to-retr-latter : {A B C : Set} → (g : B → C) → (f : A → B) →
+                                                 Sect (g ∘ f) → Is-emb g → Retr g
+    sect-comp-and-latter-is-emb-to-retr-latter {A} {B} {C} g f (s , S) g-emb =
+      (f ∘ s , λ b → ≃-inverse-map-for (g-emb ((f ∘ s ∘ g) b) b) (S (g b)))
+
+    sect-comp-and-latter-is-emb-to-sect-former : {A B C : Set} → (g : B → C) → (f : A → B) →
+                                                 Sect (g ∘ f) → Is-emb g → Sect f
+    sect-comp-and-latter-is-emb-to-sect-former {A} {B} {C} g f (s , S) g-emb =
+      (s ∘ g , λ b → ≃-inverse-map-for (g-emb ((f ∘ s ∘ g) b) b) (S (g b)))
+
+    -- 11.5 (i) → (ii) (we show a stronger statement that does not require (Is-emb f))
+    latter-is-emb-and-comp-is-equiv-then-both-are-equiv : {A B C : Set} → {g : B → C} → {f : A → B} →
+                                                          Is-emb g → Is-equiv (g ∘ f) → Is-equiv g × Is-equiv f
+    latter-is-emb-and-comp-is-equiv-then-both-are-equiv {A} {B} {C} {g} {f} g-emb (sect , retr) =
+      (
+        (sect-comp-to-sect-latter g f sect , sect-comp-and-latter-is-emb-to-retr-latter g f sect g-emb) ,
+        (sect-comp-and-latter-is-emb-to-sect-former g f sect g-emb , retr-comp-to-retr-former g f retr)
+      )
+
+    -- 11.5 (ii) → (i)
+    both-embs-are-equivs-then-comp-is-equiv : {A B C : Set} → {g : B → C} → {f : A → B} →
+                                              Is-emb g → Is-emb f → Is-equiv g → Is-equiv f →
+                                              Is-equiv (g ∘ f)
+    both-embs-are-equivs-then-comp-is-equiv {A} {B} {C} {g} {f} _ _ g-eqv f-eqv =
+      comp-equivs-is-equiv g-eqv f-eqv
+
   -- TODO: exercise 11.6
   -- TODO: exercise 11.7
 
