@@ -517,7 +517,7 @@ module _ where
                                                  (ladj , ((ladj⁻¹ , ladjS) , _)) = equivalence-ladjoint (e , e-eqv) x y
                                              -- NOTE: This side of the universality is stated in terms of the improved homotopy R'
                                              --       instead of the original homotopy R. This is because the universality statement
-                                             --       exactly corresponds to the property of S and R being a part of is-coh-inv structure,
+                                             --       exactly corresponds to the property of S and R of being a part of the is-coh-inv structure,
                                              --       and since (e , e-eqv) does not necessarily come with a coherent inverse,
                                              --       we had to make a choice in equivalence-ladjoint about which of retract and section
                                              --       we must promote to become part of the is-coh-inv structure.
