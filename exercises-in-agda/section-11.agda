@@ -496,11 +496,11 @@ module _ where
           )
         )
     
-    equivalence-ladjoint-counit-universality : {A B : Set} → ((e , e-eqv) : A ≃ B) → (x : A) → (y : B) → (p : e x ≡ y) →
+    equivalence-ladjoint-counit-universality : {A B : Set} → ((e , e-eqv) : A ≃ B) → (x : A) → (y : B) →
                                                let e⁻¹               = ≃-inverse-map-for e-eqv
                                                    (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
                                                    (ladj , ladj-eqv) = equivalence-ladjoint (e , e-eqv) x y
-                                               in ((ap e (ladj p)) · (S y) ≡ p)
+                                               in (p : e x ≡ y) → ((ap e (ladj p)) · (S y) ≡ p)
     equivalence-ladjoint-counit-universality {A} {B} (e , e-eqv) x y refl =
       let (ladj , (Sect , (_ , ladj-Retr))) = equivalence-ladjoint (e , e-eqv) x y
       in
@@ -508,6 +508,30 @@ module _ where
         --   (equivalence-ladjoint.backward ∘ equivalence-ladjoint.forward) refl ≡ refl
         -- is exactly what we want, and that is already proven in the definition of equivalence-ladjoint.
         ladj-Retr refl
+
+    open Homotopy.HomotopyGroupoidSymbolic
+    equivalence-ladjoint-unit-universality : {A B : Set} → ((e , e-eqv) : A ≃ B) → (x : A) → (y : B) →
+                                             let e⁻¹               = ≃-inverse-map-for e-eqv
+                                                 (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
+                                                 (R' , R'e⁻¹~e⁻¹S) = improve-section-of-inverse-to-be-coherent e⁻¹ (e , R , S)
+                                                 (ladj , ((ladj⁻¹ , ladjS) , _)) = equivalence-ladjoint (e , e-eqv) x y
+                                             -- NOTE: This side of the universality is stated in terms of the improved homotopy R'
+                                             --       instead of the original homotopy R. This is because the universality statement
+                                             --       exactly corresponds to the property of S and R being a part of is-coh-inv structure,
+                                             --       and since (e , e-eqv) does not necessarily come with a coherent inverse,
+                                             --       we had to make a choice in equivalence-ladjoint about which of retract and section
+                                             --       we must promote to become part of the is-coh-inv structure.
+                                             --       Had we stated the type equivalence (A ≃ B) in terms of is-coh-inv structure,
+                                             --       this asymmetry would vanish, and we should be able to write down and prove
+                                             --       the universality with the original homotopies that came along with (A ≃ B).
+                                             in (q : x ≡ e⁻¹ y) → (((R' ⁻¹ₕₜₚ)  x) · (ap e⁻¹ (ladj⁻¹ q)) ≡ q)
+    equivalence-ladjoint-unit-universality {A} {B} (e , e-eqv) x y refl =
+      let (ladj , ((_ , ladj-Sect) , Retr)) = equivalence-ladjoint (e , e-eqv) x y
+      in
+        -- if you look closely, you will see that
+        --   (equivalence-ladjoint.forward ∘ equivalence-ladjoint.backward) refl ≡ refl
+        -- is exactly what we want, and that is already proven in the definition of equivalence-ladjoint.
+        ladj-Sect refl
 
   -- exercise 11.3
   module _ where
