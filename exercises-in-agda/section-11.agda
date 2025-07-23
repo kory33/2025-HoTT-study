@@ -726,7 +726,54 @@ module _ where
     both-embs-are-equivs-then-comp-is-equiv {A} {B} {C} {g} {f} _ _ g-eqv f-eqv =
       comp-equivs-is-equiv g-eqv f-eqv
 
-  -- TODO: exercise 11.6
+  -- exercise 11.6
+  module _ where
+    open +₀-Basic
+    open EmptyBasic
+
+    +₀-univ-map-is-emb-then-both-are-emb-and-neq : {A B C : Set} → {f : A → C} → {g : B → C} →
+                                                   Is-emb ([ f +₀ g ]) → Is-emb f × Is-emb g × ((a : A) → (b : B) → ¬ (f a ≡ g b))
+    +₀-univ-map-is-emb-then-both-are-emb-and-neq {A} {B} {C} {f} {g} f+g-emb =
+      (
+        (λ a a' →
+          is-equiv-preserved-by-homotopy
+            (λ { refl → refl })
+            (comp-equivs-is-equiv (f+g-emb (left a) (left a')) (left-is-emb A B a a'))),
+        (λ b b' →
+          is-equiv-preserved-by-homotopy
+            (λ { refl → refl })
+            (comp-equivs-is-equiv (f+g-emb (right b) (right b')) (right-is-emb A B b b'))),
+        (λ a b fa≡gb →
+          let
+            [f+₀g]la≡[f+₀g]rb : [ f +₀ g ] (left a) ≡ [ f +₀ g ] (right b)
+            [f+₀g]la≡[f+₀g]rb = fa≡gb
+            ((s , S) , _) = f+g-emb (left a) (right b)
+          in
+            Eq-Copr.left-neq-right (s [f+₀g]la≡[f+₀g]rb)
+        )
+      )
+
+    both-are-emb-and-neq-then-+₀-univ-map-is-emb : {A B C : Set} → {f : A → C} → {g : B → C} →
+                                                   Is-emb f → Is-emb g → ((a : A) → (b : B) → ¬ (f a ≡ g b)) →
+                                                   Is-emb [ f +₀ g ]
+    both-are-emb-and-neq-then-+₀-univ-map-is-emb {A} {B} {C} {f} {g} f-emb g-emb neq =
+      λ {
+        (left a) (left a') →
+          former-and-comp-are-equivs-then-latter-is-equiv
+            (λ { refl → refl })
+            (left-is-emb A B a a')
+            (f-emb a a')
+      ; (left a) (right b) →
+          any-map-into-empty-type-is-equiv (λ eqn → neq a b eqn) (ap [ f +₀ g ] {left a} {right b})
+      ; (right b) (left a) →
+          any-map-into-empty-type-is-equiv (λ eqn → neq a b (inverse eqn)) (ap [ f +₀ g ] {right b} {left a})
+      ; (right b) (right b') →
+          former-and-comp-are-equivs-then-latter-is-equiv
+            (λ { refl → refl })
+            (right-is-emb A B b b')
+            (g-emb b b')
+      }
+
   -- TODO: exercise 11.7
 
   -- exercise 11.8

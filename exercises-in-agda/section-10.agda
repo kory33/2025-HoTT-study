@@ -438,6 +438,15 @@ module _ where
       (contr-then-const-unit-is-equiv b-contr)
       (contr-then-const-unit-is-equiv a-contr)
 
+  open EmptyBasic
+  any-map-into-empty-type-is-equiv : {A B : Set} → is-empty B → (f : A → B) → Is-equiv f
+  any-map-into-empty-type-is-equiv {A} {B} b-empty f =
+    has-inverse-equiv (
+      (λ b → absurd (b-empty b)),
+      (λ b → absurd (b-empty b)),
+      (λ a → absurd (b-empty (f a)))
+    )
+
   dom-is-contr-then-is-equiv-iff-cod-is-contr : {A B : Set} → {f : A → B} → Is-contr A → Is-equiv f ↔ Is-contr B
   dom-is-contr-then-is-equiv-iff-cod-is-contr {A} {B} {f} a-contr =
     (

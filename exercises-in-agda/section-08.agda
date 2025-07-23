@@ -332,11 +332,11 @@ module _ where
                                  Σ Nat (λ n → -- found a value n
                                     P n ×     -- that satisfies P
                                     (n ≤ N) × -- and is less than or equal to N
-                                    ((x : Nat) → P x → (x ≤ n) +₀ (N < x)  -- such that for any x with (P x), x does not lie in (succ n)..N
-                                 )) +₀ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
+                                    ((x : Nat) → P x → (x ≤ n) +₀ (N < x))  -- such that for any x with (P x), x does not lie in (succ n)..N
+                                 ) +₀ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
     search-descending-from-Nat {P} {decide-p} zero =
       case decide-p zero of λ {
-        (left pz) → left (zero , (pz , Leq-Nat.Leq-Nat-refl zero), (λ x _ → Lt-Nat.leq-or-gt x zero))
+        (left pz) → left (zero , (pz , Leq-Nat.Leq-Nat-refl zero , λ x _ → Lt-Nat.leq-or-gt x zero))
       ; (right ¬pz) → right λ { zero _ → ¬pz; (succ k) () }
       }
     search-descending-from-Nat {P} {decide-p} (succ N) =
@@ -344,16 +344,14 @@ module _ where
         (left psN) →
           left (
             succ N ,
-            (psN , Leq-Nat.Leq-Nat-refl (succ N)),
-            (λ x _ → Lt-Nat.leq-or-gt x (succ N))
+            (psN , Leq-Nat.Leq-Nat-refl (succ N) , λ x _ → Lt-Nat.leq-or-gt x (succ N))
           )
       ; (right ¬psN) →
         case (search-descending-from-Nat {P} {decide-p} N) of λ {
-          (left (n , (pn , leq-n), any-satisfying-Nat-is-≤n-or-N<)) →
+          (left (n , (pn , leq-n , any-satisfying-Nat-is-≤n-or-N<))) →
             left (
               n ,
-              (pn , trans n N (succ N) leq-n (self-succ N)),
-              (λ x px →
+              (pn , trans n N (succ N) leq-n (self-succ N) , λ x px →
                 +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
                   case Σ.snd (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x) (Σ.fst (Lt-Nat.lt-biimpl-succ-leq N x) N<x) of λ {
                     (left sN<x) → sN<x
@@ -382,14 +380,14 @@ module _ where
     decide-Σ-P : Is-decidable (Σ Nat P)
     decide-Σ-P =
       case (search-descending-from-Nat {P} {decide-p} m) of λ {
-        (left (n , (pn , leq-n), _)) → left (n , pn)
+        (left (n , (pn , leq-n , _))) → left (n , pn)
       ; (right ¬pn-below-m) → right (λ (n , pn) → ¬pn-below-m n (mub n pn) pn)
       }
 
     maximize : Σ Nat P → Σ Nat (λ n → P n × Nat-is-upper-bound {P} n)
     maximize (n , pn) =
       case (search-descending-from-Nat {P} {decide-p} m) of λ {
-        (left (m' , (pm' , m'≤m), no-value-from-sm'-upto-m-satisfies)) →
+        (left (m' , (pm' , m'≤m , no-value-from-sm'-upto-m-satisfies))) →
           (m' , pm' , (λ m'' pm'' →
             -- goal : m'' ≤ m'
             Lt-Nat.by-comparing m'' m' λ {

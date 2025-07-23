@@ -53,6 +53,9 @@ module _ where
     <_+₀_> : {A B A' B' : Set} → (A → A') → (B → B') → (A +₀ B) → (A' +₀ B')
     < f +₀ g > = ind-+₀ (λ x → left (f x)) (λ y → right (g y))
 
+    [_+₀_] : {A B C : Set} → (f : A → C) → (g : B → C) → (A +₀ B) → C
+    [_+₀_] f g = ind-+₀ (λ x → f x) (λ y → g y)
+
     +₀-emptyRight : {A B : Set} → is-empty B → A +₀ B → A
     +₀-emptyRight ¬b (left x) = x
     +₀-emptyRight ¬b (right y) = absurd (¬b y)
@@ -126,7 +129,7 @@ module _ where
 
   _×_ : (A B : Set) → Set
   A × B = Σ A (λ x → B)
-  infixl 15 _×_
+  infixr 15 _×_
 
   ind-× : {A B : Set} → {P : A × B → Set} →
           ((x : A) → (y : B) → P (x , y)) →
