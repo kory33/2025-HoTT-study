@@ -408,11 +408,11 @@ module _ where
 
   -- exercise 11.1
   module _ where
-    -- 11.1.a
+    -- exercise 11.1.a
     empty-map-is-emb : {A : Set} → (f : Empty → A) → Is-emb f
     empty-map-is-emb {A} f ()
 
-    -- 11.1.b
+    -- exercise 11.1.b
     left-is-emb : (A B : Set) → Is-emb (left {A} {B})
     left-is-emb A B x y =
       let
@@ -433,7 +433,7 @@ module _ where
 
     open EmptyBasic
 
-    -- 11.1.c
+    -- exercise 11.1.c
     left-is-equiv-iff-right-type-is-empty : (A B : Set) → Is-equiv (left {A} {B}) ↔ is-empty B
     left-is-equiv-iff-right-type-is-empty A B =
       (
@@ -641,7 +641,7 @@ module _ where
     comp-embs-is-emb {A} {B} {C} {g} {f} g-emb f-emb x y =
       is-equiv-preserved-by-homotopy (λ { refl → refl }) (comp-equivs-is-equiv (g-emb (f x) (f y)) (f-emb x y))
 
-    -- 11.4.a
+    -- exercise 11.4.a
     latter-is-emb-then-comp-is-emb-iff-former-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
                                                         (H : f ~ g ∘ h) → (Is-emb g) → (Is-emb f ↔ Is-emb h)
     latter-is-emb-then-comp-is-emb-iff-former-is-emb {A} {B} {X} h {g} {f} H g-emb =
@@ -671,7 +671,7 @@ module _ where
         (λ h-emb → is-emb-preserved-by-homotopy (H ⁻¹ₕₜₚ) (comp-embs-is-emb g-emb h-emb))
       )
 
-    -- 11.4.b
+    -- exercise 11.4.b
     former-is-eqv-then-comp-is-emb-iff-latter-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
                                                        (H : f ~ g ∘ h) → Is-equiv h → (Is-emb g ↔ Is-emb f)
     former-is-eqv-then-comp-is-emb-iff-latter-is-emb {A} {B} {X} h {g} {f} H h-eqv =
@@ -710,7 +710,7 @@ module _ where
     sect-comp-and-latter-is-emb-to-sect-former {A} {B} {C} g f (s , S) g-emb =
       (s ∘ g , λ b → ≃-inverse-map-for (g-emb ((f ∘ s ∘ g) b) b) (S (g b)))
 
-    -- 11.5 (i) → (ii) (we show a stronger statement that does not require (Is-emb f))
+    -- exercise 11.5 (i) → (ii) (we show a stronger statement that does not require (Is-emb f))
     latter-is-emb-and-comp-is-equiv-then-both-are-equiv : {A B C : Set} → {g : B → C} → {f : A → B} →
                                                           Is-emb g → Is-equiv (g ∘ f) → Is-equiv g × Is-equiv f
     latter-is-emb-and-comp-is-equiv-then-both-are-equiv {A} {B} {C} {g} {f} g-emb (sect , retr) =
@@ -719,7 +719,7 @@ module _ where
         (sect-comp-and-latter-is-emb-to-sect-former g f sect g-emb , retr-comp-to-retr-former g f retr)
       )
 
-    -- 11.5 (ii) → (i)
+    -- exercise 11.5 (ii) → (i)
     both-embs-are-equivs-then-comp-is-equiv : {A B C : Set} → {g : B → C} → {f : A → B} →
                                               Is-emb g → Is-emb f → Is-equiv g → Is-equiv f →
                                               Is-equiv (g ∘ f)
@@ -774,11 +774,18 @@ module _ where
             (g-emb b b')
       }
 
-  -- TODO: exercise 11.7
+  -- exercise 11.7
+  module _ where
+    open +₀-Basic
+
+    <+₀>-is-equiv-then-both-are-equivs : {A A' B B' : Set} → (f : A → A') → (g : B → B') →
+                                         Is-equiv (< f +₀ g >) → Is-equiv f × Is-equiv g
+    <+₀>-is-equiv-then-both-are-equivs {A} {A'} {B} {B'} f g f+g-eqv =
+      {!   !}
 
   -- exercise 11.8
   module _ where
-    -- 11.8.a
+    -- exercise 11.8.a
     pointwise-homotopic-then-tot-homotopic : {A : Set} → {B C : A → Set} →
                                              (f g : (x : A) → B x → C x) →
                                              (H : (x : A) → f x ~ g x) →
@@ -791,7 +798,7 @@ module _ where
         totalization g (x , b)  ∎
       }
     
-    -- 11.8.b
+    -- exercise 11.8.b
     tot-comp : {A : Set} → {B C D : A → Set} →
                (f : (x : A) → B x → C x) → (g : (x : A) → C x → D x) →
                (totalization (λ x → g x ∘ f x) ~ totalization g ∘ totalization f)
@@ -802,7 +809,7 @@ module _ where
         (totalization g ∘ totalization f) (x , b)  ∎
       }
     
-    -- 11.8.c
+    -- exercise 11.8.c
     tot-id : {A : Set} → {B : A → Set} → (totalization (λ x → id {B x}) ~ id)
     tot-id = λ { (x , b) → refl }
 
@@ -831,7 +838,7 @@ module _ where
           }
         )
 
-    -- 11.8.d
+    -- exercise 11.8.d
     retracts-of-identities-is-equiv-to-identities : {A : Set} → (a : A) → {B : A → Set} →
                                                     (retrs : (x : A) → Is-retract-of (B x) (a ≡ x)) →
                                                     (x : A) → (let (_ , r , _) = retrs x in Is-equiv r)
@@ -843,7 +850,7 @@ module _ where
         (λ x → let (_ , (r , _)) = retrs x in r)
         x
 
-    -- 11.8.e
+    -- exercise 11.8.e
     identity-to-fiber-has-section-then-is-family-of-equivs : {A : Set} → (a : A) → {B : A → Set} →
                                                              (f : (x : A) → a ≡ x → B x) →
                                                              (sects : (x : A) → Sect (f x)) →
@@ -853,10 +860,119 @@ module _ where
         a
         (λ x → let (s , S) = sects x in (s , f x , S))
 
-  -- 11.9
+  -- exercise 11.9
   ap-f-has-section-then-f-is-emb : {A B : Set} → (f : A → B) → ((x y : A) → Sect (ap f {x} {y})) → Is-emb f
   ap-f-has-section-then-f-is-emb {A} {B} f sects x =
     identity-to-fiber-has-section-then-is-family-of-equivs x (λ y → ap f {x} {y}) (sects x)
 
-  -- TODO: exercise 11.10
-  -- TODO: exercise 11.11
+  -- exercise 11.10
+  module _ where
+    open ≡-Reasoning
+
+    Is-path-split : {A B : Set} → (f : A → B) → Set
+    Is-path-split {A} {B} f = (Sect f) × ((x y : A) → Sect (ap f {x} {y}))
+    
+    equivalence-is-path-split : {A B : Set} → {f : A → B} → Is-equiv f → Is-path-split f
+    equivalence-is-path-split {A} {B} {f} f-eqv@(S , _) =
+      (S , λ x y → let (S-ap , _) = is-equiv-then-is-emb f-eqv x y in S-ap)
+
+    is-path-split-then-is-equiv : {A B : Set} → {f : A → B} → Is-path-split f → Is-equiv f
+    is-path-split-then-is-equiv {A} {B} {f} ((s , S) , sects) =
+      (
+        (s , S) ,
+        (s , (λ x →
+          let fsfx≡fx       = S (f x)
+              (ap-sect , _) = sects (s (f x)) x
+          in ap-sect fsfx≡fx
+        ))
+      )
+
+  -- exercise 11.11
+  module _ where
+    open Homotopy.HomotopyGroupoidSymbolic
+
+    fib-triangle : {A B X : Set} → (h : A → B) → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                   ((x : X) → fib f x → fib g x)
+    fib-triangle {A} {B} {X} h {f} {g} H x (a , p) =
+      (h a , ((H ⁻¹ₕₜₚ) a) · p)
+
+    -- 11.11.a
+    tot-fib-triangle-fiber-glueing : {A B X : Set} → (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                     fiber-glueing-map g ∘ (totalization (fib-triangle h H)) ~ h ∘ fiber-glueing-map f
+    tot-fib-triangle-fiber-glueing {A} {B} {X} h {f} g H (x , (a , p)) =
+      -- a `refl` works as well
+      begin
+        (fiber-glueing-map g ∘ (totalization (fib-triangle h H))) (x , (a , p))   ≡⟨⟩
+        fiber-glueing-map g (totalization (fib-triangle h H) (x , (a , p)))       ≡⟨⟩
+        fiber-glueing-map g (x , fib-triangle h H x (a , p))                      ≡⟨⟩
+        fiber-glueing-map g (x , (h a , ((H ⁻¹ₕₜₚ) a) · p))                       ≡⟨⟩
+        h a                                                                       ≡⟨⟩
+        h (fiber-glueing-map f (x , (a , p)))                                     ≡⟨⟩
+        (h ∘ fiber-glueing-map f) (x , (a , p))                                   ∎
+
+    open ↔-Reasoning
+
+    -- 11.11.b
+
+    --              top
+    --         A ─────────> B
+    --         │            │
+    --  left  ≃│   square  ≃│  right
+    --         v            v
+    --         C ─────────> D
+    --             bottom
+    --
+    -- then Is-equiv top ↔ Is-equiv bottom.
+    maps-joined-with-equivs-are-equivs-iff : {A B C D : Set} →
+                                           (top : A → B) → (bottom : C → D) →
+                                           {left : A → C} → {right : B → D} → Is-equiv left → Is-equiv right →
+                                           (square : right ∘ top ~ bottom ∘ left) →
+                                           Is-equiv top ↔ Is-equiv bottom
+    maps-joined-with-equivs-are-equivs-iff {A} {B} {C} {D} t b {l} {r} leqv reqv square =
+      (
+        --              top
+        --         A ─── ≃ ───> B
+        --         ∧            │
+        --  left⁻¹ │≃          ≃│  right
+        --         │            v
+        --         C ─────────> D
+        --             bottom
+        (λ t-eqv →
+          is-equiv-preserved-by-homotopy
+            (λ c → let l⁻¹ = ≃-inverse-map-for leqv in begin
+              (r ∘ t ∘ l⁻¹) c      ≡⟨ square (l⁻¹ c) ⟩
+              (b ∘ l ∘ l⁻¹) c      ≡⟨ ap b (≃-inverse-map-is-sect-of-original leqv c) ⟩
+              b c                  ∎
+            )
+            (comp-equivs-is-equiv (comp-equivs-is-equiv reqv t-eqv) (≃-inverse-map-is-equiv leqv))
+        ),
+        --              top
+        --         A ─────────> B
+        --         │            ∧
+        --  left   │≃          ≃│  right⁻¹
+        --         v            │
+        --         C ─── ≃ ───> D
+        --             bottom
+        --
+        (λ b-eqv →
+          is-equiv-preserved-by-homotopy
+            (λ c → let r⁻¹ = ≃-inverse-map-for reqv in begin
+              (r⁻¹ ∘ b ∘ l) c      ≡⟨← ap r⁻¹ (square c) ⟩
+              (r⁻¹ ∘ r ∘ t) c      ≡⟨ ≃-inverse-map-is-retr-of-original reqv (t c) ⟩
+              t c                  ∎
+            )
+            (comp-equivs-is-equiv (≃-inverse-map-is-equiv reqv) (comp-equivs-is-equiv b-eqv leqv))
+        )
+      )
+
+    equiv-iff-fib-triangle-is-equiv : {A B X : Set} → (h : A → B) → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                      Is-equiv h ↔ is-family-of-equivs (fib-triangle h {f} {g} H)
+    equiv-iff-fib-triangle-is-equiv {A} {B} {X} h {f} {g} H =
+      begin-↔
+        Is-equiv h                                            ↔⟨← maps-joined-with-equivs-are-equivs-iff
+                                                                    (totalization (fib-triangle h {f} {g} H)) h
+                                                                    (fiber-glueing-is-equiv f) (fiber-glueing-is-equiv g)
+                                                                    (tot-fib-triangle-fiber-glueing h g H)
+                                                              ⟩
+        Is-equiv (totalization (fib-triangle h {f} {g} H))    ↔⟨← is-family-of-equivs-iff-tot-is-equiv _ ⟩
+        is-family-of-equivs (fib-triangle h {f} {g} H)        ∎-↔

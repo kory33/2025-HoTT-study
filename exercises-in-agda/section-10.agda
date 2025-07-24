@@ -609,16 +609,24 @@ module _ where
     fiber-decomposition-map : {A B : Set} → (f : A → B) → (a : A) → Σ B (λ y → fib f y)
     fiber-decomposition-map {A} {B} f a = ((f a) , (a , refl))
 
+    fiber-glueing-map : {A B : Set} → (f : A → B) → Σ B (λ y → fib f y) → A
+    fiber-glueing-map {A} {B} f (b , (a , p)) = a
+
+    decomposition-glueing-id : {A B : Set} → (f : A → B) → Is-sect-of (fiber-decomposition-map f) (fiber-glueing-map f)
+    decomposition-glueing-id {A} {B} f (b , (a , refl)) = refl
+
+    glueing-decomposition-id : {A B : Set} → (f : A → B) → Is-retraction-of (fiber-decomposition-map f) (fiber-glueing-map f)
+    glueing-decomposition-id {A} {B} f a = refl
+
+    fiber-decomposition-is-equiv : {A B : Set} → (f : A → B) → Is-equiv (fiber-decomposition-map f)
+    fiber-decomposition-is-equiv {A} {B} f =
+      has-inverse-equiv (fiber-glueing-map f , decomposition-glueing-id f , glueing-decomposition-id f)
+
+    fiber-glueing-is-equiv : {A B : Set} → (f : A → B) → Is-equiv (fiber-glueing-map f)
+    fiber-glueing-is-equiv {A} {B} f = ≃-inverse-map-is-equiv (fiber-decomposition-is-equiv f)
+
     fiber-decomposition : {A B : Set} → (f : A → B) → A ≃ (Σ B (λ y → fib f y))
-    fiber-decomposition {A} {B} f =
-      (
-        fiber-decomposition-map f ,
-        has-inverse-equiv (
-          (λ { (b , (a , p)) → a }) ,
-          (λ { (b , (a , refl)) → refl }) ,
-          (λ a → refl)
-        )
-      )
+    fiber-decomposition {A} {B} f = (fiber-decomposition-map f , fiber-decomposition-is-equiv f)
     
     fib-replacement : {A B : Set} → (f : A → B) → (Σ B (λ y → fib f y)) → B
     fib-replacement f = Σ.fst
