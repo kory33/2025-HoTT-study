@@ -952,7 +952,7 @@ module _ where
 
             extract-a-from-forward-cases : (n : Nat) → (n≠pt : n ≢ pointToEliminate) → (copr : A +₀ Unit) → (forward n ≡ copr) → A
             extract-a-from-forward-cases n n≠pt =
-              ind-+₀ {A} {Unit} {λ copr → forward n ≡ copr → A}
+              ind-+₀ {A} {Unit} (λ copr → forward n ≡ copr → A)
                 (λ a _ → a)
                 (λ { unit eq → absurd (n≠pt (forward-is-unit-only-at-pointToEliminate n eq)) })
             extract-a-from-forward : (n : Nat) → (n ≢ pointToEliminate) → A
@@ -960,7 +960,7 @@ module _ where
 
             extract-a-from-forward-eq-forward : (n : Nat) → {n≠pt : n ≢ pointToEliminate} → left (extract-a-from-forward n n≠pt) ≡ forward n
             extract-a-from-forward-eq-forward n {n≠pt} =
-              ind-+₀ {A} {Unit} {λ copr → forward n ≡ copr → left (extract-a-from-forward n n≠pt) ≡ forward n}
+              ind-+₀ {A} {Unit} (λ copr → forward n ≡ copr → left (extract-a-from-forward n n≠pt) ≡ forward n)
                 (λ a eq → begin
                   left (extract-a-from-forward n n≠pt)                            ≡⟨⟩
                   left (extract-a-from-forward-cases n n≠pt (forward n) refl)     ≡⟨ ap left (transport-equality-fn (forward n) (extract-a-from-forward-cases n n≠pt) eq) ⟩

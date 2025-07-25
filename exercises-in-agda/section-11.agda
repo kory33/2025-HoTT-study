@@ -671,6 +671,11 @@ module _ where
         (λ h-emb → is-emb-preserved-by-homotopy (H ⁻¹ₕₜₚ) (comp-embs-is-emb g-emb h-emb))
       )
 
+    latter-and-comp-are-embs-then-comp-is-emb-iff-former-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
+                                                                  (H : f ~ g ∘ h) → Is-emb g → Is-emb f → Is-emb h
+    latter-and-comp-are-embs-then-comp-is-emb-iff-former-is-emb {A} {B} {X} h {g} {f} H g-emb f-emb =
+      Σ.fst (latter-is-emb-then-comp-is-emb-iff-former-is-emb h H g-emb) f-emb
+
     -- exercise 11.4.b
     former-is-eqv-then-comp-is-emb-iff-latter-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
                                                        (H : f ~ g ∘ h) → Is-equiv h → (Is-emb g ↔ Is-emb f)
@@ -774,14 +779,219 @@ module _ where
             (g-emb b b')
       }
 
+  --              top
+  --         A ─────────> B
+  --         │            │
+  --  left  ≃│   square  ≃│  right
+  --         v            v
+  --         C ─────────> D
+  --             bottom
+  --
+  -- then Is-equiv top ↔ Is-equiv bottom.
+  maps-joined-with-equivs-are-equivs-iff : {A B C D : Set} →
+                                          (top : A → B) → (bottom : C → D) →
+                                          {left : A → C} → {right : B → D} → Is-equiv left → Is-equiv right →
+                                          (square : right ∘ top ~ bottom ∘ left) →
+                                          Is-equiv top ↔ Is-equiv bottom
+  maps-joined-with-equivs-are-equivs-iff {A} {B} {C} {D} t b {l} {r} leqv reqv square =
+    (
+      --              top
+      --         A ─── ≃ ───> B
+      --         ∧            │
+      --  left⁻¹ │≃          ≃│  right
+      --         │            v
+      --         C ─────────> D
+      --             bottom
+      (λ t-eqv →
+        is-equiv-preserved-by-homotopy
+          (λ c → let l⁻¹ = ≃-inverse-map-for leqv in begin
+            (r ∘ t ∘ l⁻¹) c      ≡⟨ square (l⁻¹ c) ⟩
+            (b ∘ l ∘ l⁻¹) c      ≡⟨ ap b (≃-inverse-map-is-sect-of-original leqv c) ⟩
+            b c                  ∎
+          )
+          (comp-equivs-is-equiv (comp-equivs-is-equiv reqv t-eqv) (≃-inverse-map-is-equiv leqv))
+      ),
+      --              top
+      --         A ─────────> B
+      --         │            ∧
+      --  left   │≃          ≃│  right⁻¹
+      --         v            │
+      --         C ─── ≃ ───> D
+      --             bottom
+      --
+      (λ b-eqv →
+        is-equiv-preserved-by-homotopy
+          (λ c → let r⁻¹ = ≃-inverse-map-for reqv in begin
+            (r⁻¹ ∘ b ∘ l) c      ≡⟨← ap r⁻¹ (square c) ⟩
+            (r⁻¹ ∘ r ∘ t) c      ≡⟨ ≃-inverse-map-is-retr-of-original reqv (t c) ⟩
+            t c                  ∎
+          )
+          (comp-equivs-is-equiv (≃-inverse-map-is-equiv reqv) (comp-equivs-is-equiv b-eqv leqv))
+      )
+    )
+
   -- exercise 11.7
   module _ where
     open +₀-Basic
+    open EmptyBasic
+    open Eq-Copr
 
+    ind-+₀-with-eqn : {A B : Set} → (scrutinee : A +₀ B) → (P : (A +₀ B) → Set) →
+                      (on-left : (a : A) → (scrutinee ≡ left a) → P (left a)) →
+                      (on-right : (b : B) → (scrutinee ≡ right b) → P (right b)) →
+                      P scrutinee
+    ind-+₀-with-eqn {A} {B} (left a) P l _ = l a refl
+    ind-+₀-with-eqn {A} {B} (right b) P _ r = r b refl
+
+    ind-+₀-with-eqn-scrutinee-left : {A B : Set} → (scrutinee : A +₀ B) → {P : (A +₀ B) → Set} →
+                                     (on-left : (s : A +₀ B) → (a : A) → (s ≡ left a) → P (left a)) →
+                                     (on-right : (b : B) → (scrutinee ≡ right b) → P (right b)) →
+                                     (a : A) → (p : scrutinee ≡ left a) →
+                                     (ind-+₀-with-eqn scrutinee P (on-left scrutinee) on-right) ≡ tr P (inverse p) (on-left (left a) a refl)
+    ind-+₀-with-eqn-scrutinee-left {A} {B} scrutinee {P} on-left on-right a refl = refl
+
+    ind-+₀-with-eqn-scrutinee-right : {A B : Set} → (scrutinee : A +₀ B) → {P : (A +₀ B) → Set} →
+                                      (on-left : (a : A) → (scrutinee ≡ left a) → P (left a)) →
+                                      (on-right : (s : A +₀ B) → (b : B) → (s ≡ right b) → P (right b)) →
+                                      (b : B) → (p : scrutinee ≡ right b) →
+                                      (ind-+₀-with-eqn scrutinee P on-left (on-right scrutinee)) ≡ tr P (inverse p) (on-right (right b) b refl)
+    ind-+₀-with-eqn-scrutinee-right {A} {B} scrutinee {P} on-left on-right b refl = refl
+
+    tr-constant : {A B : Set} → {x y : A} → (p : x ≡ y) → (b : B) → tr (λ _ → B) p b ≡ b
+    tr-constant {A} {B} {x} {y} refl b = refl
+
+    -- exercise 11.7.a
     <+₀>-is-equiv-then-both-are-equivs : {A A' B B' : Set} → (f : A → A') → (g : B → B') →
                                          Is-equiv (< f +₀ g >) → Is-equiv f × Is-equiv g
     <+₀>-is-equiv-then-both-are-equivs {A} {A'} {B} {B'} f g f+g-eqv =
-      {!   !}
+      let
+        <f+g>⁻¹ = ≃-inverse-map-for f+g-eqv
+
+        <f+g>⁻¹l-neq-r : (a' : A') → (b : B) → ¬ (<f+g>⁻¹ (left a') ≡ right b)
+        <f+g>⁻¹l-neq-r a' b eq =
+          let rgb≡lfa' = begin
+                right (g b)                       ≡⟨⟩
+                < f +₀ g > (right b)              ≡⟨← ap < f +₀ g > eq ⟩
+                < f +₀ g > (<f+g>⁻¹ (left a'))    ≡⟨ ≃-inverse-map-is-sect-of-original f+g-eqv (left a') ⟩
+                left a'                           ∎
+          in absurd (right-neq-left rgb≡lfa')
+
+        f⁻¹ : A' → A
+        f⁻¹ a' =
+          ind-+₀-with-eqn (<f+g>⁻¹ (left a')) (λ _ → A) 
+            (λ a _ → a)
+            (λ b rb≡<f+g>⁻¹la' → absurd (<f+g>⁻¹l-neq-r a' b rb≡<f+g>⁻¹la'))
+      
+        left∘f⁻¹ : (a' : A') → left (f⁻¹ a') ≡ <f+g>⁻¹ (left a')
+        left∘f⁻¹ a' =
+          ind-+₀-with-eqn (<f+g>⁻¹ (left a')) (λ _ → left (f⁻¹ a') ≡ <f+g>⁻¹ (left a'))
+            (λ a la≡<f+g>⁻¹la' → begin
+              left (f⁻¹ a')                                                         ≡⟨⟩
+              left (ind-+₀-with-eqn (<f+g>⁻¹ (left a')) _ _ _)                      ≡⟨ ap left (ind-+₀-with-eqn-scrutinee-left (<f+g>⁻¹ (left a')) _ _ a la≡<f+g>⁻¹la') ⟩
+              left (tr (λ v → A) (inverse la≡<f+g>⁻¹la') a)                         ≡⟨ ap left (tr-constant _ a) ⟩
+              left a                                                                ≡⟨← la≡<f+g>⁻¹la' ⟩
+              <f+g>⁻¹ (left a')                                                     ∎)
+            (λ b rb≡<f+g>⁻¹la' → absurd (<f+g>⁻¹l-neq-r a' b rb≡<f+g>⁻¹la'))
+
+        <f+g>⁻¹r-neq-l : (b' : B') → (a : A) → ¬ (<f+g>⁻¹ (right b') ≡ left a)
+        <f+g>⁻¹r-neq-l b' a eq =
+          let rla≡lgb' = begin
+                left (f a)                       ≡⟨⟩
+                < f +₀ g > (left a)              ≡⟨← ap < f +₀ g > eq ⟩
+                < f +₀ g > (<f+g>⁻¹ (right b'))  ≡⟨ ≃-inverse-map-is-sect-of-original f+g-eqv (right b') ⟩
+                right b'                         ∎
+          in absurd (left-neq-right rla≡lgb')
+
+        g⁻¹ : B' → B
+        g⁻¹ b' =
+          ind-+₀-with-eqn (<f+g>⁻¹ (right b')) (λ _ → B)
+            (λ a la≡<f+g>⁻¹rb' → absurd (<f+g>⁻¹r-neq-l b' a la≡<f+g>⁻¹rb'))
+            (λ b _ → b)
+
+        right∘g⁻¹ : (b' : B') → right (g⁻¹ b') ≡ <f+g>⁻¹ (right b')
+        right∘g⁻¹ b' =
+          ind-+₀-with-eqn (<f+g>⁻¹ (right b')) (λ _ → right (g⁻¹ b') ≡ <f+g>⁻¹ (right b'))
+            (λ a la≡<f+g>⁻¹rb' → absurd (<f+g>⁻¹r-neq-l b' a la≡<f+g>⁻¹rb'))
+            (λ b rb≡<f+g>⁻¹rb' → begin
+              right (g⁻¹ b')                                                        ≡⟨⟩
+              right (ind-+₀-with-eqn (<f+g>⁻¹ (right b')) _ _ _)                    ≡⟨ ap right (ind-+₀-with-eqn-scrutinee-right (<f+g>⁻¹ (right b')) _ _ b rb≡<f+g>⁻¹rb') ⟩
+              right (tr (λ v → B) (inverse rb≡<f+g>⁻¹rb') b)                        ≡⟨ ap right (tr-constant _ b) ⟩
+              right b                                                               ≡⟨← rb≡<f+g>⁻¹rb' ⟩
+              <f+g>⁻¹ (right b')                                                    ∎)
+
+      in (
+        has-inverse-equiv (
+          f⁻¹ ,
+          (λ a' → ≃-inverse-map-for (left-is-emb A' B' (f (f⁻¹ a')) a') (begin
+            left (f (f⁻¹ a'))               ≡⟨⟩
+            < f +₀ g > (left (f⁻¹ a'))      ≡⟨ ap < f +₀ g > (left∘f⁻¹ a') ⟩
+            < f +₀ g > (<f+g>⁻¹ (left a'))  ≡⟨ ≃-inverse-map-is-sect-of-original f+g-eqv (left a') ⟩
+            left a'                         ∎
+          )) ,
+          (λ a → ≃-inverse-map-for (left-is-emb A B (f⁻¹ (f a)) a) (begin
+            left (f⁻¹ (f a))                ≡⟨ left∘f⁻¹ (f a) ⟩
+            <f+g>⁻¹ (left (f a))            ≡⟨⟩
+            <f+g>⁻¹ (< f +₀ g > (left a))   ≡⟨ ≃-inverse-map-is-retr-of-original f+g-eqv (left a) ⟩
+            left a                          ∎
+          ))
+        ) ,
+        has-inverse-equiv (
+          g⁻¹ ,
+          (λ b' → ≃-inverse-map-for (right-is-emb A' B' (g (g⁻¹ b')) b') (begin
+            right (g (g⁻¹ b'))              ≡⟨⟩
+            < f +₀ g > (right (g⁻¹ b'))     ≡⟨ ap < f +₀ g > (right∘g⁻¹ b') ⟩
+            < f +₀ g > (<f+g>⁻¹ (right b')) ≡⟨ ≃-inverse-map-is-sect-of-original f+g-eqv (right b') ⟩
+            right b'                        ∎
+          )) ,
+          (λ b → ≃-inverse-map-for (right-is-emb A B (g⁻¹ (g b)) b) (begin
+            right (g⁻¹ (g b))               ≡⟨ right∘g⁻¹ (g b) ⟩
+            <f+g>⁻¹ (right (g b))           ≡⟨⟩
+            <f+g>⁻¹ (< f +₀ g > (right b))  ≡⟨ ≃-inverse-map-is-retr-of-original f+g-eqv (right b) ⟩
+            right b                         ∎
+          ))
+        )
+      )
+
+    -- exercise 11.7.b
+    <+₀>-is-emb-iff-both-are-embs : {A A' B B' : Set} → (f : A → A') → (g : B → B') →
+                                    Is-emb (< f +₀ g >) ↔ (Is-emb f × Is-emb g)
+    <+₀>-is-emb-iff-both-are-embs {A} {A'} {B} {B'} f g =
+      (
+        (λ f+g-emb → (
+          -- left ∘ f = <f+₀g> ∘ left definitionally
+          latter-and-comp-are-embs-then-comp-is-emb-iff-former-is-emb f (htpy-refl (left ∘ f))
+            (left-is-emb A' B')
+            (comp-embs-is-emb f+g-emb (left-is-emb A B)),
+          -- right ∘ g = <f+₀g> ∘ right definitionally
+          latter-and-comp-are-embs-then-comp-is-emb-iff-former-is-emb g (htpy-refl (right ∘ g))
+            (right-is-emb A' B')
+            (comp-embs-is-emb f+g-emb (right-is-emb A B))
+        )) ,
+        (λ { (f-emb , g-emb) →
+          (λ {
+            -- ap <f+₀g> ∘ ap left ~ ap left ∘ ap f by path induction,
+            -- and since we have Is-equiv (ap left) and Is-equiv (ap f) (from f-emb)...
+            (left a) (left a') →
+              Σ.fst (
+                maps-joined-with-equivs-are-equivs-iff
+                  (ap f {a} {a'}) (ap < f +₀ g > {left a} {left a'})
+                  (left-is-emb A B a a') (left-is-emb A' B' (f a) (f a'))
+                  (λ { refl → refl })
+              ) (f-emb a a')
+          ; (left a) (right b) →
+              any-map-into-empty-type-is-equiv (λ eqn → absurd (left-neq-right eqn)) _
+          ; (right b) (left a) →
+              any-map-into-empty-type-is-equiv (λ eqn → absurd (right-neq-left eqn)) _
+          ; (right b) (right b') →
+              Σ.fst (
+                maps-joined-with-equivs-are-equivs-iff
+                  (ap g {b} {b'}) (ap < f +₀ g > {right b} {right b'})
+                  (right-is-emb A B b b') (right-is-emb A' B' (g b) (g b'))
+                  (λ { refl → refl })
+              ) (g-emb b b')
+          })
+        })
+      )
 
   -- exercise 11.8
   module _ where
@@ -913,58 +1123,6 @@ module _ where
     open ↔-Reasoning
 
     -- 11.11.b
-
-    --              top
-    --         A ─────────> B
-    --         │            │
-    --  left  ≃│   square  ≃│  right
-    --         v            v
-    --         C ─────────> D
-    --             bottom
-    --
-    -- then Is-equiv top ↔ Is-equiv bottom.
-    maps-joined-with-equivs-are-equivs-iff : {A B C D : Set} →
-                                           (top : A → B) → (bottom : C → D) →
-                                           {left : A → C} → {right : B → D} → Is-equiv left → Is-equiv right →
-                                           (square : right ∘ top ~ bottom ∘ left) →
-                                           Is-equiv top ↔ Is-equiv bottom
-    maps-joined-with-equivs-are-equivs-iff {A} {B} {C} {D} t b {l} {r} leqv reqv square =
-      (
-        --              top
-        --         A ─── ≃ ───> B
-        --         ∧            │
-        --  left⁻¹ │≃          ≃│  right
-        --         │            v
-        --         C ─────────> D
-        --             bottom
-        (λ t-eqv →
-          is-equiv-preserved-by-homotopy
-            (λ c → let l⁻¹ = ≃-inverse-map-for leqv in begin
-              (r ∘ t ∘ l⁻¹) c      ≡⟨ square (l⁻¹ c) ⟩
-              (b ∘ l ∘ l⁻¹) c      ≡⟨ ap b (≃-inverse-map-is-sect-of-original leqv c) ⟩
-              b c                  ∎
-            )
-            (comp-equivs-is-equiv (comp-equivs-is-equiv reqv t-eqv) (≃-inverse-map-is-equiv leqv))
-        ),
-        --              top
-        --         A ─────────> B
-        --         │            ∧
-        --  left   │≃          ≃│  right⁻¹
-        --         v            │
-        --         C ─── ≃ ───> D
-        --             bottom
-        --
-        (λ b-eqv →
-          is-equiv-preserved-by-homotopy
-            (λ c → let r⁻¹ = ≃-inverse-map-for reqv in begin
-              (r⁻¹ ∘ b ∘ l) c      ≡⟨← ap r⁻¹ (square c) ⟩
-              (r⁻¹ ∘ r ∘ t) c      ≡⟨ ≃-inverse-map-is-retr-of-original reqv (t c) ⟩
-              t c                  ∎
-            )
-            (comp-equivs-is-equiv (≃-inverse-map-is-equiv reqv) (comp-equivs-is-equiv b-eqv leqv))
-        )
-      )
-
     equiv-iff-fib-triangle-is-equiv : {A B X : Set} → (h : A → B) → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
                                       Is-equiv h ↔ is-family-of-equivs (fib-triangle h {f} {g} H)
     equiv-iff-fib-triangle-is-equiv {A} {B} {X} h {f} {g} H =

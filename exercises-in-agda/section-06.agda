@@ -782,8 +782,8 @@ module _ where
                                       (m≤n : m ≤ n) → by-comparing-leq-or-gt m n cases ≡ cases (left m≤n)
     by-comparing-leq-or-gt-leq-case m {n} {P} {cases} m≤n =
       let motive = by-comparing-leq-or-gt m n cases ≡ cases (left m≤n)
-      in ind-+₀ {(m < n) +₀ (Eq-Nat m n)} {n < m} {λ copr → trichotomy m n ≡ copr → motive}
-        (ind-+₀ {m < n} {Eq-Nat m n} {λ copr → trichotomy m n ≡ left copr → motive}
+      in ind-+₀ {(m < n) +₀ (Eq-Nat m n)} {n < m} (λ copr → trichotomy m n ≡ copr → motive)
+        (ind-+₀ {m < n} {Eq-Nat m n} (λ copr → trichotomy m n ≡ left copr → motive)
           (λ m<n eq → begin
             by-comparing-leq-or-gt m n cases   ≡⟨ ap (by-comparing-leq-pr-gt-cases m n cases) eq ⟩
             cases (left _)                     ≡⟨ ap (cases ∘ left) (Leq-Nat.subsingleton m n _ m≤n) ⟩
@@ -818,8 +818,8 @@ module _ where
                                       (n≤m : n ≤ m) → by-comparing-lt-or-geq m n cases ≡ cases (right n≤m)
     by-comparing-lt-or-geq-geq-case m {n} {P} {cases} n≤m =
       let motive = by-comparing-lt-or-geq m n cases ≡ cases (right n≤m)
-      in ind-+₀ {(m < n) +₀ (Eq-Nat m n)} {n < m} {λ copr → trichotomy m n ≡ copr → motive}
-        (ind-+₀ {m < n} {Eq-Nat m n} {λ copr → trichotomy m n ≡ left copr → motive}
+      in ind-+₀ {(m < n) +₀ (Eq-Nat m n)} {n < m} (λ copr → trichotomy m n ≡ copr → motive)
+        (ind-+₀ {m < n} {Eq-Nat m n} (λ copr → trichotomy m n ≡ left copr → motive)
           (λ m<n _ → EmptyBasic.absurd (Σ.fst (lt-biimpl-not-flip-leq m n) m<n n≤m))
           (λ Eqmn eq → begin
             by-comparing-lt-or-geq m n cases   ≡⟨ ap (by-comparing-lt-or-geq-cases m n cases) eq ⟩

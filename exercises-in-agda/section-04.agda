@@ -43,18 +43,18 @@ module _ where
     right : B → A +₀ B
   infixl 30 _+₀_
 
-  ind-+₀ : {A B : Set} → {P : A +₀ B → Set} → ((x : A) → P(left x)) → ((y : B) → P(right y)) → (z : A +₀ B) → P z
-  ind-+₀ pL pR (left x) = pL x
-  ind-+₀ pL pR (right y) = pR y
+  ind-+₀ : {A B : Set} → (P : A +₀ B → Set) → ((x : A) → P(left x)) → ((y : B) → P(right y)) → (z : A +₀ B) → P z
+  ind-+₀ P pL pR (left x) = pL x
+  ind-+₀ P pL pR (right y) = pR y
 
   module +₀-Basic where
     open EmptyBasic
 
     <_+₀_> : {A B A' B' : Set} → (A → A') → (B → B') → (A +₀ B) → (A' +₀ B')
-    < f +₀ g > = ind-+₀ (λ x → left (f x)) (λ y → right (g y))
+    < f +₀ g > = ind-+₀ _ (λ x → left (f x)) (λ y → right (g y))
 
     [_+₀_] : {A B C : Set} → (f : A → C) → (g : B → C) → (A +₀ B) → C
-    [_+₀_] f g = ind-+₀ (λ x → f x) (λ y → g y)
+    [_+₀_] f g = ind-+₀ _ (λ x → f x) (λ y → g y)
 
     +₀-emptyRight : {A B : Set} → is-empty B → A +₀ B → A
     +₀-emptyRight ¬b (left x) = x
