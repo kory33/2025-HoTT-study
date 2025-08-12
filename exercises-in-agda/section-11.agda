@@ -836,90 +836,11 @@ module _ where
     open EmptyBasic
     open Eq-Copr
 
-    ind-+₀-with-eqn : {A B : Set} → (scrutinee : A +₀ B) → (P : (A +₀ B) → Set) →
-                      (on-left : (a : A) → (scrutinee ≡ left a) → P (left a)) →
-                      (on-right : (b : B) → (scrutinee ≡ right b) → P (right b)) →
-                      P scrutinee
-    ind-+₀-with-eqn {A} {B} (left a) P l _ = l a refl
-    ind-+₀-with-eqn {A} {B} (right b) P _ r = r b refl
-
-    ind-+₀-with-eqn-scrutinee-left : {A B : Set} → (scrutinee : A +₀ B) → {P : (A +₀ B) → Set} →
-                                     (on-left : (s : A +₀ B) → (a : A) → (s ≡ left a) → P (left a)) →
-                                     (on-right : (b : B) → (scrutinee ≡ right b) → P (right b)) →
-                                     (a : A) → (p : scrutinee ≡ left a) →
-                                     (ind-+₀-with-eqn scrutinee P (on-left scrutinee) on-right) ≡ tr P (inverse p) (on-left (left a) a refl)
-    ind-+₀-with-eqn-scrutinee-left {A} {B} scrutinee {P} on-left on-right a refl = refl
-
-    ind-+₀-with-eqn-scrutinee-right : {A B : Set} → (scrutinee : A +₀ B) → {P : (A +₀ B) → Set} →
-                                      (on-left : (a : A) → (scrutinee ≡ left a) → P (left a)) →
-                                      (on-right : (s : A +₀ B) → (b : B) → (s ≡ right b) → P (right b)) →
-                                      (b : B) → (p : scrutinee ≡ right b) →
-                                      (ind-+₀-with-eqn scrutinee P on-left (on-right scrutinee)) ≡ tr P (inverse p) (on-right (right b) b refl)
-    ind-+₀-with-eqn-scrutinee-right {A} {B} scrutinee {P} on-left on-right b refl = refl
-
-    tr-constant : {A B : Set} → {x y : A} → (p : x ≡ y) → (b : B) → tr (λ _ → B) p b ≡ b
-    tr-constant {A} {B} {x} {y} refl b = refl
-
     -- exercise 11.7.a
     <+₀>-is-equiv-then-both-are-equivs : {A A' B B' : Set} → (f : A → A') → (g : B → B') →
                                          Is-equiv (< f +₀ g >) → Is-equiv f × Is-equiv g
     <+₀>-is-equiv-then-both-are-equivs {A} {A'} {B} {B'} f g f+g-eqv =
-      let
-        <f+g>⁻¹ = ≃-inverse-map-for f+g-eqv
-
-        <f+g>⁻¹l-neq-r : (a' : A') → (b : B) → ¬ (<f+g>⁻¹ (left a') ≡ right b)
-        <f+g>⁻¹l-neq-r a' b eq =
-          let rgb≡lfa' = begin
-                right (g b)                       ≡⟨⟩
-                < f +₀ g > (right b)              ≡⟨← ap < f +₀ g > eq ⟩
-                < f +₀ g > (<f+g>⁻¹ (left a'))    ≡⟨ ≃-inverse-map-is-sect-of-original f+g-eqv (left a') ⟩
-                left a'                           ∎
-          in absurd (right-neq-left rgb≡lfa')
-
-        f⁻¹ : A' → A
-        f⁻¹ a' =
-          ind-+₀-with-eqn (<f+g>⁻¹ (left a')) (λ _ → A) 
-            (λ a _ → a)
-            (λ b rb≡<f+g>⁻¹la' → absurd (<f+g>⁻¹l-neq-r a' b rb≡<f+g>⁻¹la'))
-      
-        left∘f⁻¹ : (a' : A') → left (f⁻¹ a') ≡ <f+g>⁻¹ (left a')
-        left∘f⁻¹ a' =
-          ind-+₀-with-eqn (<f+g>⁻¹ (left a')) (λ _ → left (f⁻¹ a') ≡ <f+g>⁻¹ (left a'))
-            (λ a la≡<f+g>⁻¹la' → begin
-              left (f⁻¹ a')                                                         ≡⟨⟩
-              left (ind-+₀-with-eqn (<f+g>⁻¹ (left a')) _ _ _)                      ≡⟨ ap left (ind-+₀-with-eqn-scrutinee-left (<f+g>⁻¹ (left a')) _ _ a la≡<f+g>⁻¹la') ⟩
-              left (tr (λ v → A) (inverse la≡<f+g>⁻¹la') a)                         ≡⟨ ap left (tr-constant _ a) ⟩
-              left a                                                                ≡⟨← la≡<f+g>⁻¹la' ⟩
-              <f+g>⁻¹ (left a')                                                     ∎)
-            (λ b rb≡<f+g>⁻¹la' → absurd (<f+g>⁻¹l-neq-r a' b rb≡<f+g>⁻¹la'))
-
-        <f+g>⁻¹r-neq-l : (b' : B') → (a : A) → ¬ (<f+g>⁻¹ (right b') ≡ left a)
-        <f+g>⁻¹r-neq-l b' a eq =
-          let rla≡lgb' = begin
-                left (f a)                       ≡⟨⟩
-                < f +₀ g > (left a)              ≡⟨← ap < f +₀ g > eq ⟩
-                < f +₀ g > (<f+g>⁻¹ (right b'))  ≡⟨ ≃-inverse-map-is-sect-of-original f+g-eqv (right b') ⟩
-                right b'                         ∎
-          in absurd (left-neq-right rla≡lgb')
-
-        g⁻¹ : B' → B
-        g⁻¹ b' =
-          ind-+₀-with-eqn (<f+g>⁻¹ (right b')) (λ _ → B)
-            (λ a la≡<f+g>⁻¹rb' → absurd (<f+g>⁻¹r-neq-l b' a la≡<f+g>⁻¹rb'))
-            (λ b _ → b)
-
-        right∘g⁻¹ : (b' : B') → right (g⁻¹ b') ≡ <f+g>⁻¹ (right b')
-        right∘g⁻¹ b' =
-          ind-+₀-with-eqn (<f+g>⁻¹ (right b')) (λ _ → right (g⁻¹ b') ≡ <f+g>⁻¹ (right b'))
-            (λ a la≡<f+g>⁻¹rb' → absurd (<f+g>⁻¹r-neq-l b' a la≡<f+g>⁻¹rb'))
-            (λ b rb≡<f+g>⁻¹rb' → begin
-              right (g⁻¹ b')                                                        ≡⟨⟩
-              right (ind-+₀-with-eqn (<f+g>⁻¹ (right b')) _ _ _)                    ≡⟨ ap right (ind-+₀-with-eqn-scrutinee-right (<f+g>⁻¹ (right b')) _ _ b rb≡<f+g>⁻¹rb') ⟩
-              right (tr (λ v → B) (inverse rb≡<f+g>⁻¹rb') b)                        ≡⟨ ap right (tr-constant _ b) ⟩
-              right b                                                               ≡⟨← rb≡<f+g>⁻¹rb' ⟩
-              <f+g>⁻¹ (right b')                                                    ∎)
-
-      in (
+      (
         has-inverse-equiv (
           f⁻¹ ,
           (λ a' → ≃-inverse-map-for (left-is-emb A' B' (f (f⁻¹ a')) a') (begin
@@ -951,6 +872,29 @@ module _ where
           ))
         )
       )
+      where
+        <f+g>⁻¹ = ≃-inverse-map-for f+g-eqv
+        <f+g>⁻¹-Sect = ≃-inverse-map-is-sect-of-original f+g-eqv
+
+        f⁻¹ : A' → A
+        f⁻¹ a' with <f+g>⁻¹ (left a') | <f+g>⁻¹-Sect (left a')
+        ...       | left a            | _                      = a
+        ...       | right b           | w                      = absurd (right-neq-left w)
+
+        left∘f⁻¹ : (a' : A') → left (f⁻¹ a') ≡ <f+g>⁻¹ (left a')
+        left∘f⁻¹ a' with <f+g>⁻¹ (left a') | <f+g>⁻¹-Sect (left a')
+        ...            | left a            | _                      = refl
+        ...            | right b           | w                      = absurd (right-neq-left w)
+
+        g⁻¹ : B' → B
+        g⁻¹ b' with <f+g>⁻¹ (right b') | <f+g>⁻¹-Sect (right b')
+        ...       | left a             | w                       = absurd (left-neq-right w)
+        ...       | right b            | _                       = b
+
+        right∘g⁻¹ : (b' : B') → right (g⁻¹ b') ≡ <f+g>⁻¹ (right b')
+        right∘g⁻¹ b' with <f+g>⁻¹ (right b') | <f+g>⁻¹-Sect (right b')
+        ...             | left a             | w                       = absurd (left-neq-right w)
+        ...             | right b'           | _                       = refl
 
     -- exercise 11.7.b
     <+₀>-is-emb-iff-both-are-embs : {A A' B B' : Set} → (f : A → A') → (g : B → B') →
