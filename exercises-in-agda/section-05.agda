@@ -1,7 +1,8 @@
 module _ where
   open import section-04 public
 
-  data _≡_ {A : Set} (a : A) : A → Set where
+  open import Agda.Primitive
+  data _≡_ {i : Level} {A : Set i} (a : A) : A → Set i where
     refl : a ≡ a
 
   refl-at : {A : Set} → (a : A) → a ≡ a
@@ -241,6 +242,10 @@ module _ where
       ≡⟨⟩
         r · refl ⁻¹
       ∎
+
+    con-cancel-right : {A : Set} → {x y z : A} → (p : x ≡ y) → (q : y ≡ z) → (r : x ≡ z) →
+                       (p ≡ r · q ⁻¹) → (p · q ≡ r)
+    con-cancel-right refl refl r eq = eq · (·-runit r)
 
     -- exercise 5.3
     lift : {A : Set} → {B : A → Set} → {a x : A} →

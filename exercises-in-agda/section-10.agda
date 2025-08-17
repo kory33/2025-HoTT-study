@@ -9,11 +9,12 @@ module _ where
   open ≡-Reasoning
 
   -- 10.1.1
-  ContractionTo : {A : Set} → A → Set
-  ContractionTo {A} a = (x : A) → a ≡ x
+  open import Agda.Primitive
+  ContractionTo : {i : Level} → {A : Set i} → A → Set i
+  ContractionTo {i} {A} a = (x : A) → a ≡ x
 
-  Is-contr : Set → Set
-  Is-contr A = Σ A (λ c → ContractionTo c)
+  Is-contr : {i : Level} → Set i → Set i
+  Is-contr A = Σ-poly A (λ c → ContractionTo c)
 
   untangle : {A : Set} → ((c , C) : Is-contr A) → ContractionTo c
   untangle (c , C) a = (C c)⁻¹ · (C a)
@@ -104,6 +105,12 @@ module _ where
       rinverse (refl , refl) = refl
       linverse : (identity-from-Eq-fib f) ∘ (Eq-fib-from-identity f) ~ id
       linverse refl = refl
+
+  open Equivalence.Symbolic
+  fib-identity-equiv-to-eq-fib : {A B : Set} → (f : A → B) → {y : B} → {x x' : fib f y} →
+                                 (x ≡ x') ≃ Eq-fib f x x'
+  fib-identity-equiv-to-eq-fib {A} {B} f {y} {x} {x'} =
+    (Eq-fib-from-identity f , Eq-fib-from-identity-is-equiv f)
 
   -- 10.3.4
   Is-contr-fn : {A B : Set} → (f : A → B) → Set

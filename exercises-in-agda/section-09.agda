@@ -617,6 +617,9 @@ module _ where
     ≃-comm : {A B : Set} → A ≃ B → B ≃ A
     ≃-comm eqv = ≃-inverse eqv
 
+    ≃-then-iff : {A B : Set} → A ≃ B → (A ↔ B)
+    ≃-then-iff {A} {B} (fwd , (bwd , _) , _) = (fwd , bwd)
+
     module Equivalence-Reasoning where
       infix  1 begin-≃_
       infixr 2 step-≃-∣ step-≃-⟩ step-≃-⟩⁻¹
@@ -1302,6 +1305,13 @@ module _ where
           (λ { ((a , b) , c) → refl })
         )
       )
+
+  -- We cannot yet prove the equivalence of this function
+  flip-dependent-fn : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) → ((y : B) → (x : A) → C x y)
+  flip-dependent-fn f y x = f x y
+
+  flip-dependent-iff : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) ↔ ((y : B) → (x : A) → C x y)
+  flip-dependent-iff = (flip-dependent-fn , flip-dependent-fn)
 
   -- exercise 9.6
   module _ where
