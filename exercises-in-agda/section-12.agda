@@ -354,18 +354,22 @@ module _ where
             tot-is-contr
         ))
     family-is-k-trunc-iff-tot-is-k-trunc {A} { succ-Trunc k } a-is-sk-trunc {B} =
-      ( (λ { each-b-is-sk-trunc (a1 , b1) (a2 , b2) →
-          equiv-to-k-type-then-is-k-type
-            (≃-comm pair-eq-≃-Eq-Σ)
-            (Σ.fst
-              (family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc a1 a2))
-              (λ a1≡a2 → each-b-is-sk-trunc a2 (tr B a1≡a2 b1) b2))
-        })
-      , (λ tot-is-sk-trunc x bx1 bx2 →
-          Σ.snd (family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x x))
-            (equiv-to-k-type-then-is-k-type pair-eq-≃-Eq-Σ (tot-is-sk-trunc (x , bx1) (x , bx2)))
-            refl
-        ))
+      begin-↔
+        ((x : A) → Is-trunc (succ-Trunc k) (B x))                                                  ↔⟨⟩
+        ((x : A) → (bx bx' : B x) → Is-trunc k (bx ≡ bx'))                                         ↔⟨ rel-on-fiber-iff-rel-on-a-transported-fiber ⟩
+        ((x : A) → (bx : B x) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))  ↔⟨ uncurry-iff ⟩
+        (((x , bx) : Σ A B) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))    ↔⟨ depfn-iff (λ s → uncurry-iff) ⟩
+        (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-iff (λ { (x , bx) → depfn-iff (λ { (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)})}) ⟩
+        (((x , bx) (y , by) : Σ A B) → Is-trunc k (Σ (x ≡ y) (λ α → tr B α bx ≡ by)))              ↔⟨⟩
+        ((s t : Σ A B) → Is-trunc k (Eq-Σ s t))                                                    ↔⟨ depfn-iff (λ s → depfn-iff (λ t → equiv-types-iff-k-types (≃-comm pair-eq-≃-Eq-Σ))) ⟩
+        ((s t : Σ A B) → Is-trunc k (s ≡ t))                                                       ↔⟨⟩
+        Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
+      where
+        rel-on-fiber-iff-rel-on-a-transported-fiber :
+          {A : Set} → {B : A → Set} → {C : (x : A) → B x → B x → Set} →
+          ((x : A) → (bx bx' : B x) → C x bx bx') ↔ ((x : A) → (bx : B x) → (y : A) → (by : B y) → (p : x ≡ y) → C y (tr B p bx) by)
+        rel-on-fiber-iff-rel-on-a-transported-fiber {A} {B} {C} =
+          ((λ { lhs x bx .x bx' refl → lhs x bx bx' }) , (λ { rhs x bx bx' → rhs x bx x bx' refl }))
 
     -- exercise 12.6.b
     map-to-k-type-is-k-trunc-iff-dom-is-k-trunc :
