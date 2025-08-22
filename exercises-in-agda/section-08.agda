@@ -216,16 +216,6 @@ module _ where
     Int-has-decidable-eq : Has-decidable-eq Int
     Int-has-decidable-eq = Σ.snd (+₀-deceq-biimpl-both-deceq) (Nat-has-decidable-eq , Σ.snd (+₀-deceq-biimpl-both-deceq) (Unit-has-decidable-eq , Nat-has-decidable-eq))
 
-  Eq-Σ : {A : Set} → {B : A → Set} → (Σ A B) → (Σ A B) → Set
-  Eq-Σ (a1 , b1) (a2 , b2) = Σ (a1 ≡ a2) (λ { (refl) → b1 ≡ b2 })
-
-  module Eq-Σ where
-    open ≡-Basic public
-    open EmptyBasic
-    open Is-decidable
-    open ≡-Reasoning
-    open Σ-Basic
-
   module exercise-8-8 {A : Set} {B : A → Set} where
     open Is-decidable
 

@@ -65,6 +65,10 @@ module _ where
     i↔iii : i ↔ iii
     i↔iii = (ii→iii ∘ i→ii , iv→i ∘ iii→iv)
 
+  is-prop-then-any-two-eq : {A : Set} → Is-prop A → (x y : A) → (x ≡ y)
+  is-prop-then-any-two-eq is-prop x y =
+    Is-prop-characterisation.i→ii is-prop x y
+
   identity-any-two-in-props : ((P , PProp) : Props _) → (x : P) → (y : P) → (x ≡ y)
   identity-any-two-in-props (P , PProp) = Is-prop-characterisation.i→ii PProp
 
@@ -278,6 +282,10 @@ module _ where
   equiv-to-k-type-then-is-k-type {A} {B} {k} (e , e-eqv) A-is-k-type =
     is-k-type-pulled-back-by-equiv A-is-k-type (≃-inverse-map-is-equiv e-eqv)
 
+  equiv-types-iff-k-types : {A B : Set} → (A ≃ B) → {k : TruncLevel} → Is-trunc k A ↔ Is-trunc k B
+  equiv-types-iff-k-types {A} {B} eqv {k} =
+    (equiv-to-k-type-then-is-k-type eqv , equiv-to-k-type-then-is-k-type (≃-comm eqv))
+
   -- corollary 12.4.6
   dom-of-emb-into-succk-type-is-succk-type : {A B : Set} → {f : A → B} → Is-emb f →
                                              {k : TruncLevel} → Is-trunc (succ-Trunc k) B → Is-trunc (succ-Trunc k) A
@@ -314,3 +322,157 @@ module _ where
           (≃-comm (forward-lemma (f x) x y p))
           (f-is-sk-trunc (f y) (x , p) (y , refl))
 
+  -- exercise 12.1
+  Bool-is-set : Is-set Bool
+  Bool-is-set =
+    underlying-type-of-reflexive-propositional-relation-is-set
+      Eq-Bool
+      Eq-Bool.Eq-Bool-refl
+      (λ { false false → Unit-Is-prop
+         ; false true  → Empty-Is-prop
+         ; true false  → Empty-Is-prop
+         ; true true   → Unit-Is-prop })
+      (λ x y → Σ.snd (Eq-Bool.Bool-≡-biimpl-Eq-Bool x y))
+
+  -- exercise 12.6 (will be useful in 12.2)
+  module _ where
+    conditionally-sk-type-then-is-sk-type : {A : Set} → {k : TruncLevel} → (A → Is-trunc (succ-Trunc k) A) → Is-trunc (succ-Trunc k) A
+    conditionally-sk-type-then-is-sk-type {A} {k} conditionally-sk-trunc x y = conditionally-sk-trunc x x y
+
+    -- exercise 12.6.a
+    family-is-k-trunc-iff-tot-is-k-trunc : {A : Set} → {k : TruncLevel} → Is-trunc k A →
+                                           {B : A → Set} → ((x : A) → Is-trunc k (B x)) ↔ Is-trunc k (Σ A B)
+    family-is-k-trunc-iff-tot-is-k-trunc {A} { -2-Trunc } a-is-contr@(ca , Ca) {B} =
+      ( (λ each-b-is-contr →
+          dom-of-equiv-is-contr-then-cod-is-contr
+            (base-is-contr-then-pair-with-base-is-equiv a-is-contr)
+            (each-b-is-contr ca)
+        )
+      , (λ tot-is-contr x →
+          cod-of-equiv-is-contr-then-dom-is-contr
+            (base-is-contr-then-pair-with-base-is-equiv (x , recenter-contraction-at x a-is-contr))
+            tot-is-contr
+        ))
+    family-is-k-trunc-iff-tot-is-k-trunc {A} { succ-Trunc k } a-is-sk-trunc {B} =
+      ( (λ { each-b-is-sk-trunc (a1 , b1) (a2 , b2) →
+          equiv-to-k-type-then-is-k-type
+            (≃-comm pair-eq-≃-Eq-Σ)
+            (Σ.fst
+              (family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc a1 a2))
+              (λ a1≡a2 → each-b-is-sk-trunc a2 (tr B a1≡a2 b1) b2))
+        })
+      , (λ tot-is-sk-trunc x bx1 bx2 →
+          Σ.snd (family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x x))
+            (equiv-to-k-type-then-is-k-type pair-eq-≃-Eq-Σ (tot-is-sk-trunc (x , bx1) (x , bx2)))
+            refl
+        ))
+
+    -- exercise 12.6.b
+    map-to-k-type-is-k-trunc-iff-dom-is-k-trunc :
+      {A B : Set} → {k : TruncLevel} → Is-trunc k B →
+      {f : A → B} → Is-trunc-map k f ↔ Is-trunc k A
+    map-to-k-type-is-k-trunc-iff-dom-is-k-trunc {A} {B} {k} B-is-k-trunc {f} =
+      begin-↔
+        Is-trunc-map k f                   ↔⟨⟩
+        ((b : B) → Is-trunc k (fib f b))   ↔⟨ family-is-k-trunc-iff-tot-is-k-trunc B-is-k-trunc ⟩
+        Is-trunc k (Σ B (fib f))           ↔⟨ equiv-types-iff-k-types (≃-comm (fiber-decomposition f)) ⟩
+        Is-trunc k A                       ∎-↔
+
+  product-of-props-is-prop : {A B : Set} → Is-prop A → Is-prop B → Is-prop (A × B)
+  product-of-props-is-prop A-is-prop B-is-prop =
+    Σ.fst (family-is-k-trunc-iff-tot-is-k-trunc A-is-prop) (λ x → B-is-prop)
+
+  -- exercise 12.2
+  underlying-type-of-reflexive-antisymmetric-rel-is-set : {A : Set} → (R : A → A → Set) →
+                                    (R-is-prop : (x y : A) → Is-prop (R x y)) →
+                                    (reflexive : (x : A) → R x x) →
+                                    (antisymmetric : (x y : A) → R x y → R y x → x ≡ y) →
+                                    Is-set A
+  underlying-type-of-reflexive-antisymmetric-rel-is-set {A} R R-is-prop reflexive antisymmetric =
+    underlying-type-of-reflexive-propositional-relation-is-set
+      R'
+      (λ x → (reflexive x , reflexive x))
+      (λ x y → product-of-props-is-prop (R-is-prop x y) (R-is-prop y x))
+      (λ { x y (Rxy , Ryx) → antisymmetric x y Rxy Ryx })
+    where
+      R' : (x y : A) → Set
+      R' x y = R x y × R y x
+
+  -- exercise 12.3
+  module _ where
+    Is-inj : {A B : Set} → (f : A → B) → Set
+    Is-inj {A} {B} f = (x y : A) → (f x ≡ f y) → x ≡ y
+
+    is-emb-then-is-inj : {A B : Set} → {f : A → B} → Is-emb f → Is-inj f
+    is-emb-then-is-inj {A} {B} {f} emb x y p = ≃-inverse-map-for (emb x y) p
+
+    -- exercise 12.3.a
+    inj-to-a-set-is-emb : {A B : Set} → Is-set B → {f : A → B} → Is-inj f → Is-emb f
+    inj-to-a-set-is-emb {A} {B} B-is-set {f} inj x y =
+      has-inverse-equiv
+        ( (λ fx≡fy → (inj x x refl) ⁻¹ · inj x y fx≡fy)
+        , (λ fx≡fy → is-prop-then-any-two-eq (B-is-set (f x) (f y)) _ _)
+        , (λ { refl → ·-linv (inj x x refl) }))
+
+    dom-of-inj-to-a-set-is-set : {A B : Set} → Is-set B → {f : A → B} → Is-inj f → Is-set A
+    dom-of-inj-to-a-set-is-set {A} {B} B-is-set {f} inj =
+      dom-of-emb-into-succk-type-is-succk-type (inj-to-a-set-is-emb B-is-set inj) B-is-set
+
+    open NatBasic.Symbolic
+    open Nat-EqualityThroughEq-Nat
+    -- exercise 12.3.b
+    add-nat-left-is-emb : (m : Nat) → Is-emb (λ n → m + n)
+    add-nat-left-is-emb m = inj-to-a-set-is-emb Nat-is-set (λ n1 n2 → Σ.snd (add-inj-left n1 n2 m))
+
+    open Leq-Nat
+    open Leq-Nat.Symbolic
+
+    Leq-Nat-is-prop : (m n : Nat) → Is-prop (m ≤ n)
+    Leq-Nat-is-prop zero y = Unit-Is-prop
+    Leq-Nat-is-prop (succ x) zero = Empty-Is-prop
+    Leq-Nat-is-prop (succ x) (succ y) = Leq-Nat-is-prop x y
+
+    set-elem-having-preimage-under-inj-is-prop : {A B : Set} → Is-set A → {f : B → A} → Is-inj f →
+                                                 (x : A) → Is-prop (Σ B (λ b → f b ≡ x))
+    set-elem-having-preimage-under-inj-is-prop {A} {B} A-is-set {f} inj x =
+      Is-prop-characterisation.ii→i (λ { (b1 , p) (b2 , q) →
+        subtype-and-fst-eq-then-pair-eq (λ b → A-is-set (f b) x) (inj b1 b2 (p · q ⁻¹))
+      })
+
+    exists-diff-to-nat-is-prop : (m n : Nat) → Is-prop (Σ Nat (λ k → m + k ≡ n))
+    exists-diff-to-nat-is-prop m n =
+      set-elem-having-preimage-under-inj-is-prop
+        Nat-is-set
+        (is-emb-then-is-inj (add-nat-left-is-emb m))
+        n
+
+    Leq-Nat-equiv-exists-diff : (m n : Nat) → (m ≤ n) ≃ (Σ Nat (λ k → m + k ≡ n))
+    Leq-Nat-equiv-exists-diff m n =
+      Σ.snd
+        (props-equiv-iff-biimpl
+          (m ≤ n , Leq-Nat-is-prop m n)
+          (Σ Nat (λ k → m + k ≡ n) , exists-diff-to-nat-is-prop m n))
+        (leq-biimpl-exists-diff m n)
+
+    -- exercise 12.3.c
+    mul-succnat-left-is-emb : (m : Nat) → Is-emb (λ n → (succ m) * n)
+    mul-succnat-left-is-emb m = inj-to-a-set-is-emb Nat-is-set (λ n1 n2 → Σ.snd (mul-inj-left n1 n2 m))
+
+    open DivisibilityBasic.Symbolic
+    divisibility-is-prop : (d n : Nat) → Is-prop (succ d ∣ n)
+    divisibility-is-prop d n =
+      set-elem-having-preimage-under-inj-is-prop
+        Nat-is-set
+        (is-emb-then-is-inj (mul-succnat-left-is-emb d))
+        n
+
+  -- TODO: exercise 12.4
+  -- TODO: exercise 12.5
+  -- TODO: exercise 12.7
+  -- TODO: exercise 12.8
+  -- TODO: exercise 12.9
+  -- TODO: exercise 12.10
+  -- TODO: exercise 12.11
+  -- TODO: exercise 12.12
+  -- TODO: exercise 12.13
+  -- TODO: exercise 12.14

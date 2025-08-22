@@ -818,6 +818,36 @@ module _ where
             (λ { (left x , c) → refl           ; (right y , c)   → refl })))
 
   open ≡-Basic
+
+  -- definition 9.3.1
+  Eq-Σ : {A : Set} → {B : A → Set} → (Σ A B) → (Σ A B) → Set
+  Eq-Σ {A} {B} (a1 , b1) (a2 , b2) = Σ (a1 ≡ a2) (λ α → tr B α b1 ≡ b2)
+
+  module _ where
+    open ≡-Reasoning
+    open Equivalence
+
+    -- lemma 9.3.2
+    Eq-Σ-refl : {A : Set} → {B : A → Set} → (s : Σ A B) → Eq-Σ s s
+    Eq-Σ-refl {A} {B} (a , b) = (refl , refl)
+
+    -- definition 9.3.3
+    pair-eq-Eq-Σ : {A : Set} → {B : A → Set} → {s t : Σ A B} → (s ≡ t) → Eq-Σ s t
+    pair-eq-Eq-Σ {A} {B} {s} {.s} refl = Eq-Σ-refl s
+
+    -- theorem 9.3.4
+    pair-eq-Eq-Σ-is-equiv : {A : Set} → {B : A → Set} → {s t : Σ A B} → Is-equiv (pair-eq-Eq-Σ {A} {B} {s} {t})
+    pair-eq-Eq-Σ-is-equiv {A} {B} {s} {t} =
+      has-inverse-equiv
+        ( (λ { (refl , refl) → refl })
+        , (λ { (refl , refl) → refl } )
+        , (λ { refl → refl } ))
+    
+    open Equivalence.Symbolic
+    pair-eq-≃-Eq-Σ : {A : Set} → {B : A → Set} → {s t : Σ A B} → (s ≡ t) ≃ Eq-Σ s t
+    pair-eq-≃-Eq-Σ {A} {B} {s} {t} = (pair-eq-Eq-Σ , pair-eq-Eq-Σ-is-equiv)
+
+  open ≡-Basic
   open ≡-Reasoning
   open Homotopy
   open Homotopy.Symbolic

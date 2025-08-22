@@ -109,6 +109,9 @@ module _ where
         in
           ap succ (f m n (succ k) eq'')
 
+    mul-inj-left : (m n k : Nat) → (m ≡ n) ↔ (succ k * m ≡ succ k * n)
+    mul-inj-left m n k = tr2 (λ e1 e2 → (m ≡ n) ↔ (e1 ≡ e2)) (mul-comm m (succ k)) (mul-comm n (succ k)) (mul-inj m n k)
+
     -- exercise 6.1.b
     sum-eq-zero-iff-both-zero : (m n : Nat) → (m + n ≡ zero) ↔ ((m ≡ zero) × (n ≡ zero))
     sum-eq-zero-iff-both-zero m n = (forward m n , (λ { (refl , refl) → refl }))
@@ -219,15 +222,15 @@ module _ where
     open EmptyBasic
     open ≡-Basic
 
-    Bool-≡-refl : (x : Bool) → Eq-Bool x x
-    Bool-≡-refl false = unit
-    Bool-≡-refl true = unit
+    Eq-Bool-refl : (x : Bool) → Eq-Bool x x
+    Eq-Bool-refl false = unit
+    Eq-Bool-refl true = unit
 
     Bool-≡-biimpl-Eq-Bool : (x y : Bool) → ((x ≡ y) ↔ Eq-Bool x y)
     Bool-≡-biimpl-Eq-Bool x y = (forward x y , backward x y)
       where
       forward : (x y : Bool) → (x ≡ y) → Eq-Bool x y
-      forward x y refl = Bool-≡-refl x
+      forward x y refl = Eq-Bool-refl x
 
       backward : (x y : Bool) → Eq-Bool x y → (x ≡ y)
       backward false false _ = refl
