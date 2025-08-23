@@ -342,17 +342,16 @@ module _ where
     -- exercise 12.6.a
     family-is-k-trunc-iff-tot-is-k-trunc : {A : Set} → {k : TruncLevel} → Is-trunc k A →
                                            {B : A → Set} → ((x : A) → Is-trunc k (B x)) ↔ Is-trunc k (Σ A B)
-    family-is-k-trunc-iff-tot-is-k-trunc {A} { -2-Trunc } a-is-contr@(ca , Ca) {B} =
-      ( (λ each-b-is-contr →
-          dom-of-equiv-is-contr-then-cod-is-contr
-            (base-is-contr-then-pair-with-base-is-equiv a-is-contr)
-            (each-b-is-contr ca)
-        )
-      , (λ tot-is-contr x →
-          cod-of-equiv-is-contr-then-dom-is-contr
-            (base-is-contr-then-pair-with-base-is-equiv (x , recenter-contraction-at x a-is-contr))
-            tot-is-contr
-        ))
+    family-is-k-trunc-iff-tot-is-k-trunc {A} { -2-Trunc } a-is-contr@(ca , _) {B} =
+      begin-↔
+        ((x : A) → Is-trunc -2-Trunc (B x))   ↔⟨⟩
+        ((x : A) → Is-contr (B x))            ↔⟨ depfn-iff (λ x →
+                                                    equiv-then-contr-iff-contr (
+                                                      ≃-comm (Σ-≃-sections-at-base-center
+                                                        (x , recenter-contraction-at x a-is-contr)))) ⟩
+        ((x : A) → Is-contr (Σ A B))          ↔⟨ (ev-pt ca , const) ⟩
+        Is-contr (Σ A B)                      ↔⟨⟩
+        Is-trunc -2-Trunc (Σ A B)             ∎-↔
     family-is-k-trunc-iff-tot-is-k-trunc {A} { succ-Trunc k } a-is-sk-trunc {B} =
       begin-↔
         ((x : A) → Is-trunc (succ-Trunc k) (B x))                                                  ↔⟨⟩
