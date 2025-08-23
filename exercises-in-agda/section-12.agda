@@ -126,7 +126,7 @@ module _ where
     is-emb-iff-fibs-are-props {A} {B} {f} =
       begin-↔
         Is-emb f                                                            ↔⟨⟩
-        ((x : A) → (y : A) → Is-equiv (λ (p : x ≡ y) → ap f p))             ↔⟨ depfn-iff (λ x → depfn-iff (λ y → ap-is-equiv-iff-ap-inverse-if-equiv x y)) ⟩
+        ((x : A) → (y : A) → Is-equiv (λ (p : x ≡ y) → ap f p))             ↔⟨ depfn-iff-2 (λ x y → ap-is-equiv-iff-ap-inverse-if-equiv x y) ⟩
         ((x : A) → (y : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ flip-dependent-iff ⟩
         ((y : A) → (x : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ depfn-iff (λ y → fundamental-thm-of-identity-types.i-at-fn↔ii (λ x (p : y ≡ x) → ap f (inverse p))) ⟩
         ((y : A) → Is-contr (Σ A (λ x → f x ≡ f y)))                        ↔⟨⟩
@@ -359,9 +359,9 @@ module _ where
         ((x : A) → (bx bx' : B x) → Is-trunc k (bx ≡ bx'))                                         ↔⟨ rel-on-fiber-iff-rel-on-a-transported-fiber ⟩
         ((x : A) → (bx : B x) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))  ↔⟨ uncurry-iff ⟩
         (((x , bx) : Σ A B) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))    ↔⟨ depfn-iff (λ s → uncurry-iff) ⟩
-        (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-iff (λ { (x , bx) → depfn-iff (λ { (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)})}) ⟩
+        (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-iff-2 (λ { (x , bx) (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)}) ⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k (Σ (x ≡ y) (λ α → tr B α bx ≡ by)))              ↔⟨⟩
-        ((s t : Σ A B) → Is-trunc k (Eq-Σ s t))                                                    ↔⟨ depfn-iff (λ s → depfn-iff (λ t → equiv-types-iff-k-types (≃-comm pair-eq-≃-Eq-Σ))) ⟩
+        ((s t : Σ A B) → Is-trunc k (Eq-Σ s t))                                                    ↔⟨ depfn-iff-2 (λ s t → equiv-types-iff-k-types (≃-comm pair-eq-≃-Eq-Σ)) ⟩
         ((s t : Σ A B) → Is-trunc k (s ≡ t))                                                       ↔⟨⟩
         Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
       where

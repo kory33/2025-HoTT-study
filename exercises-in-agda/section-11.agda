@@ -44,7 +44,7 @@ module _ where
       is-family-of-equivs f                                              ↔⟨⟩
       ((x : A) → Is-equiv (f x))                                         ↔⟨ depfn-iff (λ x → Is-equiv-iff-is-contr-fn) ⟩
       ((x : A) → Is-contr-fn (f x))                                      ↔⟨⟩
-      ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-iff (λ x → depfn-iff (λ c → equiv-then-contr-iff-contr (fib-tot-pt-eqv-fib-pr1-pr2 f (x , c)))) ⟩
+      ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-iff-2 (λ x c → equiv-then-contr-iff-contr (fib-tot-pt-eqv-fib-pr1-pr2 f (x , c))) ⟩
       ((x : A) → (c : C x) → Is-contr (fib (totalization f) (x , c)))    ↔⟨ uncurry-iff ⟩
       ((t : Σ A C) → Is-contr (fib (totalization f) t))                  ↔⟨⟩
       Is-contr-fn (totalization f)                                       ↔⟨← Is-equiv-iff-is-contr-fn ⟩
