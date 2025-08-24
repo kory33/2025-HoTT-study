@@ -3,6 +3,7 @@ open import Function.Base using (case_of_)
 module _ where
   open import section-05 public
   
+  -- definition 6.3.1
   Eq-Nat : (x y : Nat) → Set
   Eq-Nat zero zero = Unit
   Eq-Nat zero (succ y) = Empty
@@ -12,12 +13,12 @@ module _ where
   module Eq-Nat where
     open ≡-Basic
 
-    -- 6.3.2
+    -- lemma 6.3.2
     Eq-Nat-refl : (n : Nat) → Eq-Nat n n
     Eq-Nat-refl zero = unit
     Eq-Nat-refl (succ n) = Eq-Nat-refl n
 
-    -- 6.3.3
+    -- proposition 6.3.3
     eq-then-obseq : (x y : Nat) → (x ≡ y) → Eq-Nat x y
     eq-then-obseq x y eq = ≡-Basic.tr (λ e → Eq-Nat x e) eq (Eq-Nat-refl x)
 
@@ -40,7 +41,7 @@ module _ where
     open NatBasic.Symbolic
     open ≡-Reasoning
 
-    -- 6.4.1
+    -- theorem 6.4.1
     succ-inj : (x y : Nat) → (x ≡ y) ↔ (succ x ≡ succ y)
     succ-inj x y =
       (
@@ -51,7 +52,7 @@ module _ where
     eq-if-succ-eq : (x y : Nat) → (succ x ≡ succ y) → (x ≡ y)
     eq-if-succ-eq x y eq = Σ.snd (succ-inj x y) eq
 
-    -- 6.4.2
+    -- theorem 6.4.2
     zero-neq-succ : (x : Nat) → ¬ (zero ≡ succ x)
     zero-neq-succ x zero-eq-succx = eq-then-obseq zero (succ x) zero-eq-succx
 

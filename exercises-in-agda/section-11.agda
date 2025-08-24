@@ -14,11 +14,11 @@ module _ where
   is-family-of-equivs : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) → Set
   is-family-of-equivs {A} f = (x : A) → Is-equiv (f x)
 
-  -- 11.1.1
+  -- definition 11.1.1
   totalization : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) → Σ A B → Σ A C
   totalization {A} f (x , b) = (x , f x b)
 
-  -- 11.1.2
+  -- lemma 11.1.2
   fib-tot-pt-eqv-fib-pr1-pr2 : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) →
                                (t : Σ A C) → fib (totalization f) t ≃ fib (f (Σ.fst t)) (Σ.snd t)
   fib-tot-pt-eqv-fib-pr1-pr2 {A} {B} {C} f t =
@@ -36,7 +36,7 @@ module _ where
 
   open ↔-Reasoning
 
-  -- 11.1.3
+  -- theorem 11.1.3
   is-family-of-equivs-iff-tot-is-equiv : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) →
                                          (is-family-of-equivs f ↔ Is-equiv (totalization f))
   is-family-of-equivs-iff-tot-is-equiv {A} {B} {C} f =
@@ -60,12 +60,11 @@ module _ where
     in
       (totalization equiv-fns , Σ.fst (is-family-of-equivs-iff-tot-is-equiv equiv-fns) equiv-fns-is-family-of-equivs)
 
-  -- 11.1.4
-  module lem-11-1-4 where
-    mapleft : {A B : Set} → (f : A → B) → (C : B → Set) → Σ A (λ a → C (f a)) → Σ B C
-    mapleft f C (x , c) = (f x , c)
+  mapleft : {A B : Set} → (f : A → B) → (C : B → Set) → Σ A (λ a → C (f a)) → Σ B C
+  mapleft f C (x , c) = (f x , c)
 
-  mapleft-by-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : B → Set} → Is-equiv (lem-11-1-4.mapleft f C)
+  -- lemma 11.1.4
+  mapleft-by-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : B → Set} → Is-equiv (mapleft f C)
   mapleft-by-equiv-is-equiv {A} {B} {f} f-is-eqv {C} =
     contr-fn-then-equiv (λ t →
       cod-of-equiv-is-contr-then-dom-is-contr
@@ -73,9 +72,9 @@ module _ where
         (Is-equiv-then-is-contr-fn f-is-eqv (Σ.fst t))
     )
     where
-      φ : (t : Σ B C) → fib (lem-11-1-4.mapleft f C) t → fib f (Σ.fst t)
+      φ : (t : Σ B C) → fib (mapleft f C) t → fib f (Σ.fst t)
       φ .(f x , z) ((x , z) , refl) = (x , refl)
-      ψ : (t : Σ B C) → fib f (Σ.fst t) → fib (lem-11-1-4.mapleft f C) t
+      ψ : (t : Σ B C) → fib f (Σ.fst t) → fib (mapleft f C) t
       ψ (.(f x) , z) (x , refl) = ((x , z) , refl)
       G : (t : Σ B C) → φ t ∘ ψ t ~ id
       G (.(f x) , z) (x , refl) = refl
@@ -85,12 +84,12 @@ module _ where
   family-of-maps-over : {A B : Set} → (f : A → B) → (C : A → Set) → (D : B → Set) → Set
   family-of-maps-over {A} {B} f C D = (x : A) → C x → D (f x)
 
-  -- 11.1.5
+  -- definition 11.1.5
   totalization-over : {A B : Set} → (f : A → B) → {C : A → Set} → (D : B → Set) →
                       family-of-maps-over f C D → Σ A C → Σ B D
   totalization-over f D g (x , z) = (f x , g x z)
 
-  -- 11.1.6
+  -- theorem 11.1.6
   totalization-of-equivs-over-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : A → Set} → {D : B → Set} →
                                                (g : family-of-maps-over f C D) → (is-family-of-equivs g) ↔ Is-equiv (totalization-over f D g)
   totalization-of-equivs-over-equiv-is-equiv {A} {B} {f} f-eqv {C} {D} g =
@@ -101,10 +100,10 @@ module _ where
                                                                   (htpy-refl _)
                                                                   (mapleft-by-equiv-is-equiv f-eqv)
                                                             ⟩
-      Is-equiv (lem-11-1-4.mapleft f D ∘ totalization g)    ↔⟨⟩ -- these maps are definitionally equal
+      Is-equiv (mapleft f D ∘ totalization g)               ↔⟨⟩ -- these maps are definitionally equal
       Is-equiv (totalization-over f D g)                    ∎-↔
 
-  -- 11.2.1
+  -- definition 11.2.1
   is-identity-system-at : {A : Set} → (a : A) → (B : A → Set) → (b : B a) → Set₁
   is-identity-system-at {A} a B b =
     (P : (x : A) → B x → Set) → Sect (λ (h : (x : A) → (y : B x) → P x y) → h a b)
@@ -113,7 +112,7 @@ module _ where
   identity-system-at {A} a =
     Σ-poly (A → Set) (λ B → Σ-poly (B a) (λ b → is-identity-system-at a B b))
 
-  -- 11.2.2
+  -- theorem 11.2.2
   module fundamental-thm-of-identity-types {A : Set} {a : A} {B : A → Set} where
     -- i-at f is the version assumed in the book, but in fact we can show an even stronger result (ii → i),
     -- because (i) holding at a single function f (i-at f) is actually equivalent to (i) holding at all functions (see i↔i-at-fn for proof)
@@ -191,7 +190,7 @@ module _ where
   module _ where
     open Eq-Nat
 
-    -- 11.3.1
+    -- theorem 11.3.1
     Eq-Nat-refl-is-equiv : (m n : Nat) → Is-equiv (eq-then-obseq m n)
     Eq-Nat-refl-is-equiv m =
       fundamental-thm-of-identity-types.ii→i-at-fn (contr m) (eq-then-obseq m)
@@ -210,14 +209,14 @@ module _ where
 
   -- subsection 11.4
   module _ where
-    -- 11.4.1
+    -- definition 11.4.1
     Is-emb : {A B : Set} → (f : A → B) → Set
     Is-emb {A} {B} f = (x y : A) → Is-equiv (ap f {x} {y})
 
     _↪_ : Set → Set → Set
     A ↪ B = Σ (A → B) Is-emb
 
-    -- 11.4.2
+    -- theorem 11.4.2
     is-equiv-then-is-emb : {A B : Set} → {e : A → B} → Is-equiv e → Is-emb e
     is-equiv-then-is-emb {A} {B} {e} e-eqv x =
       fundamental-thm-of-identity-types.ii→i-at-fn contr (λ y → ap e {x} {y})
@@ -244,7 +243,7 @@ module _ where
     open Eq-Copr
     E = Eq-Copr
 
-    -- 11.5.4
+    -- proposition 11.5.4
     eq-copr-is-contr : {A B : Set} → (s : A +₀ B) → Is-contr (Σ (A +₀ B) (Eq-Copr s))
     eq-copr-is-contr {A} {B} (left x) =
       Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-Is-contr x)
@@ -269,7 +268,7 @@ module _ where
              Empty +₀ (Σ B (λ y' → y ≡ y'))                                                         ≃⟨ +₀-lunit ⟩     
              (Σ B (λ y' → y ≡ y'))                                                                  ∎-≃
 
-    -- 11.5.1
+    -- theorem 11.5.1
     copr-eq-equiv-eq-copr : {A B : Set} → (s t : A +₀ B) → (s ≡ t) ≃ (Eq-Copr s t)
     copr-eq-equiv-eq-copr s t =
       (eq-copr-eq , fundamental-thm-of-identity-types.ii→i-at-fn (eq-copr-is-contr s) (λ ab → eq-copr-eq) t)
@@ -292,7 +291,7 @@ module _ where
 
   -- subsection 11.6
   module _ where
-    -- 11.6.1
+    -- definition 11.6.1
     is-dependent-identity-system-over : {A : Set} → {a : A} → {C : A → Set} → {c : C a} → (is-identity-system-at a C c) → {B : A → Set} → (b : B a) →
                                         (D : (x : A) → B x → C x → Set) → (d : D a b c) → Set₁
     is-dependent-identity-system-over {A} {a} {C} {c} id-sys {B} b D d = is-identity-system-at b (λ y → D a y c) d
@@ -303,7 +302,7 @@ module _ where
         Σ-poly (D a b c) (λ d → is-dependent-identity-system-over id-sys b D d)
       )
 
-    -- 11.6.2 (Structure Identity Principle)
+    -- theorem 11.6.2 (Structure Identity Principle)
     module SIP {A : Set} {a : A}
                (B : A → Set) (b : B a)
                (C : A → Set) {c : C a} (id-sys : is-identity-system-at a C c)
@@ -362,7 +361,7 @@ module _ where
       ii→iv : (d : D a b c) → ii → iv
       ii→iv d = (Σ.snd (iv↔v d)) ∘ (Σ.fst ii↔v)
 
-    -- 11.6.3
+    -- example 11.6.3
     fib-eq-≃-fib-apf-concat : {A B : Set} → (f : A → B) → (b : B) →
                               ((x , p) (y , q) : fib f b) → ((x , p) ≡ (y , q)) ≃ fib (ap f) (p · q ⁻¹)
     fib-eq-≃-fib-apf-concat {A} {B} f b (x , p) =
@@ -1050,7 +1049,7 @@ module _ where
     fib-triangle {A} {B} {X} h {f} {g} H x (a , p) =
       (h a , ((H ⁻¹ₕₜₚ) a) · p)
 
-    -- 11.11.a
+    -- exercise 11.11.a
     tot-fib-triangle-fiber-glueing : {A B X : Set} → (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
                                      fiber-glueing-map g ∘ (totalization (fib-triangle h H)) ~ h ∘ fiber-glueing-map f
     tot-fib-triangle-fiber-glueing {A} {B} {X} h {f} g H (x , (a , p)) =
@@ -1066,7 +1065,7 @@ module _ where
 
     open ↔-Reasoning
 
-    -- 11.11.b
+    -- exercise 11.11.b
     equiv-iff-fib-triangle-is-equiv : {A B X : Set} → (h : A → B) → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
                                       Is-equiv h ↔ is-family-of-equivs (fib-triangle h {f} {g} H)
     equiv-iff-fib-triangle-is-equiv {A} {B} {X} h {f} {g} H =

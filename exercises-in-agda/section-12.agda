@@ -403,9 +403,6 @@ module _ where
 
   -- exercise 12.3
   module _ where
-    Is-inj : {A B : Set} → (f : A → B) → Set
-    Is-inj {A} {B} f = (x y : A) → (f x ≡ f y) → x ≡ y
-
     is-emb-then-is-inj : {A B : Set} → {f : A → B} → Is-emb f → Is-inj f
     is-emb-then-is-inj {A} {B} {f} emb x y p = ≃-inverse-map-for (emb x y) p
 

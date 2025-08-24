@@ -6,11 +6,9 @@ module _ where
   open EmptyBasic
   open ≡-Basic
 
+  -- definition 8.1.1
   Is-decidable : Set → Set
   Is-decidable A = A +₀ ¬ A
-
-  Has-decidable-eq : Set → Set
-  Has-decidable-eq A = (x y : A) → Is-decidable (x ≡ y)
 
   Is-decidable-family : {A : Set} → (A → Set) → Set
   Is-decidable-family {A} B = (x : A) → Is-decidable (B x)
@@ -25,21 +23,18 @@ module _ where
   reflect-inhabitance (right ¬a) eq = absurd (Eq-Bool.false-neq-true (refl · eq))
 
   open Leq-Nat.Symbolic
-  Nat-is-lower-bound : {P : Nat → Set} (n : Nat) → Set
-  Nat-is-lower-bound {P} n = (x : Nat) → P x → (n ≤ x)
-
-  Nat-is-upper-bound : {P : Nat → Set} (n : Nat) → Set
-  Nat-is-upper-bound {P} n = (x : Nat) → P x → (x ≤ n)
 
   module Is-decidable where
     open ≡-Basic public
 
+    -- example 8.1.2
     decide-Unit : Is-decidable Unit
     decide-Unit = left unit
 
     decide-Empty : Is-decidable Empty
     decide-Empty = right id
 
+    -- example 8.1.3
     decide-+₀ : {A B : Set} → Is-decidable A → Is-decidable B → Is-decidable (A +₀ B)
     decide-+₀ (left a) (left b) = left (left a)
     decide-+₀ (left a) (right ¬b) = left (left a)
@@ -62,21 +57,25 @@ module _ where
     decide-→ (right ¬a) (left b) = left (λ a → absurd (¬a a))
     decide-→ (right ¬a) (right ¬b) = left (λ a → absurd (¬a a))
 
+    -- example 8.1.4
     decide-Eq-Nat : (m n : Nat) → Is-decidable (Eq-Nat m n)
     decide-Eq-Nat zero zero = decide-Unit
     decide-Eq-Nat zero (succ n) = decide-Empty
     decide-Eq-Nat (succ m) zero = decide-Empty
     decide-Eq-Nat (succ m) (succ n) = decide-Eq-Nat m n
 
-    module _ where
-      open +₀-Basic
-      decide-biimpl : {A B : Set} → (A ↔ B) → (Is-decidable A ↔ Is-decidable B)
-      decide-biimpl (a→b , b→a) = (< a→b +₀ contrapose b→a > , < b→a +₀ contrapose a→b >)
+    -- lemma 8.1.6
+    biimplying-type-is-decidable-iff-decidable : {A B : Set} → (A ↔ B) → (Is-decidable A ↔ Is-decidable B)
+    biimplying-type-is-decidable-iff-decidable (a→b , b→a) =
+      (< a→b +₀ contrapose b→a > , < b→a +₀ contrapose a→b >)
+      where open +₀-Basic
 
+    -- proposition 8.2.3
     decide-⟶-with-dependent-decidability : {A B : Set} → Is-decidable A → (A → Is-decidable B) → Is-decidable (A → B)
     decide-⟶-with-dependent-decidability (left a) f = decide-→ (left a) (f a)
     decide-⟶-with-dependent-decidability (right ¬a) f = left (λ a → absurd (¬a a))
 
+    -- proposition 8.2.3
     decide-×-with-dependent-decidability : {A B : Set} → Is-decidable A → (A → Is-decidable B) → Is-decidable (A × B)
     decide-×-with-dependent-decidability (left a) f = decide-× (left a) (f a)
     decide-×-with-dependent-decidability (right ¬a) f = right (λ (a , b) → ¬a a)
@@ -85,6 +84,10 @@ module _ where
     flatten : {A : Set} → Is-decidable (Is-decidable A) → Is-decidable A
     flatten (left dec) = dec
     flatten (right ¬dec) = right (λ a → ¬dec (left a))
+
+  -- definition 8.1.5
+  Has-decidable-eq : Set → Set
+  Has-decidable-eq A = (x y : A) → Is-decidable (x ≡ y)
 
   module Has-decidable-eq where
     open Is-decidable
@@ -123,11 +126,41 @@ module _ where
               ; (right ¬eqab) → right (λ eqb → ¬eqab (ap (λ e → a , e) eqb))
               }
 
+    -- proposition 8.1.7
     Nat-has-decidable-eq : Has-decidable-eq Nat
-    Nat-has-decidable-eq m n = Σ.snd (decide-biimpl (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)) (decide-Eq-Nat m n)
+    Nat-has-decidable-eq m n = Σ.snd (biimplying-type-is-decidable-iff-decidable (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)) (decide-Eq-Nat m n)
 
     Unit-has-decidable-eq : Has-decidable-eq Unit
     Unit-has-decidable-eq unit unit = left refl
+
+    -- proposition 8.1.8
+    postulate Fin-has-decidable-eq : (k : Nat) → Has-decidable-eq (Fin k)
+
+    open DivisibilityBasic.Symbolic
+    -- theorem 8.1.9
+    postulate divisibility-is-decidable : (d x : Nat) → Is-decidable (d ∣ x)
+
+  -- TODO: formalize subsection 8.2
+
+  -- definition 8.3.1
+  Nat-is-lower-bound : {P : Nat → Set} (n : Nat) → Set
+  Nat-is-lower-bound {P} n = (x : Nat) → P x → (n ≤ x)
+
+  Nat-is-upper-bound : {P : Nat → Set} (n : Nat) → Set
+  Nat-is-upper-bound {P} n = (x : Nat) → P x → (x ≤ n)
+
+  -- TODO: formalize the rest of subsection 8.3
+  -- TODO: formalize subsection 8.4
+  -- TODO: formalize subsection 8.5
+
+  -- TODO: exercise 8.1
+  -- TODO: exercise 8.4
+  -- TODO: exercise 8.5
+  -- TODO: exercise 8.11
+  -- TODO: exercise 8.12
+  -- TODO: exercise 8.13
+  -- TODO: exercise 8.14
+  -- TODO: exercise 8.15
 
   -- exercise 8.7
   Eq-Copr : {A B : Set} → (A +₀ B) → (A +₀ B) → Set
@@ -147,6 +180,7 @@ module _ where
     Eq-Copr-refl (left a) = refl
     Eq-Copr-refl (right b) = refl
 
+    -- exercise 8.7.a
     Copr-≡-biimpl-Eq-Copr : {A B : Set} → {x y : A +₀ B} → (x ≡ y) ↔ (Eq-Copr x y)
     Copr-≡-biimpl-Eq-Copr {A} {B} {x} {y} = (forward x y , backward x y)
       where
@@ -171,6 +205,7 @@ module _ where
     +₀-right-inj : {A : Set} → {B : Set} → {x y : B} → (right {A} {B} x ≡ right y) → (x ≡ y)
     +₀-right-inj eq = Σ.fst (Copr-≡-biimpl-Eq-Copr) eq
 
+    -- exercise 8.7.b
     +₀-deceq-biimpl-both-deceq : {A B : Set} → Has-decidable-eq (A +₀ B) ↔ ((Has-decidable-eq A) × (Has-decidable-eq B))
     +₀-deceq-biimpl-both-deceq {A} {B} = (forward , backward)
       where
@@ -213,9 +248,11 @@ module _ where
     open Eq-Copr
     open Has-decidable-eq
 
+    -- exercise 8.7.b
     Int-has-decidable-eq : Has-decidable-eq Int
     Int-has-decidable-eq = Σ.snd (+₀-deceq-biimpl-both-deceq) (Nat-has-decidable-eq , Σ.snd (+₀-deceq-biimpl-both-deceq) (Unit-has-decidable-eq , Nat-has-decidable-eq))
 
+  -- exercise 8.8
   module exercise-8-8 {A : Set} {B : A → Set} where
     open Is-decidable
 
@@ -257,11 +294,13 @@ module _ where
       ; (right ¬paireq) → right (λ { refl → ¬paireq refl })
       }
 
+  -- exercise 8.9
   module exercise-8-9 where
     open Is-decidable
     open ≡-Reasoning
     open Fin-Basic
 
+    -- exercise 8.9.a
     decide-Fin-depfn : {k : Nat} → {B : Fin k → Set} → Is-decidable-family B → Is-decidable ((x : Fin k) → B x)
     decide-Fin-depfn {zero} _ = left λ { () }
     decide-Fin-depfn {succ k} {B} decide-bx =
@@ -281,6 +320,7 @@ module _ where
     -- (i.e. some restricted version of funext would be equivalent to deceq-Fin-depfn)
     postulate funext : {A : Set} → {B : A → Set} → {f g : (x : A) → B x} → ((x : A) → f x ≡ g x) → f ≡ g
 
+    -- exercise 8.9.b
     deceq-Fin-depfn : {k : Nat} → {B : Fin k → Set} → ((x : Fin k) → Has-decidable-eq (B x)) → Has-decidable-eq ((x : Fin k) → B x)
     deceq-Fin-depfn {zero} _ f1 f2 = left (funext λ { () })
     deceq-Fin-depfn {succ k} {B} x→deceq-bx f1 f2 =
@@ -297,11 +337,12 @@ module _ where
         deceq-x'→b'x' : Has-decidable-eq ((x : Fin k) → B' x)
         deceq-x'→b'x' = deceq-Fin-depfn (λ x → x→deceq-bx (incl-succ x))
 
-  module exercise-8-3 where
+  module _ where
     open Is-decidable
     open ≡-Reasoning
     open Fin-Basic
   
+    -- exercise 8.3
     Fin-de-Morgan : {k : Nat} → {P : Fin k → Set} → Is-decidable-family P → ¬ ((x : Fin k) → P x) → Σ (Fin k) (λ x → ¬ P x)
     Fin-de-Morgan {zero} decide-p ¬ΠP = absurd (¬ΠP λ { () })
     Fin-de-Morgan {succ k} {P} decide-p ¬ΠP =
@@ -314,59 +355,59 @@ module _ where
       ; (right ¬plast) → last , ¬plast
       }
 
-  module _ where
-    open Leq-Nat
-    open Lt-Nat.Symbolic
+  open Leq-Nat
+  open Lt-Nat.Symbolic
 
-    search-descending-from-Nat : {P : Nat → Set} → {decide-p : Is-decidable-family P} → (N : Nat) →
-                                 Σ Nat (λ n → -- found a value n
-                                    P n ×     -- that satisfies P
-                                    (n ≤ N) × -- and is less than or equal to N
-                                    ((x : Nat) → P x → (x ≤ n) +₀ (N < x))  -- such that for any x with (P x), x does not lie in (succ n)..N
-                                 ) +₀ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
-    search-descending-from-Nat {P} {decide-p} zero =
-      case decide-p zero of λ {
-        (left pz) → left (zero , (pz , Leq-Nat.Leq-Nat-refl zero , λ x _ → Lt-Nat.leq-or-gt x zero))
-      ; (right ¬pz) → right λ { zero _ → ¬pz; (succ k) () }
-      }
-    search-descending-from-Nat {P} {decide-p} (succ N) =
-      case decide-p (succ N) of λ {
-        (left psN) →
+  search-descending-from-Nat : {P : Nat → Set} → {decide-p : Is-decidable-family P} → (N : Nat) →
+                                Σ Nat (λ n → -- found a value n
+                                  P n ×     -- that satisfies P
+                                  (n ≤ N) × -- and is less than or equal to N
+                                  ((x : Nat) → P x → (x ≤ n) +₀ (N < x))  -- such that for any x with (P x), x does not lie in (succ n)..N
+                                ) +₀ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
+  search-descending-from-Nat {P} {decide-p} zero =
+    case decide-p zero of λ {
+      (left pz) → left (zero , (pz , Leq-Nat.Leq-Nat-refl zero , λ x _ → Lt-Nat.leq-or-gt x zero))
+    ; (right ¬pz) → right λ { zero _ → ¬pz; (succ k) () }
+    }
+  search-descending-from-Nat {P} {decide-p} (succ N) =
+    case decide-p (succ N) of λ {
+      (left psN) →
+        left (
+          succ N ,
+          (psN , Leq-Nat.Leq-Nat-refl (succ N) , λ x _ → Lt-Nat.leq-or-gt x (succ N))
+        )
+    ; (right ¬psN) →
+      case (search-descending-from-Nat {P} {decide-p} N) of λ {
+        (left (n , (pn , leq-n , any-satisfying-Nat-is-≤n-or-N<))) →
           left (
-            succ N ,
-            (psN , Leq-Nat.Leq-Nat-refl (succ N) , λ x _ → Lt-Nat.leq-or-gt x (succ N))
-          )
-      ; (right ¬psN) →
-        case (search-descending-from-Nat {P} {decide-p} N) of λ {
-          (left (n , (pn , leq-n , any-satisfying-Nat-is-≤n-or-N<))) →
-            left (
-              n ,
-              (pn , trans n N (succ N) leq-n (self-succ N) , λ x px →
-                +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
-                  case Σ.snd (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x) (Σ.fst (Lt-Nat.lt-biimpl-succ-leq N x) N<x) of λ {
-                    (left sN<x) → sN<x
-                  ; (right refl) → absurd (¬psN px)
-                  }
-                )
+            n ,
+            (pn , trans n N (succ N) leq-n (self-succ N) , λ x px →
+              +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
+                case Σ.snd (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x) (Σ.fst (Lt-Nat.lt-biimpl-succ-leq N x) N<x) of λ {
+                  (left sN<x) → sN<x
+                ; (right refl) → absurd (¬psN px)
+                }
               )
             )
-        ; (right ¬pn-below-N) →
-            right (λ n n≤sN → by-comparing n N λ {
+          )
+      ; (right ¬pn-below-N) →
+          right (λ n n≤sN → by-comparing n N λ {
+            (left n≤N) → ¬pn-below-N n n≤N
+          ; (right N≤n) →
+            case (leq-succ-then-leq-or-eq-succ n N n≤sN) of λ {
               (left n≤N) → ¬pn-below-N n n≤N
-            ; (right N≤n) →
-              case (leq-succ-then-leq-or-eq-succ n N n≤sN) of λ {
-                (left n≤N) → ¬pn-below-N n n≤N
-              ; (right refl) → ¬psN
-              }
-            })
-        }
+            ; (right refl) → ¬psN
+            }
+          })
       }
+    }
 
   module exercise-8-10 {P : Nat → Set} {decide-p : Is-decidable-family P} {m : Nat} {mub : Nat-is-upper-bound {P} m} where
     open Is-decidable
     open ≡-Reasoning
     open Fin-Basic
 
+    -- exercise 8.10.a
     decide-Σ-P : Is-decidable (Σ Nat P)
     decide-Σ-P =
       case (search-descending-from-Nat {P} {decide-p} m) of λ {
@@ -374,6 +415,7 @@ module _ where
       ; (right ¬pn-below-m) → right (λ (n , pn) → ¬pn-below-m n (mub n pn) pn)
       }
 
+    -- exercise 8.10.b
     maximize : Σ Nat P → Σ Nat (λ n → P n × Nat-is-upper-bound {P} n)
     maximize (n , pn) =
       case (search-descending-from-Nat {P} {decide-p} m) of λ {
@@ -392,3 +434,4 @@ module _ where
       ; (right ¬pm'-below-m) → absurd (¬pm'-below-m n (mub n pn) pn) -- impossible
       }
  
+    -- TODO: exercise 8.10.c

@@ -3,6 +3,7 @@ open import Function.Base using (case_of_)
 module _ where
   open import section-06 public
 
+  -- definition 7.1.2
   Divides : Nat → Nat → Set
   Divides m n = Σ Nat (λ k → NatBasic.mul m k ≡ n)
 
@@ -20,11 +21,11 @@ module _ where
     divides-refl : (m : Nat) → m ∣ m
     divides-refl m = (one , mul-runit m)
 
-    -- 7.1.4
+    -- example 7.1.4
     one-divides-any : (m : Nat) → one ∣ m
     one-divides-any m = (m , mul-lunit m)
 
-    -- 7.1.5
+    -- proposition 7.1.5
     divides-both-then-divides-sum : (d x y : Nat) → d ∣ x → d ∣ y → d ∣ (x + y)
     divides-both-then-divides-sum d x y (k , p) (l , q) =
       (
@@ -36,13 +37,25 @@ module _ where
           x + y           ∎)
       )
     
-    -- TODO: prove, as part of 7.1
+    -- proposition 7.1.5 (exercise 7.1); TODO: prove
     postulate divides-summand-and-sum-then-divides-other : (d x y : Nat) → d ∣ x → d ∣ (x + y) → d ∣ y
 
     -- TODO: exercise 7.2
 
   CongrMod : (x y k : Nat) → Set
   CongrMod x y k = Divides k (Nat-dist x y)
+
+  TypalReflexivity : {A : Set} (R : A → A → Set) → Set
+  TypalReflexivity {A} R = (x : A) → R x x
+
+  TypalSymmetry : {A : Set} (R : A → A → Set) → Set
+  TypalSymmetry {A} R = (x y : A) → R x y → R y x
+
+  TypalTransitivity : {A : Set} (R : A → A → Set) → Set
+  TypalTransitivity {A} R = (x y z : A) → R x y → R y z → R x z
+
+  TypalEquivalence : {A : Set} (R : A → A → Set) → Set
+  TypalEquivalence {A} R = TypalReflexivity R × TypalSymmetry R × TypalTransitivity R
 
   module CongrModBasic where
     module Symbolic where
@@ -56,23 +69,31 @@ module _ where
     open NatCommSemiring
     open DivisibilityBasic.Symbolic
 
-    -- 7.2.3
+    -- example 7.2.3
     congr-to-zero-mod-self : (x : Nat) → x ≡ zero mod x
     congr-to-zero-mod-self x =
       tr (λ e → x ∣ e) (inverse (Nat-dist.dist-to-zero x)) (DivisibilityBasic.divides-refl x)
     
-    -- TODO: 7.2.4
+    -- proposition 7.2.4
+    -- TODO: prove
+    postulate congr-is-equiv : {k : Nat} → TypalEquivalence (λ x y → x ≡ y mod k)
+
 
   classical-Fin : (k : Nat) → Set
   classical-Fin k = Σ Nat (λ x → Lt-Nat x k)
 
+  -- definition 7.3.2
   Fin : (k : Nat) → Set
   Fin zero = Empty
   Fin (succ k) = (Fin k) +₀ Unit
 
+  Is-inj : {A B : Set} → (f : A → B) → Set
+  Is-inj {A} {B} f = (x y : A) → (f x ≡ f y) → x ≡ y
+
   module Fin-Basic where
     open Lt-Nat.Symbolic
 
+    -- definition 7.3.3
     incl-succ : {k : Nat} → Fin k → Fin (succ k)
     incl-succ fk = left fk
 
@@ -87,10 +108,11 @@ module _ where
     ind-Fk g p (succ k) (left fk) = g k fk (ind-Fk g p k fk)
     ind-Fk g p (succ k) (right unit) = p k
 
+    -- definition 7.3.4
     incl-Nat : (k : Nat) → Fin k → Nat
     incl-Nat k fk = ind-Fk (λ k x included-x → included-x) (λ k → k) k fk
 
-    -- 7.3.5
+    -- lemma 7.3.5
     incl-Nat-bounded : {k : Nat} → (x : Fin k) → incl-Nat k x < k
     incl-Nat-bounded {zero} ()
     incl-Nat-bounded {succ k} (left fk) =
@@ -110,12 +132,21 @@ module _ where
     succ-Fin {succ k} (left x) = skip-zero x
     succ-Fin {succ k} (right unit) = zero-Fin
 
+    -- proposition 7.3.6
+    -- TODO: prove
+    postulate incl-Nat-is-inj : (k : Nat) → Is-inj (incl-Nat k)
+
+  -- TODO: formalize subsection 7.4
+
   Eq-Fin : (k : Nat) → Fin k → Fin k → Set
   Eq-Fin zero () ()
   Eq-Fin (succ k) (left x) (left y) = Eq-Fin k x y
   Eq-Fin (succ k) (left x) (right unit) = Empty
   Eq-Fin (succ k) (right unit) (left y) = Empty
   Eq-Fin (succ k) (right unit) (right unit) = Unit
+
+  -- TODO: exercise 7.3
+  -- TODO: exercise 7.4
 
   -- exercise 7.5
   module Eq-Fin where
@@ -129,6 +160,7 @@ module _ where
     Eq-Fin-refl {succ k} (left x) = Eq-Fin-refl x
     Eq-Fin-refl {succ k} (right unit) = unit
 
+    -- exercise 7.5.a
     Fin-≡-biimpl-Eq-Fin : {k : Nat} → (x y : Fin k) → (x ≡ y) ↔ (Eq-Fin k x y)
     Fin-≡-biimpl-Eq-Fin {zero} () ()
     Fin-≡-biimpl-Eq-Fin {succ k} x y = ((λ { refl → Eq-Fin-refl x }), backward x y)
@@ -139,9 +171,16 @@ module _ where
       backward (right unit) (left y) ()
       backward (right unit) (right unit) eq-fin = refl
 
+    -- TODO: exercise 7.5.b
     postulate incl-succ-inj : {k : Nat} → {x y : Fin k} → (incl-succ x ≡ incl-succ y) → (x ≡ y)
+
+    -- TODO: exercise 7.5.c
     postulate succ-non-last-neq-zero : {k : Nat} → {x : Fin k} → ¬ (succ-Fin (incl-succ x) ≡ zero-Fin)
+
+    -- TODO: exercise 7.5.d
     postulate succ-inj : {k : Nat} → {x y : Fin k} → (succ-Fin x ≡ succ-Fin y) → (x ≡ y)
+
+  -- TODO: exercise 7.6
 
   module classical-Fin-and-Fin where
     open Σ-Basic
@@ -157,3 +196,7 @@ module _ where
       )
 
     -- TODO: exercise 7.7.b
+
+  -- TODO: exercise 7.8
+  -- TODO: exercise 7.9
+  -- TODO: exercise 7.10

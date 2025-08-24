@@ -8,7 +8,7 @@ module _ where
   open ≡-Basic
   open ≡-Reasoning
 
-  -- 10.1.1
+  -- definition 10.1.1
   open import Agda.Primitive
   ContractionTo : {i : Level} → {A : Set i} → A → Set i
   ContractionTo {i} {A} a = (x : A) → a ≡ x
@@ -28,20 +28,20 @@ module _ where
   two-points-eq-in-contr-type : {A : Set} → Is-contr A → (x y : A) → x ≡ y
   two-points-eq-in-contr-type (a , C) x y = (C x)⁻¹ · (C y)
 
-  -- 10.1.2
+  -- remark 10.1.2
   contraction-to : {A : Set} → (c : A) → Set
   contraction-to c = const c ~ id
 
-  -- 10.1.3
+  -- example 10.1.3
   Unit-Is-contr : Is-contr Unit
   Unit-Is-contr = (unit , Unit-ind { λ (u : Unit) → unit ≡ u } refl)
 
-  -- 10.1.4
+  -- theorem 10.1.4
   identity-with-an-endpoint-fixed-Is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → a ≡ x))
   identity-with-an-endpoint-fixed-Is-contr a =
     ((a , refl) , λ pt → ≡-Basic1.refl-uniq a pt)
 
-  -- 10.2.1
+  -- definition 10.2.1
   ev-pt : {A : Set} → {B : (x : A) → Set} → (a : A) → (f : (x : A) → B x) → B a
   ev-pt a f = f a
 
@@ -49,7 +49,7 @@ module _ where
   singleton-induction-at : {A : Set} → (a : A) → Set₁
   singleton-induction-at {A} a = (B : A → Set) → Sect (ev-pt {A} {B} a)
 
-  -- 10.2.3 (This is stronger than 10.2.3 in the book: a : A is arbitrary with this definition)
+  -- theorem 10.2.3 (This is stronger than 10.2.3 in the book: a : A is arbitrary with this definition)
   contr-then-sing-ind-at : {A : Set} → (a : A) → Is-contr A → singleton-induction-at a
   contr-then-sing-ind-at {A} a contr =
     λ B → 
@@ -74,11 +74,11 @@ module _ where
   is-contr-iff-sing-ind-at : {A : Set} → (a : A) → (Is-contr A) ↔-poly (singleton-induction-at a)
   is-contr-iff-sing-ind-at {A} a = (contr-then-sing-ind-at a , sing-ind-then-contr a)
 
-  -- 10.3.1
+  -- definition 10.3.1
   fib : {A B : Set} → (f : A → B) → (b : B) → Set
   fib {A} {B} f b = Σ A (λ a → f a ≡ b)
 
-  -- 10.3.2
+  -- definition 10.3.2
   Eq-fib : {A B : Set} → (f : A → B) → {y : B} → fib f y → fib f y → Set
   Eq-fib f (x , p) (x' , p') = Σ (x ≡ x') (λ α → p ≡ (ap f α) · p')
 
@@ -95,7 +95,7 @@ module _ where
     Eq-fib f x x' → x ≡ x'
   identity-from-Eq-fib f (refl , refl) = refl
 
-  -- 10.3.3
+  -- proposition 10.3.3
   Eq-fib-from-identity-is-equiv : {A B : Set} → (f : A → B) → {y : B} → {x x' : fib f y} →
                                   Is-equiv (Eq-fib-from-identity f {y} {x} {x'})
   Eq-fib-from-identity-is-equiv f {y} {x} {x'} =
@@ -112,13 +112,13 @@ module _ where
   fib-identity-equiv-to-eq-fib {A} {B} f {y} {x} {x'} =
     (Eq-fib-from-identity f , Eq-fib-from-identity-is-equiv f)
 
-  -- 10.3.4
+  -- definition 10.3.4
   Is-contr-fn : {A B : Set} → (f : A → B) → Set
   Is-contr-fn {A} {B} f = (b : B) → Is-contr (fib f b)
 
   open Σ
 
-  -- 10.3.5
+  -- theorem 10.3.5
   contr-fn-then-equiv : {A B : Set} → {f : A → B} → Is-contr-fn f → Is-equiv f
   contr-fn-then-equiv {A} {B} {f} contr =
     let
@@ -140,12 +140,12 @@ module _ where
         in ap fst q
     in has-inverse-equiv (g , G , linverse)
 
-  -- 10.4.1
+  -- definition 10.4.1
   Is-coh-invertible : {A B : Set} → (f : A → B) → Set
   Is-coh-invertible {A} {B} f =
     Σ (Has-inverse f) (λ { (g , G , H) → lwhisker G f ~ rwhisker f H })
 
-  -- 10.4.2
+  -- proposition 10.4.2
   coh-invertible-then-contr-fn : {A B : Set} → (f : A → B) → Is-coh-invertible f → Is-contr-fn f
   coh-invertible-then-contr-fn {A} {B} f ((g , G , H) , K) y =
     (center , C)
@@ -163,7 +163,7 @@ module _ where
       C : (x : fib f y) → center ≡ x
       C x = identity-from-Eq-fib f (C' x)
 
-  -- 10.4.4
+  -- definition 10.4.4
   comm-htpy : {A : Set} → (f : A → A) → (H : f ~ id) → (x : A) → (H (f x) ≡ ap f (H x))
   comm-htpy f H x = begin
     H (f x)                           ≡⟨← (·-runit (H (f x))) ⟩
@@ -288,7 +288,7 @@ module _ where
       -- g   f   g
       rwhisker g G   ∎-htpy
 
-  -- 10.4.5
+  -- lemma 10.4.5
   improve-section-of-inverse-to-be-coherent : {A B : Set} → (f : A → B) →
                                               ((g , G , H) : Has-inverse f) →
                                               (Σ (f ∘ g ~ id) (λ G' → lwhisker G' f ~ rwhisker f H))
@@ -367,7 +367,7 @@ module _ where
   Has-inverse-then-Is-coh-invertible {A} {B} f (g , G , H) =
     let (G' , K) = improve-section-of-inverse-to-be-coherent f (g , G , H) in ((g , G' , H) , K)
 
-  -- 10.4.6
+  -- theorem 10.4.6
   Is-equiv-then-is-contr-fn : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr-fn f
   Is-equiv-then-is-contr-fn {A} {B} {f} is-eqv =
     let
@@ -379,7 +379,7 @@ module _ where
   Is-equiv-iff-is-contr-fn : {A B : Set} → {f : A → B} → (Is-equiv f ↔ Is-contr-fn f)
   Is-equiv-iff-is-contr-fn = (Is-equiv-then-is-contr-fn , contr-fn-then-equiv)
 
-  -- 10.4.7
+  -- corollary 10.4.7
   inverse-paths-type-is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → x ≡ a))
   inverse-paths-type-is-contr {A} a =
     let
@@ -424,10 +424,12 @@ module _ where
   contr-iff-const-unit-is-equiv : {A : Set} → Is-contr A ↔ Is-equiv (λ (a : A) → const unit a)
   contr-iff-const-unit-is-equiv = (contr-then-const-unit-is-equiv , const-unit-is-equiv-then-contr)
 
+  -- exercise 10.3.b
   cod-of-equiv-is-contr-then-dom-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr B → Is-contr A
   cod-of-equiv-is-contr-then-dom-is-contr {A} {B} {f} f-eqv b-contr =
     map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv b-contr) f-eqv)
 
+  -- exercise 10.3.b
   dom-of-equiv-is-contr-then-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr A → Is-contr B
   dom-of-equiv-is-contr-then-cod-is-contr {A} {B} {f} f-eqv a-contr =
     map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv a-contr) (≃-inverse-map-is-equiv f-eqv))
@@ -439,6 +441,7 @@ module _ where
   equiv-then-contr-iff-contr : {A B : Set} → (A ≃ B) → (Is-contr A ↔ Is-contr B)
   equiv-then-contr-iff-contr (f , f-eqv) = dom-of-equiv-is-contr-iff-cod-is-contr f-eqv
 
+  -- exercise 10.3.b
   any-map-between-contr-types-is-equiv : {A B : Set} → Is-contr A → Is-contr B → (f : A → B) → Is-equiv f
   any-map-between-contr-types-is-equiv {A} {B} a-contr b-contr f =
     latter-and-comp-are-equivs-then-former-is-equiv f (λ a → refl)

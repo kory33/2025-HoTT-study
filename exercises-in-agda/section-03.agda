@@ -22,6 +22,7 @@ module _ where
     predOrZero zero = zero
     predOrZero (succ n) = n
 
+    -- definition 3.2.1
     add : Nat → Nat → Nat
     add m zero = m
     add m (succ n) = succ (add m n)

@@ -1,6 +1,7 @@
 module _ where
   open import section-04 public
 
+  -- definition 5.1.1, made universe-polymorphic for ContractionTo in section 10
   open import Agda.Primitive
   data _≡_ {i : Level} {A : Set i} (a : A) : A → Set i where
     refl : a ≡ a
@@ -17,6 +18,7 @@ module _ where
   ind-≡ P parefl x refl = parefl
 
   module ≡-Basic where
+    -- definition 5.2.1
     concat : {A : Set} → {x y z : A} →
              (x ≡ y) → (y ≡ z) → (x ≡ z)
     concat refl yz = yz
@@ -27,6 +29,7 @@ module _ where
 
     infixl 40 _·_
 
+    -- definition 5.2.2
     inverse : {A : Set} → {x y : A} →
              (x ≡ y) → (y ≡ x)
     inverse refl = refl
@@ -46,6 +49,7 @@ module _ where
                   (x ≢ y) → (y ≢ x)
       ≢-inverse x≢y y≡x = x≢y (inverse y≡x)
 
+    -- definition 5.2.3
     ·-assoc : {A : Set} → {x y z w : A} →
               (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w) →
               p · q · r ≡ p · (q · r)
@@ -56,6 +60,7 @@ module _ where
                 p · (q · r) ≡ p · q · r
     ·-unassoc p q r = inverse (·-assoc p q r)
 
+    -- definition 5.2.4
     ·-lunit : {A : Set} → {x y : A} →
               (p : x ≡ y) → refl · p ≡ p
     ·-lunit p = refl
@@ -64,6 +69,7 @@ module _ where
               (p : x ≡ y) → p · refl ≡ p
     ·-runit refl = refl
 
+    -- definition 5.2.5
     ·-linv : {A : Set} → {x y : A} →
              (p : x ≡ y) → p ⁻¹ · p ≡ refl
     ·-linv refl = refl
@@ -72,6 +78,7 @@ module _ where
              (p : x ≡ y) → p · p ⁻¹ ≡ refl
     ·-rinv refl = refl
 
+    -- definition 5.3.1
     ap : {A B : Set} → (f : A → B) → {x y : A} → (p : x ≡ y) → f x ≡ f y
     ap f refl = refl
 
@@ -118,6 +125,7 @@ module _ where
              ap (g ∘ f) p ≡ ap g (ap f p) 
     ap-comp g f refl = refl
 
+    -- definition 5.3.2
     ap-refl : {A B : Set} → (f : A → B) → (x : A) → ap f {x} refl ≡ refl
     ap-refl f x = refl
 
@@ -130,6 +138,7 @@ module _ where
                 ap f (p · q) ≡ ap f p · ap f q
     ap-concat f refl q = refl
  
+    -- definition 5.4.1
     tr : {A : Set} → (B : A → Set) →
          {x y : A} → (p : x ≡ y) →
          B x → B y
@@ -153,6 +162,7 @@ module _ where
                 tr B (p · q) b ≡ tr B q (tr B p b)
     tr-concat refl refl b = refl
 
+    -- definition 5.4.2
     apd : {A : Set} → {B : A → Set} →
           (f : (a : A) → B a) →
           {x y : A} →
@@ -196,7 +206,7 @@ module _ where
   module ≡-Basic1 where
     open ≡-Reasoning
 
-    -- 5.5.1
+    -- proposition 5.5.1
     refl-uniq : {A : Set} → (a : A) → (y : Σ A (λ x → a ≡ x)) →
                 (a , refl) ≡ y
     refl-uniq a (x , refl) = refl
@@ -252,6 +262,7 @@ module _ where
           (p : a ≡ x) → (b : B a) → (a , b) ≡ (x , (tr B p b))
     lift refl b = refl
 
+    -- exercise 5.4
     module exercise-5-4 where
       variable
         A : Set
@@ -261,6 +272,7 @@ module _ where
         r : c ≡ d
         s : d ≡ e
       
+      -- exercise 5.4.a
       α₁ : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →
            ((p · q) · r) · s ≡ (p · (q · r)) · s
       α₁ p q r s = ap (λ x → x · s) (·-assoc p q r)
@@ -298,7 +310,7 @@ module _ where
     predOrZero-succ : (n : Nat) → predOrZero (succ n) ≡ n
     predOrZero-succ n = refl
 
-    -- 5.6.1
+    -- proposition 5.6.1
     add-lunit : (n : Nat) → zero + n ≡ n
     add-lunit zero = refl
     add-lunit (succ n) =
@@ -313,7 +325,7 @@ module _ where
     add-runit : (n : Nat) → (add n zero) ≡ n
     add-runit n = refl
 
-    -- 5.6.2
+    -- proposition 5.6.2
     add-succ-left : (m n : Nat) →
       (succ m) + n ≡ succ (m + n)
     add-succ-left m zero = refl
@@ -329,7 +341,7 @@ module _ where
     add-succ-right : (m n : Nat) → m + (succ n) ≡ succ (m + n)
     add-succ-right m n = refl
 
-    -- 5.6.3
+    -- proposition 5.6.3
     add-assoc : (m n k : Nat) → (m + n) + k ≡ m + (n + k)
     add-assoc m n zero = refl
     add-assoc m n (succ k) =
@@ -346,7 +358,7 @@ module _ where
     add-unassoc : (m n k : Nat) → m + (n + k) ≡ (m + n) + k
     add-unassoc m n k = inverse (add-assoc m n k)
     
-    -- 5.6.4
+    -- proposition 5.6.4
     add-comm : (m n : Nat) → m + n ≡ n + m
     add-comm zero n = add-lunit n
     add-comm (succ m) n =

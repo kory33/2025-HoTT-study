@@ -3,7 +3,7 @@ open import Function.Base using (case_of_)
 module _ where
   open import section-08 public
 
-  -- 9.1.2
+  -- definition 9.1.2
   Homotopy : {A : Set} → {B : (x : A) → Set} → (f g : (x : A) → B x) → Set
   Homotopy {A} f g = (x : A) → f x ≡ g x
 
@@ -23,14 +23,14 @@ module _ where
       infixl 5 _~_
     open Symbolic
 
-    -- 9.1.3
+    -- example 9.1.3
     module _ where
       open BoolBasic
       neg-neg-bool : neg-bool ∘ neg-bool ~ id
       neg-neg-bool true = refl
       neg-neg-bool false = refl
 
-    -- 9.1.5 + 9.1.6
+    -- definition 9.1.5 + proposition 9.1.6
     module _ where
       private variable
         A : Set
@@ -224,7 +224,7 @@ module _ where
       ·ₕₜₚ-rinv : (H : f ~ g) → (H ·ₕₜₚ H ⁻¹ₕₜₚ) ~ htpy-refl f
       ·ₕₜₚ-rinv H x = ·-rinv (H x)
 
-      -- 10.4.3
+      -- definition 10.4.3
       nat-htpy : {A B : Set} → {f g : A → B} → (H : f ~ g) → {x y : A} → (p : x ≡ y) → (ap f p · H y ≡ H x · ap g p)
       nat-htpy {A} {B} {f} {g} H {x} {y} refl =
         begin
@@ -234,7 +234,7 @@ module _ where
           H x · refl             ≡⟨⟩
           H x · ap g refl        ∎
 
-    -- 9.1.7
+    -- definition 9.1.7
     module _ where
       open HomotopyGroupoidSymbolic
       open ≡-Reasoning
@@ -506,7 +506,7 @@ module _ where
   open Homotopy.Symbolic
 
   module BiInvertibleMaps where
-    -- 9.2.1
+    -- definition 9.2.1
     module _ where
       Is-sect-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
       Is-sect-of f g = f ∘ g ~ id
@@ -551,7 +551,7 @@ module _ where
     build-tpe-equiv : {A B : Set} → {f : A → B} → Is-equiv f → A ≃ B
     build-tpe-equiv {A} {B} {f} is-equiv = (f , is-equiv)
 
-    -- 9.2.3
+    -- example 9.2.3
     id-is-equiv : {A : Set} → Is-equiv (id {A})
     id-is-equiv {A} = ((id , λ x → refl), (id , λ x → refl))
 
@@ -569,17 +569,17 @@ module _ where
     ≃-trans : {A B C : Set} → A ≃ B → B ≃ C → A ≃ C
     ≃-trans (f , f-eqv) (g , g-eqv) = (g ∘ f , comp-equivs-is-equiv g-eqv f-eqv)
 
-    -- 9.2.6
     Is-inverse-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
     Is-inverse-of {A} {B} f g = Is-sect-of f g × Is-retraction-of f g
 
+    -- remark 9.2.6
     Has-inverse : {A B : Set} → (f : A → B) → Set
     Has-inverse {A} {B} f = Σ (B → A) (Is-inverse-of f)
 
     has-inverse-equiv : {A B : Set} → {f : A → B} → Has-inverse f → Is-equiv f
     has-inverse-equiv (g , FG , GF) = ((g , FG), (g , GF))
 
-    -- 9.2.7 (see diagrams/9.2.7.drawio.svg for pictorial proof)
+    -- proposition 9.2.7 (see diagrams/9.2.7.drawio.svg for pictorial proof)
     equiv-has-inverse : {A B : Set} → {f : A → B} → Is-equiv f → Has-inverse f
     equiv-has-inverse {A} {B} {f} ((g , G), (h , H)) =
       (g , G , (lwhisker K f) ·ₕₜₚ H)
@@ -587,7 +587,7 @@ module _ where
         K : g ~ h
         K = (lwhisker H g) ⁻¹ₕₜₚ ·ₕₜₚ (rwhisker h G)
 
-    -- 9.2.8
+    -- corollary 9.2.8
     ≃-inverse-map-for : {A B : Set} → {f : A → B} → Is-equiv f → (B → A)
     ≃-inverse-map-for ((g , _), _) = g
 
@@ -644,7 +644,7 @@ module _ where
       _∎-≃ : (A : Set) → A ≃ A
       A ∎-≃  =  ≃-refl
     
-    -- 9.2.9
+    -- example 9.2.9
     module _ where
       open +₀-Basic
       open EmptyBasic
@@ -753,7 +753,7 @@ module _ where
           )
         )
     
-    -- 9.2.10
+    -- example 9.2.10
     module _ where
       open Σ-Basic
       open EmptyBasic
