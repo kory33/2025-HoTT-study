@@ -87,6 +87,10 @@ module _ where
   -- definition 4.6.1, made universe-polymorphic for use in section 11
   open import Agda.Primitive
   record Σ-poly {i j} (A : Set i) (B : A → Set j) : Set (i ⊔ j) where
+    -- Turn off eta equality (since the book does not assume the eta rule for Σ-types)
+    no-eta-equality
+    -- ... but allow pattern matching for induction
+    pattern
     constructor pair
     field
       fst : A
@@ -307,11 +311,6 @@ module _ where
     uncurry-iff : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
                   (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
     uncurry-iff = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
-
-    curry-type-family : {A : Set} → {B : A → Set} → {H : (P : Σ A B → Set) → Set} →
-                        ((P : Σ A B → Set) → H P) ↔-poly
-                        ((P' : (x : A) → B x → Set) → H (λ t → P' (Σ.fst t) (Σ.snd t)))
-    curry-type-family = ((λ f P' → f (λ t → P' (Σ.fst t) (Σ.snd t))) , λ f P → f (λ x y → P (x , y)))
 
     open EmptyBasic
     neg-iff : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)

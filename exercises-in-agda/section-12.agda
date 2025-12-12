@@ -360,7 +360,8 @@ module _ where
         (((x , bx) : Σ A B) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))    ↔⟨ depfn-iff (λ s → uncurry-iff) ⟩
         (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-iff-2 (λ { (x , bx) (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)}) ⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k (Σ (x ≡ y) (λ α → tr B α bx ≡ by)))              ↔⟨⟩
-        ((s t : Σ A B) → Is-trunc k (Eq-Σ s t))                                                    ↔⟨ depfn-iff-2 (λ s t → equiv-types-iff-k-types (≃-comm pair-eq-≃-Eq-Σ)) ⟩
+        (((x , bx) (y , by) : Σ A B) → Is-trunc k (Eq-Σ (x , bx) (y , by)))                        ↔⟨ depfn-iff-2 (λ s t → equiv-types-iff-k-types (≃-comm pair-eq-≃-Eq-Σ)) ⟩
+        (((x , bx) (y , by) : Σ A B) → Is-trunc k ((x , bx) ≡ (y , by)))                           ↔⟨ {!   !} ⟩
         ((s t : Σ A B) → Is-trunc k (s ≡ t))                                                       ↔⟨⟩
         Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
       where
@@ -467,7 +468,67 @@ module _ where
         n
 
   -- TODO: exercise 12.4
-  -- TODO: exercise 12.5
+  
+  -- exercise 12.5
+  module _ where
+    δ : {A : Set} → A → A × A
+    δ {A} a = (a , a)
+
+    -- exercise 12.5.a
+    diagonal-is-equiv-iff-is-prop : {A : Set} → Is-equiv (δ {A}) ↔ Is-prop A
+    diagonal-is-equiv-iff-is-prop {A} =
+      ((λ eqv -> Is-prop-characterisation.ii→i (eqv-then-any-two-eq eqv)) , backward)
+      where
+        eqv-then-any-two-eq : Is-equiv (δ {A}) → (x y : A) → x ≡ y
+        eqv-then-any-two-eq ((s , S) , _) x y with (ap Σ.fst (S (x , y)) , ap Σ.snd (S (x , y)))
+        ...                                      | (sxy≡x , sxy≡y) = (sxy≡x) ⁻¹ · (sxy≡y)
+
+        backward : Is-prop A → Is-equiv (δ {A})
+        backward A-is-prop =
+          has-inverse-equiv
+            ( Σ.fst
+            , (λ { (x , y) -> is-prop-then-any-two-eq (product-of-props-is-prop A-is-prop A-is-prop) (x , x) (x , y) })
+            , (λ x → refl))
+
+    -- exercise 12.5.b
+    fib-δ-equiv-≡ : {A : Set} → (x y : A) → fib (δ {A}) (x , y) ≃ (x ≡ y)
+    fib-δ-equiv-≡ {A} x y =
+      build-tpe-equiv (
+        has-inverse-equiv {_} {_} {forward}
+          ( backward
+          , (λ { refl → refl })
+          ,
+            (λ { (a , q) →
+              begin
+                (backward ∘ forward) (a , q)                                                     ≡⟨⟩
+                (x , ap (λ t → (x , t)) ((ap Σ.fst q) ⁻¹ · (ap Σ.snd q)))                        ≡⟨ ap (λ t → (x , t)) (ap-concat (λ t → (x , t)) ((ap Σ.fst q) ⁻¹) _) ⟩
+                (x , (ap (λ t → (x , t)) ((ap Σ.fst q) ⁻¹) · ap (λ t → (x , t)) (ap Σ.snd q)))   ≡⟨ ap2 (λ t1 t2 → (x , t1 · t2)) (ap-inv (λ t → (x , t)) (ap Σ.fst q)) (ap-comp (λ t → (x , t)) Σ.snd q ⁻¹) ⟩
+                (x , (ap (λ t → (x , t)) (ap Σ.fst q) ⁻¹ · ap (λ t → (x , Σ.snd t)) q))          ≡⟨← ap (λ t → (x , t ⁻¹ · ap (λ t → (x , Σ.snd t)) q)) (ap-comp (λ t → (x , t)) Σ.fst q) ⟩
+                (x , (ap (λ t → (x , Σ.fst t)) q ⁻¹ · ap (λ t → (x , Σ.snd t)) q))               ≡⟨
+                  identity-from-Eq-fib (δ {A}) _ (a , q) ((ap Σ.fst q) ⁻¹ , (begin
+                    ap (λ t → (x , Σ.fst t)) q ⁻¹ · ap (λ t → (x , Σ.snd t)) q                                                                       ≡⟨ {!   !} ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (x , Σ.snd t)) q                                                                     ≡⟨ {!   !} ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · refl · ap (λ t → (x , Σ.snd t)) q                                                              ≡⟨ {!   !} ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · (ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q) · ap (λ t → (x , Σ.snd t)) q    ≡⟨ {!   !} ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q      ≡⟨ {!   !} ⟩
+                    (ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹)) · (ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q)  ≡⟨ {!   !} ⟩
+                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , Σ.snd t)) q                                                         ≡⟨ {!   !} ⟩
+                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap id q                                                                                  ≡⟨ {!   !} ⟩
+                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · q                                                                                        ≡⟨ {!   !} ⟩
+                    ap δ (ap Σ.fst (q ⁻¹)) · q                                                                                                       ≡⟨ {!   !} ⟩
+                    ap δ (ap Σ.fst q ⁻¹) · q                                                                                                         ∎
+                  ))
+                ⟩
+                (a , q)                                                                          ∎
+            })
+          )
+      )
+      where
+        forward : fib (δ {A}) (x , y) → (x ≡ y)
+        forward (a , p) = (ap Σ.fst p) ⁻¹ · (ap Σ.snd p)
+        backward : (x ≡ y) → fib (δ {A}) (x , y)
+        backward p = (x , ap (λ t → (x , t)) p)
+
   -- TODO: exercise 12.7
   -- TODO: exercise 12.8
   -- TODO: exercise 12.9

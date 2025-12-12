@@ -87,23 +87,26 @@ module _ where
 
   Eq-fib-from-identity : {A B : Set} → (f : A → B) → {y : B} →
                          {x x' : fib f y} → (p : x ≡ x') → Eq-fib f x x'
-  Eq-fib-from-identity f refl = Eq-fib-refl f _
+  Eq-fib-from-identity f {y} {x} {.x} refl = Eq-fib-refl f x
 
   open Equivalence
 
-  identity-from-Eq-fib : {A B : Set} → (f : A → B) → {y : B} → {x x' : fib f y} →
+  identity-from-Eq-fib : {A B : Set} → (f : A → B) → {y : B} → (x x' : fib f y) →
     Eq-fib f x x' → x ≡ x'
-  identity-from-Eq-fib f (refl , refl) = refl
+  identity-from-Eq-fib f {y} (x , α) (x' , α') (refl , refl) = refl
 
   -- proposition 10.3.3
   Eq-fib-from-identity-is-equiv : {A B : Set} → (f : A → B) → {y : B} → {x x' : fib f y} →
                                   Is-equiv (Eq-fib-from-identity f {y} {x} {x'})
-  Eq-fib-from-identity-is-equiv f {y} {x} {x'} =
-    has-inverse-equiv (identity-from-Eq-fib f , rinverse , linverse)
+  Eq-fib-from-identity-is-equiv f {y} {xα@(x , α)} {x'} =
+    has-inverse-equiv (identity-from-Eq-fib f xα x' , rinverse , linverse)
     where
-      rinverse : (Eq-fib-from-identity f) ∘ (identity-from-Eq-fib f) ~ id
-      rinverse (refl , refl) = refl
-      linverse : (identity-from-Eq-fib f) ∘ (Eq-fib-from-identity f) ~ id
+      rinverse : (Eq-fib-from-identity f) ∘ (identity-from-Eq-fib f xα x') ~ id
+      rinverse = by-inductions x'
+        where
+          by-inductions : (x'' : fib f y) → (p : Eq-fib f xα x'') → (Eq-fib-from-identity f (identity-from-Eq-fib f xα x'' p)) ≡ p
+          by-inductions (x' , α') (refl , refl) = refl
+      linverse : (identity-from-Eq-fib f xα x') ∘ (Eq-fib-from-identity f {y} {xα} {x'}) ~ id
       linverse refl = refl
 
   open Equivalence.Symbolic
@@ -130,14 +133,7 @@ module _ where
       G y = snd (gG y)
 
       linverse : g ∘ f ~ id
-      linverse x =
-        let
-          (_ , C) = contr (f x)
-          q = begin
-            -- the LHS is THE center of contraction of fib f (f x)
-            (g (f x) , G (f x))   ≡⟨ C (x , refl) ⟩
-            (x , refl)            ∎
-        in ap fst q
+      linverse x = ap fst (snd (contr (f x)) (x , refl))
     in has-inverse-equiv (g , G , linverse)
 
   -- definition 10.4.1
@@ -161,7 +157,7 @@ module _ where
             ap f (H x)          ≡⟨← (·-runit _) ⟩
             ap f (H x) · refl   ∎
       C : (x : fib f y) → center ≡ x
-      C x = identity-from-Eq-fib f (C' x)
+      C x = identity-from-Eq-fib f center x (C' x)
 
   -- definition 10.4.4
   comm-htpy : {A : Set} → (f : A → A) → (H : f ~ id) → (x : A) → (H (f x) ≡ ap f (H x))
@@ -473,17 +469,17 @@ module _ where
     inhabited-sum-is-not-contr a _ (right c , C) = Eq-Copr.left-neq-right ((C (left a)) ⁻¹)
 
     fin-is-not-contr-except-fin-one : {n : Nat} → (n ≢ succ zero) → ¬ (Is-contr (Fin n))
-    fin-is-not-contr-except-fin-one {zero}           _    ()
-    fin-is-not-contr-except-fin-one {succ zero}     neq   _   = neq refl
-    fin-is-not-contr-except-fin-one {succ (succ n)}  _  contr = inhabited-sum-is-not-contr (right unit) unit contr
+    fin-is-not-contr-except-fin-one {zero}           _    (() , _)
+    fin-is-not-contr-except-fin-one {succ zero}     neq   _        = neq refl
+    fin-is-not-contr-except-fin-one {succ (succ n)}  _  contr      = inhabited-sum-is-not-contr (right unit) unit contr
 
   -- exercise 10.5
   both-contr-then-product-is-contr : {A B : Set} → Is-contr A → Is-contr B → Is-contr (A × B)
   both-contr-then-product-is-contr {A} {B} (ca , CA) (cb , CB) =
-    ((ca , cb) , λ (x , y) → begin
+    ((ca , cb) , λ { (x , y) → begin
       (ca , cb)           ≡⟨ ap2 (λ a b → (a , b)) (CA x) (CB y) ⟩
       (x , y)             ∎
-    )
+    })
   product-is-contr-then-both-contr : {A B : Set} → Is-contr (A × B) → Is-contr A × Is-contr B
   product-is-contr-then-both-contr {A} {B} (cab , CAB) =
     let

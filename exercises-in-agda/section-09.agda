@@ -602,9 +602,9 @@ module _ where
     ≃-inverse-map-is-sect-of-original ((g , gsect) , _) = gsect
 
     ≃-inverse-map-is-retr-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-retraction-of f (≃-inverse-map-for f-is-eqv)
-    ≃-inverse-map-is-retr-of-original f-is-eqv@((g , _) , _) =
+    ≃-inverse-map-is-retr-of-original ((g , gSect) , (r , R)) =
       let
-        (_ {- should equal g -} , gsect , gretr) = equiv-has-inverse f-is-eqv
+        (_ {- should equal g -} , gsect , gretr) = equiv-has-inverse ((g , gSect) , (r , R))
       in gretr
 
     ≃-inverse-map-is-inverse-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-inverse-of f (≃-inverse-map-for f-is-eqv)
@@ -701,7 +701,7 @@ module _ where
           ))
 
       ×-lzero : {A : Set} → Empty × A ≃ Empty
-      ×-lzero = ((λ { () }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { () })))
+      ×-lzero = ((λ { (() , a) }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { (() , a) })))
 
       ×-rzero : {A : Set} → A × Empty ≃ Empty
       ×-rzero = ≃-trans ×-comm ×-lzero
@@ -760,10 +760,10 @@ module _ where
       open Equivalence-Reasoning
 
       Σ-lzero : {B : Empty → Set} → Σ Empty B ≃ Empty
-      Σ-lzero = ((λ { () }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { () })))
+      Σ-lzero = ((λ { (() , b) }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { (() , b) })))
 
       Σ-rzero : {A : Set} → Σ A (λ x → Empty) ≃ Empty
-      Σ-rzero = ((λ { () }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { () })))
+      Σ-rzero = ((λ { (a , ()) }) , has-inverse-equiv ((λ { () }) , (λ { () }) , (λ { (a , ()) })))
 
       Σ-lunit : {B : Unit → Set} → Σ Unit B ≃ B unit
       Σ-lunit =
@@ -835,14 +835,24 @@ module _ where
     pair-eq-Eq-Σ : {A : Set} → {B : A → Set} → {s t : Σ A B} → (s ≡ t) → Eq-Σ s t
     pair-eq-Eq-Σ {A} {B} {s} {.s} refl = Eq-Σ-refl s
 
+    eq-pair : {A : Set} → {B : A → Set} → (s t : Σ A B) → Eq-Σ s t → s ≡ t
+    eq-pair {A} {B} (a1 , b1) (a2 , b2) (refl , refl) = refl
+
     -- theorem 9.3.4
     pair-eq-Eq-Σ-is-equiv : {A : Set} → {B : A → Set} → {s t : Σ A B} → Is-equiv (pair-eq-Eq-Σ {A} {B} {s} {t})
-    pair-eq-Eq-Σ-is-equiv {A} {B} {s} {t} =
+    pair-eq-Eq-Σ-is-equiv {A} {B} {s@(a1 , b1)} {t} =
       has-inverse-equiv
-        ( (λ { (refl , refl) → refl })
-        , (λ { (refl , refl) → refl } )
-        , (λ { refl → refl } ))
-    
+        (eq-pair s t , S , R)
+      where
+        S : Is-sect-of pair-eq-Eq-Σ (eq-pair s t)
+        S = by-inductions t
+          where
+            by-inductions : (t' : Σ A B) → (x : Eq-Σ s t') → pair-eq-Eq-Σ (eq-pair s t' x) ≡ x
+            by-inductions (a2 , b2) (refl , refl) = refl
+
+        R : Is-retraction-of pair-eq-Eq-Σ (eq-pair s t)
+        R refl = refl
+
     open Equivalence.Symbolic
     pair-eq-≃-Eq-Σ : {A : Set} → {B : A → Set} → {s t : Σ A B} → (s ≡ t) ≃ Eq-Σ s t
     pair-eq-≃-Eq-Σ {A} {B} {s} {t} = (pair-eq-Eq-Σ , pair-eq-Eq-Σ-is-equiv)
@@ -1155,7 +1165,7 @@ module _ where
       (is-equiv-preserved-by-homotopy FG , is-equiv-preserved-by-homotopy (FG ⁻¹ₕₜₚ))
 
     sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retraction-of f)) → Is-retraction-of f g
-    sect-with-retr-is-retr {A} {B} {f} {g} gsect retr = Σ.snd (Σ.snd (equiv-has-inverse ((g , gsect), retr)))
+    sect-with-retr-is-retr {A} {B} {f} {g} gsect (r , R) = Σ.snd (Σ.snd (equiv-has-inverse ((g , gsect), (r , R))))
 
     homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →
                                               ≃-inverse-map-for ee ~ ≃-inverse-map-for ee'
@@ -1285,7 +1295,7 @@ module _ where
         is-equiv-preserved-by-homotopy g⁻¹f~h (comp-equivs-is-equiv g⁻¹-eqv f-eqv)
     
     sect-of-equiv-is-equiv : {A B : Set} → {f : A → B} → (((s , S) , _) : Is-equiv f) → Is-equiv s
-    sect-of-equiv-is-equiv eqv = ≃-inverse-map-is-equiv eqv
+    sect-of-equiv-is-equiv ((s , S) , (r , R)) = ≃-inverse-map-is-equiv ((s , S) , (r , R))
 
     retr-of-equiv-is-equiv : {A B : Set} → {f : A → B} → ((_ , (r , R)) : Is-equiv f) → Is-equiv r
     retr-of-equiv-is-equiv eqv@(_ , (r , R)) =
@@ -1394,6 +1404,14 @@ module _ where
           < f' ×₀ g' > (a , b) ∎
       }
 
+    fst-×₀-eq-left-fst : {A A' B B' : Set} → {f : A → A'} → {g : B → B'} → (t : A × B) →
+                        Σ.fst (< f ×₀ g > t) ≡ f (Σ.fst t)
+    fst-×₀-eq-left-fst (a , b) = refl
+
+    snd-×₀-eq-right-snd : {A A' B B' : Set} → {f : A → A'} → {g : B → B'} → (t : A × B) →
+                         Σ.snd (< f ×₀ g > t) ≡ g (Σ.snd t)
+    snd-×₀-eq-right-snd (a , b) = refl
+
     ×₀-equiv-then-conditionally-equivs : {A A' B B' : Set} →
                                          {f : A → A'} → {g : B → B'} → Is-equiv < f ×₀ g > →
                                          (B' → Is-equiv f) × (A' → Is-equiv g)
@@ -1406,13 +1424,13 @@ module _ where
 
         f⁻¹-is-sectionof-f = λ (b' : B') (a' : A') → begin
           f (f⁻¹-at b' a')                   ≡⟨⟩
-          f (Σ.fst (f×₀g⁻¹ (a' , b')))       ≡⟨⟩
+          f (Σ.fst (f×₀g⁻¹ (a' , b')))       ≡⟨← fst-×₀-eq-left-fst (f×₀g⁻¹ (a' , b')) ⟩
           Σ.fst (f×₀g (f×₀g⁻¹ (a' , b')))    ≡⟨ ap Σ.fst (invS (a' , b')) ⟩
           Σ.fst (a' , b')                    ≡⟨⟩
           a'                                 ∎
         g⁻¹-is-sectionof-g = λ (a' : A') (b' : B') → begin
           g (g⁻¹-at a' b')                   ≡⟨⟩
-          g (Σ.snd (f×₀g⁻¹ (a' , b')))       ≡⟨⟩
+          g (Σ.snd (f×₀g⁻¹ (a' , b')))       ≡⟨← snd-×₀-eq-right-snd (f×₀g⁻¹ (a' , b')) ⟩
           Σ.snd (f×₀g (f×₀g⁻¹ (a' , b')))    ≡⟨ ap Σ.snd (invS (a' , b')) ⟩
           Σ.snd (a' , b')                    ≡⟨⟩
           b'                                 ∎
@@ -1426,7 +1444,7 @@ module _ where
               f⁻¹-at b' (f a)                              ≡⟨⟩
               Σ.fst (f×₀g⁻¹ (f a , b'))                    ≡⟨← ap (λ x → Σ.fst (f×₀g⁻¹ ((f a) , x))) (g⁻¹-is-sectionof-g (f a) b') ⟩
               Σ.fst (f×₀g⁻¹ (f a , g (g⁻¹-at (f a) b')))   ≡⟨⟩
-              Σ.fst (f×₀g⁻¹ (f×₀g (a , g⁻¹-at (f a) b')))  ≡⟨ ap Σ.fst (invR _) ⟩
+              Σ.fst (f×₀g⁻¹ (f×₀g (a , g⁻¹-at (f a) b')))  ≡⟨ ap Σ.fst (invR (a , _)) ⟩
               Σ.fst (a , g⁻¹-at (f a) b')                  ≡⟨⟩
               a                                            ∎
             )
@@ -1440,7 +1458,7 @@ module _ where
               g⁻¹-at a' (g b)                               ≡⟨⟩
               Σ.snd (f×₀g⁻¹ (a' , g b))                     ≡⟨← ap (λ x → Σ.snd (f×₀g⁻¹ (x , g b))) (f⁻¹-is-sectionof-f (g b) a') ⟩
               Σ.snd (f×₀g⁻¹ (f (f⁻¹-at (g b) a') , g b))    ≡⟨⟩
-              Σ.snd (f×₀g⁻¹ (f×₀g (f⁻¹-at (g b) a' , b)))   ≡⟨ ap Σ.snd (invR _) ⟩
+              Σ.snd (f×₀g⁻¹ (f×₀g (f⁻¹-at (g b) a' , b)))   ≡⟨ ap Σ.snd (invR (_ , b)) ⟩
               Σ.snd (f⁻¹-at (g b) a' , b)                   ≡⟨⟩
               b                                             ∎
             )

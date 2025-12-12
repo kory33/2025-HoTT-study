@@ -100,13 +100,13 @@ module _ where
                                                                   (htpy-refl _)
                                                                   (mapleft-by-equiv-is-equiv f-eqv)
                                                             ⟩
-      Is-equiv (mapleft f D ∘ totalization g)               ↔⟨⟩ -- these maps are definitionally equal
+      Is-equiv (mapleft f D ∘ totalization g)               ↔⟨ homotope-implies-is-equiv-biimpl (λ { (x , y) → refl }) ⟩
       Is-equiv (totalization-over f D g)                    ∎-↔
 
   -- definition 11.2.1
   is-identity-system-at : {A : Set} → (a : A) → (B : A → Set) → (b : B a) → Set₁
   is-identity-system-at {A} a B b =
-    (P : (x : A) → B x → Set) → Sect (λ (h : (x : A) → (y : B x) → P x y) → h a b)
+    (P : Σ A B → Set) → Sect (λ (h : (x : A) → (y : B x) → P (x , y)) → h a b)
 
   identity-system-at : {A : Set} → (a : A) → Set₁
   identity-system-at {A} a =
@@ -150,28 +150,27 @@ module _ where
     ii↔iii : (b : B a) → ii ↔-poly (iii b)
     ii↔iii b =
       begin-↔-poly
-        Is-contr (Σ A B)                                                     ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
-        singleton-induction-at (a , b)                                       ↔-poly⟨⟩
-        ((P : Σ A B → Set) → Sect (ev-pt (a , b)))                           ↔-poly⟨ curry-type-family ⟩
-        ((P : (x : A) → B x → Set) → Sect (ev-pt (a , b)))                   ↔-poly⟨⟩
-        ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b ∘ ev-pair P))    ↔-poly⟨ depfn-iff (λ P →
-                                                                              Sect-former-then-Sect-comp-iff-Sect-latter
-                                                                                (ev-at-pair P a b)
-                                                                                (htpy-refl (ev-at-pair P a b ∘ ev-pair P))
-                                                                                (ev-pair-sect P)
-                                                                            ) ⟩
-        ((P : (x : A) → B x → Set) → Sect (ev-at-pair P a b))                ↔-poly⟨⟩
-        is-identity-system-at a B b                                          ∎-↔-poly
+        Is-contr (Σ A B)                                          ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
+        singleton-induction-at (a , b)                            ↔-poly⟨⟩
+        ((P : Σ A B → Set) → Sect (ev-pt {Σ A B} {P} (a , b)))    ↔-poly⟨⟩
+        ((P : Σ A B → Set) → Sect (ev-at-pair P a b ∘ ev-pair P)) ↔-poly⟨ depfn-iff (λ P →
+                                                                    Sect-former-then-Sect-comp-iff-Sect-latter
+                                                                      (ev-at-pair P a b)
+                                                                      (htpy-refl (ev-at-pair P a b ∘ ev-pair P))
+                                                                      (ev-pair-sect P)
+                                                                  ) ⟩
+        ((P : Σ A B → Set) → Sect (ev-at-pair P a b))             ↔-poly⟨⟩
+        is-identity-system-at a B b                               ∎-↔-poly
       where
         open ↔-poly-Reasoning
-        ev-pair : (P : (x : A) → B x → Set) → (((x , y) : Σ A B) → P x y) → (x : A) → (y : B x) → P x y
+        ev-pair : (P : Σ A B → Set) → ((t : Σ A B) → P t) → (x : A) → (y : B x) → P (x , y)
         ev-pair P h x y = h (x , y)
 
-        ev-at-pair : (P : (x : A) → B x → Set) → (a : A) → (b : B a) → (((x : A) → (y : B x) → P x y) → P a b)
+        ev-at-pair : (P : Σ A B → Set) → (a : A) → (b : B a) → (((x : A) → (y : B x) → P (x , y)) → P (a , b))
         ev-at-pair P a b f = f a b
 
-        ev-pair-sect : (P : (x : A) → B x → Set) → Sect (ev-pair P)
-        ev-pair-sect P = ((λ { f (x , y) → f x y }) , λ f → refl)
+        ev-pair-sect : (P : Σ A B → Set) → Sect (ev-pair P)
+        ev-pair-sect P = (ind-Σ , λ { h → refl })
 
     -- the most useful direction of the theorem 11.2.2
     ii→i-at-fn : Is-contr (Σ A B) → (f : (x : A) → (a ≡ x) → B x) → is-family-of-equivs f
@@ -315,12 +314,12 @@ module _ where
       iii : (d : D a b c) → Set₁
       iii d = is-dependent-identity-system-over id-sys b D d
 
-      iv  = (f : ((x , y) : Σ A B) → ((a , b) ≡ (x , y)) → Σ (C x) (λ z → D x y z)) → is-family-of-equivs f
-      v   = Is-contr (Σ (Σ A B) (λ { (x , y) → Σ (C x) (λ z → D x y z) }))
+      iv  = (f : (xy@(x , y) : Σ A B) → ((a , b) ≡ xy) → Σ (C x) (λ z → D x y z)) → is-family-of-equivs f
+      v   = Is-contr (Σ (Σ A B) (λ (x , y) → Σ (C x) (λ z → D x y z)))
 
       -- we will fix the point of the identity system to be (c , d), although the book leaves this implicit
       vi : (d : D a b c) → Set₁
-      vi d = is-identity-system-at (a , b) (λ { (x , y) → Σ (C x) (λ z → D x y z) }) (c , d)
+      vi d = is-identity-system-at (a , b) (λ (x , y) → Σ (C x) (λ z → D x y z)) (c , d)
 
       i↔ii : (d : D a b c) → i ↔ ii
       i↔ii d = fundamental-thm-of-identity-types.i↔ii d
@@ -337,25 +336,23 @@ module _ where
       ii↔v : ii ↔ v
       ii↔v =
         equiv-then-contr-iff-contr (
-          ≃-comm (
-            begin-≃
-              Σ (Σ A B) (λ { (x , y) → Σ (C x) (λ z → D x y z) })
-                  ≃⟨ (
-                    (λ { ((x , y) , (z , d)) → ((x , z) , (y , d)) }) ,
-                    has-inverse-equiv (
-                      (λ { ((x , z) , (y , d)) → ((x , y) , (z , d)) }) ,
-                      (λ { ((x , y) , (z , d)) → refl }) ,
-                      (λ { ((x , z) , (y , d)) → refl })
-                    )
-                  ) ⟩
-              Σ (Σ A C) (λ { (x , z) → Σ (B x) (λ y → D x y z) })
-                  ≃⟨
-                    Σ-≃-sections-at-base-center (_ ,
-                      recenter-contraction-at (a , c) (
-                        Σ-poly.snd (fundamental-thm-of-identity-types.ii↔iii c) id-sys))
-                  ⟩
-              Σ (B a) (λ y → D a y c)   ∎-≃
-          )
+          begin-≃
+            Σ (B a) (λ y → D a y c)
+              ≃⟨←
+                Σ-≃-sections-at-base-center (_ ,
+                  recenter-contraction-at (a , c) (
+                    Σ-poly.snd (fundamental-thm-of-identity-types.ii↔iii c) id-sys))
+              ⟩
+            Σ (Σ A C) (λ xz → Σ (B (Σ-poly.fst xz)) (λ y → D (Σ-poly.fst xz) y (Σ-poly.snd xz)))
+              ≃⟨← (
+                (λ { ((x , y) , (z , d)) → ((x , z) , (y , d)) }) ,
+                has-inverse-equiv (
+                  (λ { ((x , z) , (y , d)) → ((x , y) , (z , d)) }) ,
+                  (λ { ((x , y) , (z , d)) → refl }) ,
+                  (λ { ((x , z) , (y , d)) → refl })
+                )
+              ) ⟩
+            Σ (Σ A B) (λ xy → Σ (C (Σ-poly.fst xy)) (λ z → D (Σ-poly.fst xy) (Σ-poly.snd xy) z))  ∎-≃
         )
       
       ii→iv : (d : D a b c) → ii → iv
@@ -367,8 +364,8 @@ module _ where
     fib-eq-≃-fib-apf-concat {A} {B} f b (x , p) =
       (λ { (y , q) → (_ , eqvs-is-family-of-equivs (y , q)) })
       where
-        eqvs : ((y , q) : fib f b) → ((x , p) ≡ (y , q)) → Σ (x ≡ y) (λ α → ap f α ≡ p · q ⁻¹)
-        eqvs _ refl = (refl , (inverse (≡-Basic.·-rinv p)))
+        eqvs : (yq@(y , q) : fib f b) → ((x , p) ≡ yq) → Σ (x ≡ y) (λ α → ap f α ≡ p · q ⁻¹)
+        eqvs yq refl = (refl , (inverse (≡-Basic.·-rinv p)))
 
         equivalence : Σ (f x ≡ b) (λ q → ap f refl ≡ p · q ⁻¹) ≃ Σ (f x ≡ b) (λ q → p ≡ q)
         equivalence =
