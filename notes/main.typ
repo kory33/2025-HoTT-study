@@ -241,6 +241,7 @@
         rule(
           name: [(#smallcaps[Swap])],
           $Gamma, y: B, x: A, Delta tack.r cal(J)$,
+          $Gamma tack.r B "type"$,
           $Gamma, x: A, y: B, Delta tack.r cal(J)$,
         ),
       ),
@@ -491,4 +492,234 @@
     ]
 
 #show: page
+== Section 2. Dependent Function Types
+
+=== Exercise 2.1
+
+Give a derivation of the rule
+
+#box(width: 100%)[
+  #align(center)[
+    #prooftree(
+      rule(
+        name: [(#smallcaps[FunExt])],
+        $Gamma tack.r f eqdot g : product_((x: A)) B(x)$,
+        $Gamma tack.r f : product_((x: A)) B(x)$,
+        $Gamma tack.r g : product_((x: A)) B(x)$,
+        $Gamma, x: A tack.r f(x) eqdot g(x): B(x)$,
+      ),
+    )
+  ]
+]
+
+Answer:
+#pad(top: 1em, bottom: 1em)[
+  #box(width: 100%)[
+    #set text(size: 7pt)
+    #align(center)[
+      #prooftree(
+        rule(
+          name: [(#smallcaps[JEqEquiv])],
+          $Gamma tack.r f eqdot g : product_((x: A)) B(x)$,
+          rule(
+            name: [(#smallcaps[JEqEquiv])],
+            $Gamma tack.r f eqdot lambda x. f(x) : product_((x: A)) B(x)$,
+            rule(
+              name: [($eta$)],
+              $Gamma tack.r lambda x. f(x) eqdot f: product_((x: A)) B(x)$,
+              $Gamma tack.r f : product_((x: A)) B(x)$,
+            ),
+          ),
+          rule(
+            name: [(#smallcaps[JEqEquiv])],
+            $Gamma tack.r lambda x. f(x) eqdot g : product_((x: A)) B(x)$,
+            rule(
+              name: [(#smallcaps[$Pi$-IntroCong])],
+              $Gamma tack.r lambda x. f(x) eqdot lambda x. g(x) : product_((x: A)) B(x)$,
+              $Gamma, x: A tack.r f(x) eqdot g(x): B(x)$,
+            ),
+            rule(
+              name: [($eta$)],
+              $Gamma tack.r lambda x. g(x) eqdot g: product_((x: A)) B(x)$,
+              $Gamma tack.r g : product_((x: A)) B(x)$,
+            ),
+          ),
+        ),
+      )
+    ]
+  ]
+]
+
+=== Exercise 2.2
+
+Give a derivation of the rule
+#box(width: 100%)[
+  #pad(left: 70pt)[
+    #prooftree(
+      rule(
+        name: [($sans(id)$-#smallcaps[RUnit])],
+        $Gamma tack.r f compose sans(id)_A eqdot f : A arrow B$,
+        $Gamma tack.r f : A arrow B$,
+      ),
+    )
+  ]
+]
+
+Answer:
+
+First, we must _assume_ two axioms (which the book does not state explicitly):
+
+#padded-vertical-grid(
+  grid(
+    columns: (150pt, 2fr, 1fr),
+    align: (right, left),
+    grid.cell(align: horizon)[(#smallcaps[JEqTyped]):],
+    one-line-grid(
+      prooftree(
+        rule(
+          $Gamma tack.r A "type"$,
+          $Gamma tack.r A arrow B "type"$,
+        ),
+      ),
+      prooftree(
+        rule(
+          $Gamma tack.r B "type"$,
+          $Gamma tack.r A arrow B "type"$,
+        ),
+      ),
+    )
+  ),
+)
+
+We have the following lemmas:
+
+
+#align(left)[
+  #box(width: 100%)[
+    #lemma[
+
+    ]
+  ]
+]
+
+#pad(top: 1em, bottom: 2em)[
+  #box(width: 100%)[
+    #align(center)[
+      #set text(size: 3pt)
+      #prooftree(
+        rule(
+          name: [(#smallcaps[FunExt])],
+          $Gamma tack.r f compose sans(id)_A eqdot f : A arrow B$,
+          rule(
+            $Gamma, x: A tack.r (f compose sans("id")_A)(x) eqdot f(x): B$,
+            rule(
+              name: [(#smallcaps[JEqEquiv])],
+              $Gamma, x: A tack.r sans("comp")(f)(sans("id")_A)(x) eqdot f(x): B$,
+              rule(
+                name: [(#smallcaps[SubstCongr])],
+                $Gamma, x: A tack.r sans("comp")(f)(sans("id")_A)(x) eqdot(lambda g. lambda f'. lambda x'. g(f'(x')))(f)(sans("id")_A)(x): B$,
+                rule(
+                  name: [(#smallcaps[Wk])],
+                  $Gamma, x: A tack.r sans("comp") eqdot lambda g. lambda f'. lambda x'. g(f'(x')): B^A arrow (A^A arrow B^A)$,
+                  rule(
+                    name: [(#smallcaps[$sans("comp")$-Defn])],
+                    $Gamma tack.r sans("comp") eqdot lambda g. lambda f'. lambda x'. g(f'(x')): B^A arrow (A^A arrow B^A)$,
+                    $Gamma tack.r A "type"$,
+                    $Gamma tack.r B "type"$,
+                    $Gamma tack.r A "type"$,
+                  ),
+                ),
+                rule(
+                  name: [(#smallcaps[JEqEquiv])],
+                  $Gamma, x: A, y: B^A arrow (A^A arrow B^A) tack.r y(f)(sans("id")_A)(x) eqdot y(f)(sans("id")_A)(x): B$,
+                  rule(
+                    name: [(#smallcaps[Swap])],
+                    $Gamma, x: A, y: B^A arrow (A^A arrow B^A) tack.r y(f)(sans("id")_A)(x): B$,
+                    $Gamma tack.r A "type"$,
+                    rule(
+                      name: [(#smallcaps[$Pi$-Elim])],
+                      $Gamma, y: B^A arrow (A^A arrow B^A), x: A tack.r y(f)(sans("id")_A)(x): B$,
+                      rule(
+                        name: [(#smallcaps[Subst])],
+                        $Gamma, y: B^A arrow (A^A arrow B^A) tack.r y(f)(sans("id")_A): A arrow B$,
+                        rule(
+                          name: [(#smallcaps[Wk])],
+                          $Gamma, y: B^A arrow (A^A arrow B^A) tack.r sans("id")_A: A arrow A$,
+                          rule(
+                            name: [(#smallcaps[$sans("id")$-Defn])],
+                            $Gamma tack.r sans("id")_A: A arrow A$,
+                            $Gamma tack.r A "type"$,
+                          ),
+                        ),
+                        rule(
+                          name: [(#smallcaps[$Pi$-Elim])],
+                          $Gamma, y: B^A arrow (A^A arrow B^A), x: A arrow A tack.r y(f)(x): A arrow B$,
+                          rule(
+                            name: [(#smallcaps[Subst])],
+                            $Gamma, y: B^A arrow (A^A arrow B^A) tack.r y(f): A^A arrow B^A$,
+                            rule(
+                              name: [(#smallcaps[Wk])],
+                              $Gamma, y: B^A arrow (A^A arrow B^A) tack.r f: A arrow B$,
+                              $Gamma tack.r f: A arrow B$,
+                            ),
+                            rule(
+                              name: [(#smallcaps[$Pi$-Elim])],
+                              $Gamma, y: B^A arrow (A^A arrow B^A), x: B^A tack.r y(x): A^A arrow B^A$,
+                              // var
+                              $Gamma, y: B^A arrow (A^A arrow B^A) tack.r y: B^A arrow (A^A arrow B^A)$,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              rule(
+                name: [(#smallcaps[JEqQuiv])],
+                $Gamma, x: A tack.r (lambda g. lambda f'. lambda x'. g(f'(x')))(f)(sans("id")_A)(x) eqdot f(x): B$,
+                rule(
+                  $Gamma, x: A tack.r (lambda g. lambda f'. lambda x'. g(f'(x')))(f)(sans("id")_A)(x) eqdot f(sans("id")_A (x))): B$,
+                  rule(
+                    name: [(#smallcaps[SubstCongr])],
+                    $Gamma, x: A tack.r (lambda g. lambda f'. lambda x'. g(f'(x')))(f)(sans("id")_A)(x) eqdot (lambda f'. lambda x'. f(f'(x')))(sans("id")_A)(x): B$,
+                    rule(
+                      name: [(#smallcaps[JEqEquiv])],
+                      $Gamma, x: A, y: A^A arrow B^A tack.r y(sans("id")_A)(x) eqdot y(sans("id")_A)(x): B$,
+                      rule(
+                        name: [(#smallcaps[Swap])],
+                        $Gamma, x: A, y: A^A arrow B^A tack.r y(sans("id")_A)(x): B$,
+                        rule(
+                          name: [(#smallcaps[$Pi$-Elim])],
+                          $Gamma, y: A^A arrow B^A, x: A tack.r y(sans("id")_A)(x): B$,
+                          rule(
+                            name: [(#smallcaps[Subst])],
+                            $Gamma, y: A^A arrow B^A tack.r y(sans("id")_A): A arrow B$,
+                            $Gamma, y: A^A arrow B^A tack.r sans("id")_A : A arrow A$,
+                            rule(
+                              name: [(#smallcaps[$Pi$-Elim])],
+                              $Gamma, y: A^A arrow B^A, x: A^A tack.r y(x): A arrow B$,
+                              rule(
+                                name: [(#smallcaps[Var])],
+                                $Gamma, y: A^A arrow B^A tack.r y: A^A arrow A^B$,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  $Gamma, x: A tack.r (lambda f'. lambda x'. f(f'(x')))(sans("id")_A)(x) eqdot f(sans("id")_A (x))): B$,
+                ),
+                $Gamma, x: A tack.r f(sans("id")_A (x))) eqdot f(x): B$,
+              ),
+            ),
+          ),
+        ),
+      )
+    ]
+  ]
+]
+
+#show: page.with(flipped: false)
 #bibliography("bibliography.bib")
