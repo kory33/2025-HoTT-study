@@ -17,7 +17,12 @@ jobs:
         with:
           agda-version: "2.6.4.3"
           stdlib-version: "2.1"
-          build: false
+          # NOTE: build: false is ignored due to a bug in setup-agda's
+          # option parsing (parseBoolean(…) || def.build always resolves
+          # to the default `true`). As a workaround, we point the action's
+          # built-in build step at the simplest file in the project.
+          dir: exercises-in-agda
+          main: section-02
 
       - name: Typecheck all Agda files
         working-directory: exercises-in-agda
