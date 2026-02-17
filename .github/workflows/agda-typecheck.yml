@@ -24,10 +24,11 @@ jobs:
           failed=0
           for f in $(find . -maxdepth 1 -name '*.agda' | sort); do
             echo "::group::Typechecking $f"
-            if agda --allow-unsolved-metas "$f"; then
+            if output=$(agda --allow-unsolved-metas "$f" 2>&1); then
               echo "OK: $f"
             else
-              echo "::error::FAILED: $f"
+              echo "$output"
+              echo "::error file=$f::$(echo "$output" | tail -5 | tr '\n' ' ')"
               failed=1
             fi
             echo "::endgroup::"
