@@ -16,7 +16,7 @@ jobs:
         uses: wenkokke/setup-agda@v2
         with:
           agda-version: "2.6.4.3"
-          agda-stdlib-version: "recommended"
+          agda-stdlib-version: "2.1"
 
       - name: Typecheck all Agda files
         working-directory: exercises-in-agda
