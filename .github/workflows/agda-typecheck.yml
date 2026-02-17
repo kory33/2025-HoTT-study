@@ -1,0 +1,27 @@
+name: Agda typecheck
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Agda
+        uses: omelkonian/setup-agda@v2.3
+        with:
+          agda-version: "2.6.4.3"
+          stdlib-version: "2.1"
+          build: false
+
+      - name: Typecheck all Agda files
+        working-directory: exercises-in-agda
+        run: |
+          find . -maxdepth 1 -name '*.agda' -print0 \
+            | sort -z \
+            | xargs -0 -I{} sh -c 'echo "Typechecking {}"; agda "{}"'
