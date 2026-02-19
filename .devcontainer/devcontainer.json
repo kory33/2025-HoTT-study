@@ -1,0 +1,49 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/rust
+{
+    "name": "Exercises in \"Introduction to Homotopy Type Theory\"",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
+    "remoteUser": "vscode",
+    "features": {
+        "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "GitHub.copilot",
+                "Anthropic.claude-code",
+                "banacorn.agda-mode",
+                "qbane.als-wasm-loader"
+            ],
+            "settings": {
+                "files.eol": "\n",
+                "files.insertFinalNewline": true,
+                "files.trimFinalNewlines": true,
+                "files.trimTrailingWhitespace": true,
+                "editor.formatOnSave": true
+            }
+        }
+    },
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "mounts": [
+        "source=claudeconfig-${devcontainerId},target=/home/vscode/.claude,type=volume",
+        "source=commandhistory-${devcontainerId},target=/commandhistory,type=volume"
+    ],
+    "containerEnv": {
+        "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+    },
+    "runArgs": [
+        // When authenticating Claude Code, for example, the web browser in the host needs
+        // to be able to connect to a port in the container.
+        // Enable this configuration only when necessary, as it has security implications.
+        // "--network=host"
+    ],
+    // Hack: In Windows, every mounted file gets root:root ownership, so overwrite it to vscode:vscode.
+    //       Also, convert all text files to Unix line endings.
+    "onCreateCommand": "sudo chown -R $(id -u):$(id -g) /workspace && git ls-files -z | sudo xargs -0 dos2unix && git add -A",
+    "postCreateCommand": "chmod +x /workspace/.devcontainer/post-create.sh && /workspace/.devcontainer/post-create.sh"
+}
