@@ -7,6 +7,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ripgrep \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Codex
+RUN wget https://github.com/openai/codex/releases/download/rust-v0.104.0/codex-x86_64-unknown-linux-musl.tar.gz -O /tmp/codex.tar.gz && \
+  tar -xvf /tmp/codex.tar.gz -C /usr/local/bin/ && \
+  rm /tmp/codex.tar.gz && \
+  mv /usr/local/bin/codex-x86_64-unknown-linux-musl /usr/local/bin/codex && \
+  chmod +x /usr/local/bin/codex
+
 # Used to persist bash history as per https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
 RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
     && mkdir /commandhistory \
@@ -16,7 +23,10 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
 
 # Claude configuration files
 RUN mkdir /home/$USERNAME/.claude && chown -R $USERNAME /home/$USERNAME/.claude
+# Codex configuration files
+RUN mkdir /home/$USERNAME/.codex && chown -R $USERNAME /home/$USERNAME/.codex
 
 # Use with caution.
 # The devcontainer may contain Claude credentials so this is not entirely safe.
 RUN echo "alias claude-yolo='claude --dangerously-skip-permissions'" >> /etc/bash.bashrc
+RUN echo "alias codex-yolo='codex --dangerously-bypass-approvals-and-sandbox'" >> /etc/bash.bashrc

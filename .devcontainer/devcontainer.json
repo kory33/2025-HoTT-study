@@ -31,6 +31,7 @@
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "mounts": [
         "source=claudeconfig-${devcontainerId},target=/home/vscode/.claude,type=volume",
+        "source=codexconfig-${devcontainerId},target=/home/vscode/.codex,type=volume",
         "source=commandhistory-${devcontainerId},target=/commandhistory,type=volume"
     ],
     "containerEnv": {
