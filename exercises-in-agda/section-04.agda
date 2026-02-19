@@ -13,21 +13,21 @@ module _ where
   -- definition 4.3.1
   data Empty : Set where
 
-  Enpty-ind : {P : Empty → Set} → (x : Empty) → P x
-  Enpty-ind ()
+  Empty-ind : {P : Empty → Set} → (x : Empty) → P x
+  Empty-ind ()
 
   module EmptyBasic where
     -- alias
     absurd : {A : Set} → Empty → A
-    absurd = Enpty-ind
+    absurd = Empty-ind
 
     -- alias
     ex-falso : {A : Set} → Empty → A
     ex-falso = absurd
 
     -- definition 4.3.2
-    is-empty : Set → Set
-    is-empty A = A → Empty
+    Is-empty : Set → Set
+    Is-empty A = A → Empty
 
     -- definition 4.3.2
     ¬_ : Set → Set
@@ -60,11 +60,11 @@ module _ where
     [_+₀_] f g = ind-+₀ _ (λ x → f x) (λ y → g y)
 
     -- proposition 4.4.3
-    +₀-emptyRight : {A B : Set} → is-empty B → A +₀ B → A
+    +₀-emptyRight : {A B : Set} → Is-empty B → A +₀ B → A
     +₀-emptyRight ¬b (left x) = x
     +₀-emptyRight ¬b (right y) = absurd (¬b y)
 
-    +₀-emptyLeft : {A B : Set} → is-empty A → A +₀ B → B
+    +₀-emptyLeft : {A B : Set} → Is-empty A → A +₀ B → B
     +₀-emptyLeft ¬a (left x) = absurd (¬a x)
     +₀-emptyLeft ¬a (right y) = y
 

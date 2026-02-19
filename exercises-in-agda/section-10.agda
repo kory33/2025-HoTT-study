@@ -445,7 +445,7 @@ module _ where
       (contr-then-const-unit-is-equiv a-contr)
 
   open EmptyBasic
-  any-map-into-empty-type-is-equiv : {A B : Set} → is-empty B → (f : A → B) → Is-equiv f
+  any-map-into-empty-type-is-equiv : {A B : Set} → Is-empty B → (f : A → B) → Is-equiv f
   any-map-into-empty-type-is-equiv {A} {B} b-empty f =
     has-inverse-equiv (
       (λ b → absurd (b-empty b)),

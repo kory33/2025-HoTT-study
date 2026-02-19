@@ -11,8 +11,8 @@ module _ where
   open Equivalence
   open Equivalence.Symbolic
 
-  is-family-of-equivs : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) → Set
-  is-family-of-equivs {A} f = (x : A) → Is-equiv (f x)
+  Is-family-of-equivs : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) → Set
+  Is-family-of-equivs {A} f = (x : A) → Is-equiv (f x)
 
   -- definition 11.1.1
   totalization : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) → Σ A B → Σ A C
@@ -38,10 +38,10 @@ module _ where
 
   -- theorem 11.1.3
   is-family-of-equivs-iff-tot-is-equiv : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) →
-                                         (is-family-of-equivs f ↔ Is-equiv (totalization f))
+                                         (Is-family-of-equivs f ↔ Is-equiv (totalization f))
   is-family-of-equivs-iff-tot-is-equiv {A} {B} {C} f =
     begin-↔
-      is-family-of-equivs f                                              ↔⟨⟩
+      Is-family-of-equivs f                                              ↔⟨⟩
       ((x : A) → Is-equiv (f x))                                         ↔⟨ depfn-iff (λ x → Is-equiv-iff-is-contr-fn) ⟩
       ((x : A) → Is-contr-fn (f x))                                      ↔⟨⟩
       ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-iff-2 (λ x c → equiv-then-contr-iff-contr (fib-tot-pt-eqv-fib-pr1-pr2 f (x , c))) ⟩
@@ -55,26 +55,26 @@ module _ where
     let
       equiv-fns : (x : A) → B x → C x
       equiv-fns x = Σ.fst (equivs x)
-      equiv-fns-is-family-of-equivs : is-family-of-equivs equiv-fns
+      equiv-fns-is-family-of-equivs : Is-family-of-equivs equiv-fns
       equiv-fns-is-family-of-equivs x = Σ.snd (equivs x)
     in
       (totalization equiv-fns , Σ.fst (is-family-of-equivs-iff-tot-is-equiv equiv-fns) equiv-fns-is-family-of-equivs)
 
-  mapleft : {A B : Set} → (f : A → B) → (C : B → Set) → Σ A (λ a → C (f a)) → Σ B C
-  mapleft f C (x , c) = (f x , c)
+  leftMap : {A B : Set} → (f : A → B) → (C : B → Set) → Σ A (λ a → C (f a)) → Σ B C
+  leftMap f C (x , c) = (f x , c)
 
   -- lemma 11.1.4
-  mapleft-by-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : B → Set} → Is-equiv (mapleft f C)
-  mapleft-by-equiv-is-equiv {A} {B} {f} f-is-eqv {C} =
+  leftMap-by-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : B → Set} → Is-equiv (leftMap f C)
+  leftMap-by-equiv-is-equiv {A} {B} {f} f-is-eqv {C} =
     contr-fn-then-equiv (λ t →
       cod-of-equiv-is-contr-then-dom-is-contr
         (has-inverse-equiv (ψ t , G t , H t))
         (Is-equiv-then-is-contr-fn f-is-eqv (Σ.fst t))
     )
     where
-      φ : (t : Σ B C) → fib (mapleft f C) t → fib f (Σ.fst t)
+      φ : (t : Σ B C) → fib (leftMap f C) t → fib f (Σ.fst t)
       φ .(f x , z) ((x , z) , refl) = (x , refl)
-      ψ : (t : Σ B C) → fib f (Σ.fst t) → fib (mapleft f C) t
+      ψ : (t : Σ B C) → fib f (Σ.fst t) → fib (leftMap f C) t
       ψ (.(f x) , z) (x , refl) = ((x , z) , refl)
       G : (t : Σ B C) → φ t ∘ ψ t ~ id
       G (.(f x) , z) (x , refl) = refl
@@ -91,44 +91,44 @@ module _ where
 
   -- theorem 11.1.6
   totalization-of-equivs-over-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : A → Set} → {D : B → Set} →
-                                               (g : family-of-maps-over f C D) → (is-family-of-equivs g) ↔ Is-equiv (totalization-over f D g)
+                                               (g : family-of-maps-over f C D) → (Is-family-of-equivs g) ↔ Is-equiv (totalization-over f D g)
   totalization-of-equivs-over-equiv-is-equiv {A} {B} {f} f-eqv {C} {D} g =
     begin-↔
-      is-family-of-equivs g                                 ↔⟨ is-family-of-equivs-iff-tot-is-equiv g ⟩
+      Is-family-of-equivs g                                 ↔⟨ is-family-of-equivs-iff-tot-is-equiv g ⟩
       Is-equiv (totalization g)                             ↔⟨← latter-is-equiv-then-comp-is-equiv-iff-former-is-equiv
                                                                   (totalization g)
                                                                   (htpy-refl _)
-                                                                  (mapleft-by-equiv-is-equiv f-eqv)
+                                                                  (leftMap-by-equiv-is-equiv f-eqv)
                                                             ⟩
-      Is-equiv (mapleft f D ∘ totalization g)               ↔⟨ homotope-implies-is-equiv-biimpl (λ { (x , y) → refl }) ⟩
+      Is-equiv (leftMap f D ∘ totalization g)               ↔⟨ homotope-implies-is-equiv-biimpl (λ { (x , y) → refl }) ⟩
       Is-equiv (totalization-over f D g)                    ∎-↔
 
   -- definition 11.2.1
-  is-identity-system-at : {A : Set} → (a : A) → (B : A → Set) → (b : B a) → Set₁
-  is-identity-system-at {A} a B b =
+  Is-identity-system-at : {A : Set} → (a : A) → (B : A → Set) → (b : B a) → Set₁
+  Is-identity-system-at {A} a B b =
     (P : Σ A B → Set) → Sect (λ (h : (x : A) → (y : B x) → P (x , y)) → h a b)
 
   identity-system-at : {A : Set} → (a : A) → Set₁
   identity-system-at {A} a =
-    Σ-poly (A → Set) (λ B → Σ-poly (B a) (λ b → is-identity-system-at a B b))
+    Σ-poly (A → Set) (λ B → Σ-poly (B a) (λ b → Is-identity-system-at a B b))
 
   -- theorem 11.2.2
   module fundamental-thm-of-identity-types {A : Set} {a : A} {B : A → Set} where
     -- i-at f is the version assumed in the book, but in fact we can show an even stronger result (ii → i),
     -- because (i) holding at a single function f (i-at f) is actually equivalent to (i) holding at all functions (see i↔i-at-fn for proof)
-    i = (f : (x : A) → (a ≡ x) → B x) → is-family-of-equivs f
+    i = (f : (x : A) → (a ≡ x) → B x) → Is-family-of-equivs f
     ii  = Is-contr (Σ A B)
 
     iii : (b : B a) → Set₁
-    iii b = is-identity-system-at a B b
+    iii b = Is-identity-system-at a B b
 
     i-at : (f : (x : A) → (a ≡ x) → B x) → Set
-    i-at f = is-family-of-equivs f
+    i-at f = Is-family-of-equivs f
 
     i-at-fn↔ii : (f : (x : A) → (a ≡ x) → B x) → i-at f ↔ ii
     i-at-fn↔ii f =
       begin-↔
-        is-family-of-equivs f                                          ↔⟨ is-family-of-equivs-iff-tot-is-equiv f ⟩
+        Is-family-of-equivs f                                          ↔⟨ is-family-of-equivs-iff-tot-is-equiv f ⟩
         Is-equiv (totalization f)                                      ↔⟨⟩
         Is-equiv ((totalization f) typed (Σ A (λ x → a ≡ x) → Σ A B))  ↔⟨ dom-is-contr-then-is-equiv-iff-cod-is-contr (identity-with-an-endpoint-fixed-Is-contr a) ⟩
         Is-contr (Σ A B)                                               ∎-↔
@@ -160,7 +160,7 @@ module _ where
                                                                       (ev-pair-sect P)
                                                                   ) ⟩
         ((P : Σ A B → Set) → Sect (ev-at-pair P a b))             ↔-poly⟨⟩
-        is-identity-system-at a B b                               ∎-↔-poly
+        Is-identity-system-at a B b                               ∎-↔-poly
       where
         open ↔-poly-Reasoning
         ev-pair : (P : Σ A B → Set) → ((t : Σ A B) → P t) → (x : A) → (y : B x) → P (x , y)
@@ -173,16 +173,16 @@ module _ where
         ev-pair-sect P = (ind-Σ , λ { h → refl })
 
     -- the most useful direction of the theorem 11.2.2
-    ii→i-at-fn : Is-contr (Σ A B) → (f : (x : A) → (a ≡ x) → B x) → is-family-of-equivs f
+    ii→i-at-fn : Is-contr (Σ A B) → (f : (x : A) → (a ≡ x) → B x) → Is-family-of-equivs f
     ii→i-at-fn contr@((a' , ba') , C) f = Σ.snd (i-at-fn↔ii f) contr
 
-    is-contr-then-has-identity-system-at-any-pt : Is-contr (Σ A B) → (b : B a) → is-identity-system-at a B b
+    is-contr-then-has-identity-system-at-any-pt : Is-contr (Σ A B) → (b : B a) → Is-identity-system-at a B b
     is-contr-then-has-identity-system-at-any-pt contr b = Σ-poly.fst (ii↔iii b) contr
 
     ind-≡-family : (b : B a) → (x : A) → (a ≡ x) → B x
     ind-≡-family b x refl = b
 
-    corollary : (b : B a) → is-family-of-equivs (ind-≡-family b) ↔ Is-contr (Σ A B)
+    corollary : (b : B a) → Is-family-of-equivs (ind-≡-family b) ↔ Is-contr (Σ A B)
     corollary b = i-at-fn↔ii (ind-≡-family b)
 
   -- subsection 11.3
@@ -291,35 +291,35 @@ module _ where
   -- subsection 11.6
   module _ where
     -- definition 11.6.1
-    is-dependent-identity-system-over : {A : Set} → {a : A} → {C : A → Set} → {c : C a} → (is-identity-system-at a C c) → {B : A → Set} → (b : B a) →
+    Is-dependent-identity-system-over : {A : Set} → {a : A} → {C : A → Set} → {c : C a} → (Is-identity-system-at a C c) → {B : A → Set} → (b : B a) →
                                         (D : (x : A) → B x → C x → Set) → (d : D a b c) → Set₁
-    is-dependent-identity-system-over {A} {a} {C} {c} id-sys {B} b D d = is-identity-system-at b (λ y → D a y c) d
+    Is-dependent-identity-system-over {A} {a} {C} {c} id-sys {B} b D d = Is-identity-system-at b (λ y → D a y c) d
 
-    dependent-identity-system-over : {A : Set} → {a : A} → {C : A → Set} → {c : C a} → (is-identity-system-at a C c) → {B : A → Set} → (b : B a) → Set₁
+    dependent-identity-system-over : {A : Set} → {a : A} → {C : A → Set} → {c : C a} → (Is-identity-system-at a C c) → {B : A → Set} → (b : B a) → Set₁
     dependent-identity-system-over {A} {a} {C} {c} id-sys {B} b =
       Σ-poly ((x : A) → B x → C x → Set) (λ D →
-        Σ-poly (D a b c) (λ d → is-dependent-identity-system-over id-sys b D d)
+        Σ-poly (D a b c) (λ d → Is-dependent-identity-system-over id-sys b D d)
       )
 
     -- theorem 11.6.2 (Structure Identity Principle)
     module SIP {A : Set} {a : A}
                (B : A → Set) (b : B a)
-               (C : A → Set) {c : C a} (id-sys : is-identity-system-at a C c)
+               (C : A → Set) {c : C a} (id-sys : Is-identity-system-at a C c)
                (D : (x : A) → B x → C x → Set) where
       open Equivalence-Reasoning
 
-      i   = (f : (y : B a) → (b ≡ y) → D a y c) → is-family-of-equivs f
+      i   = (f : (y : B a) → (b ≡ y) → D a y c) → Is-family-of-equivs f
       ii  = Is-contr (Σ (B a) (λ y → D a y c))
 
       iii : (d : D a b c) → Set₁
-      iii d = is-dependent-identity-system-over id-sys b D d
+      iii d = Is-dependent-identity-system-over id-sys b D d
 
-      iv  = (f : (xy@(x , y) : Σ A B) → ((a , b) ≡ xy) → Σ (C x) (λ z → D x y z)) → is-family-of-equivs f
+      iv  = (f : (xy@(x , y) : Σ A B) → ((a , b) ≡ xy) → Σ (C x) (λ z → D x y z)) → Is-family-of-equivs f
       v   = Is-contr (Σ (Σ A B) (λ (x , y) → Σ (C x) (λ z → D x y z)))
 
       -- we will fix the point of the identity system to be (c , d), although the book leaves this implicit
       vi : (d : D a b c) → Set₁
-      vi d = is-identity-system-at (a , b) (λ (x , y) → Σ (C x) (λ z → D x y z)) (c , d)
+      vi d = Is-identity-system-at (a , b) (λ (x , y) → Σ (C x) (λ z → D x y z)) (c , d)
 
       i↔ii : (d : D a b c) → i ↔ ii
       i↔ii d = fundamental-thm-of-identity-types.i↔ii d
@@ -430,7 +430,7 @@ module _ where
     open EmptyBasic
 
     -- exercise 11.1.c
-    left-is-equiv-iff-right-type-is-empty : (A B : Set) → Is-equiv (left {A} {B}) ↔ is-empty B
+    left-is-equiv-iff-right-type-is-empty : (A B : Set) → Is-equiv (left {A} {B}) ↔ Is-empty B
     left-is-equiv-iff-right-type-is-empty A B =
       (
         (λ { ((s , S) , _) b → Eq-Copr.left-neq-right (S (right b)) }) ,
@@ -441,7 +441,7 @@ module _ where
         ))
       )
     
-    right-is-equiv-iff-left-type-is-empty : (A B : Set) → Is-equiv (right {A} {B}) ↔ is-empty A
+    right-is-equiv-iff-left-type-is-empty : (A B : Set) → Is-equiv (right {A} {B}) ↔ Is-empty A
     right-is-equiv-iff-left-type-is-empty A B =
       (
         (λ { ((s , S) , _) a → Eq-Copr.right-neq-left (S (left a)) }) ,
@@ -1004,7 +1004,7 @@ module _ where
     identity-to-fiber-has-section-then-is-family-of-equivs : {A : Set} → (a : A) → {B : A → Set} →
                                                              (f : (x : A) → a ≡ x → B x) →
                                                              (sects : (x : A) → Sect (f x)) →
-                                                             is-family-of-equivs f
+                                                             Is-family-of-equivs f
     identity-to-fiber-has-section-then-is-family-of-equivs {A} a {B} f sects =
       retracts-of-identities-is-equiv-to-identities
         a
@@ -1064,7 +1064,7 @@ module _ where
 
     -- exercise 11.11.b
     equiv-iff-fib-triangle-is-equiv : {A B X : Set} → (h : A → B) → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
-                                      Is-equiv h ↔ is-family-of-equivs (fib-triangle h {f} {g} H)
+                                      Is-equiv h ↔ Is-family-of-equivs (fib-triangle h {f} {g} H)
     equiv-iff-fib-triangle-is-equiv {A} {B} {X} h {f} {g} H =
       begin-↔
         Is-equiv h                                            ↔⟨← maps-joined-with-equivs-are-equivs-iff
@@ -1073,4 +1073,4 @@ module _ where
                                                                     (tot-fib-triangle-fiber-glueing h g H)
                                                               ⟩
         Is-equiv (totalization (fib-triangle h {f} {g} H))    ↔⟨← is-family-of-equivs-iff-tot-is-equiv _ ⟩
-        is-family-of-equivs (fib-triangle h {f} {g} H)        ∎-↔
+        Is-family-of-equivs (fib-triangle h {f} {g} H)        ∎-↔
