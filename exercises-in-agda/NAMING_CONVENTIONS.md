@@ -133,14 +133,18 @@ Arithmetic and algebraic laws follow the pattern
 - `Is-contr-then-is-prop`, `is-equiv-then-is-emb`, `contr-fn-then-equiv`, `has-decidable-equality-then-is-set`
 - Long chains are fine: `is-emb-then-homotope-ap-is-equiv`
 
-### `{A}-iff-{B}` for biimplications (A ↔ B)
-- `is-emb-iff-fibs-are-props`, `Set-iff-axiom-K`, `fst-is-emb-iff-is-subtype`, `is-family-of-equivs-iff-tot-is-equiv`
+### `{A}-iff-{B}` for proposition-level biimplications (A ↔ B)
+- Use `-iff-` only when both sides are proposition-valued statements.
+- In this codebase, a practical default is:
+  - proposition-valued if both sides are named predicates such as `Is-...` / `Has-...`;
+  - or if propositionhood is explicit from context (e.g. both sides live in `Props`).
+- Examples: `is-emb-iff-fibs-are-props`, `fst-is-emb-iff-is-subtype`, `Set-iff-axiom-K`.
 
-### `{A}-biimpl-{B}` (alternate biimplication form)
-- `Nat-≡-biimpl-Eq-Nat`, `Bool-≡-biimpl-Eq-Bool`, `Fin-≡-biimpl-Eq-Fin`,
-  `leq-biimpl-exists-diff`, `lt-biimpl-succ-leq`
-- This is used alongside `iff`; both are acceptable. `iff` is more common in
-  later sections.
+### `{A}-biimpl-{B}` for general biimplications (A ↔ B)
+- Use `-biimpl-` as the default when propositionhood of both sides is not built
+  into the statement naming/context.
+- Examples: `Nat-≡-biimpl-Eq-Nat`, `Bool-≡-biimpl-Eq-Bool`,
+  `Fin-≡-biimpl-Eq-Fin`, `leq-biimpl-exists-diff`, `lt-biimpl-succ-leq`.
 
 ### `{A}-preserved-by-{B}` for preservation under some operation
 - `Is-prop-preserved-by-equiv`, `is-emb-preserved-by-homotopy`
@@ -189,7 +193,7 @@ Standard shortened forms used in names:
 |--------------|---------|
 | `ap` | action on paths (functorial action of a map) |
 | `apd` | dependent ap |
-| `biimpl` | biimplication (synonym of `iff`; prefer `iff` going forward) |
+| `biimpl` | biimplication (general/default connective for `↔`) |
 | `cod` | codomain |
 | `coh` | coherent |
 | `con` | concatenation (of paths) |
@@ -211,6 +215,7 @@ Standard shortened forms used in names:
 | `htpe` | homotopy (in suffixes: `-lhtpe`, `-rhtpe`) |
 | `htpy` | homotopy |
 | `inv` | inverse |
+| `iff` | biimplication reserved for proposition-level statements |
 | `leq` | less-than-or-equal |
 | `lt` | less-than |
 | `neq` | not equal |
@@ -256,8 +261,8 @@ Symbolic aliases for operations are grouped in nested `Symbolic` or
 | `neg-bool` | Hyphen-case but computational (`Bool → Bool`) | `negBool` |
 | `swap-middle` | Hyphen-case but unconditional verb (local `where` in section-05) | `swapMiddle` |
 | `flip-dependent-fn` | Hyphen-case but computational (swaps argument order) | `flipDependentFn` |
-| `flip-dependent-iff` | Hyphen-case but computational (biimplication of the above) | `flipDependentIff` |
-| `flip-iff` | Hyphen-case but computational (flips a biimplication) | `flipIff` |
+| `flip-dependent-biimpl` | Hyphen-case but computational (biimplication of the above) | `flipDependentBiimpl` |
+| `flip-biimpl` | Hyphen-case but computational (flips a biimplication) | `flipBiimpl` |
 | `decide-Unit` | Hyphen-case but decision procedure | `decideUnit` |
 | `decide-Empty` | Same | `decideEmpty` |
 | `decide-Eq-Nat` | Same (takes plain `Nat` data) | `decideEqNat` |
@@ -265,7 +270,7 @@ Symbolic aliases for operations are grouped in nested `Symbolic` or
 | `decide-Σ-P` | Same (but contains symbol, so hyphen is acceptable) | ambiguous |
 | `Nat-is-set` | Lowercase `is` for a named predicate about `Nat` | `Nat-Is-set` (cf. `Unit-Is-contr`, `Unit-Is-prop`) |
 | `Bool-is-set` | Same issue | `Bool-Is-set` |
-| `biimpl` vs `iff` | Two synonyms for the same concept | Prefer `iff` going forward |
+| `biimpl` vs `iff` | Mixed usage without proposition-level distinction | Use `iff` only when both sides are proposition-valued; otherwise use `biimpl` |
 
 ### Style Notes
 
@@ -296,7 +301,8 @@ For **computational** names, compose descriptively in camelCase
 2. **Core concept**: `add`, `mul`, `equiv`, `emb`, `contr`, `prop`, `trunc`, ...
 3. **Relationship connective**:
    - `-then-` (implication)
-   - `-iff-` / `-biimpl-` (biimplication)
+   - `-iff-` (biimplication when both sides are proposition-valued)
+   - `-biimpl-` (general biimplication; default if unsure)
    - `-is-` (asserting a property)
    - `-preserved-by-` / `-pulled-back-by-`
    - `-from-` / `-to-` (conversion direction)

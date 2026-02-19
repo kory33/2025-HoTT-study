@@ -114,16 +114,16 @@ module _ where
     mul-inj-left m n k = tr2 (λ e1 e2 → (m ≡ n) ↔ (e1 ≡ e2)) (mul-comm m (succ k)) (mul-comm n (succ k)) (mul-inj m n k)
 
     -- exercise 6.1.b
-    sum-eq-zero-iff-both-zero : (m n : Nat) → (m + n ≡ zero) ↔ ((m ≡ zero) × (n ≡ zero))
-    sum-eq-zero-iff-both-zero m n = (forward m n , (λ { (refl , refl) → refl }))
+    sum-eq-zero-biimpl-both-zero : (m n : Nat) → (m + n ≡ zero) ↔ ((m ≡ zero) × (n ≡ zero))
+    sum-eq-zero-biimpl-both-zero m n = (forward m n , (λ { (refl , refl) → refl }))
       where
       forward : (m n : Nat) → (m + n ≡ zero) → ((m ≡ zero) × (n ≡ zero))
       forward zero zero eq = refl , refl
       forward (succ m) zero eq = absurd (zero-neq-succ m (inverse eq))
       forward m (succ n) eq = absurd (zero-neq-succ (m + n) (inverse eq))
 
-    product-eq-zero-iff-some-zero : (m n : Nat) → (m * n ≡ zero) ↔ ((m ≡ zero) +₀ (n ≡ zero))
-    product-eq-zero-iff-some-zero m n = (forward m n , (λ { (left refl) → mul-lzero n ; (right refl) → mul-rzero m }))
+    product-eq-zero-biimpl-some-zero : (m n : Nat) → (m * n ≡ zero) ↔ ((m ≡ zero) +₀ (n ≡ zero))
+    product-eq-zero-biimpl-some-zero m n = (forward m n , (λ { (left refl) → mul-lzero n ; (right refl) → mul-rzero m }))
       where
       forward : (m n : Nat) → (m * n ≡ zero) → ((m ≡ zero) +₀ (n ≡ zero))
       forward m zero eq = right refl
@@ -140,8 +140,8 @@ module _ where
         in
           absurd (zero-neq-succ (m + succ m * n) eq')
 
-    product-eq-one-iff-both-one : (m n : Nat) → (m * n ≡ one) ↔ ((m ≡ one) × (n ≡ one))
-    product-eq-one-iff-both-one m n = (forward m n , (λ { (refl , refl) → refl }))
+    product-eq-one-biimpl-both-one : (m n : Nat) → (m * n ≡ one) ↔ ((m ≡ one) × (n ≡ one))
+    product-eq-one-biimpl-both-one m n = (forward m n , (λ { (refl , refl) → refl }))
       where
       forward : (m n : Nat) → (m * n ≡ one) → ((m ≡ one) × (n ≡ one))
       forward zero zero eq = absurd (zero-neq-succ zero eq)
@@ -743,7 +743,7 @@ module _ where
     lt-biimpl-mul-succ-right m n k =
       begin-↔
         m < n                                                     ↔⟨ lt-biimpl-neq-and-leq m n ⟩
-        ¬ (m ≡ n) × (m ≤ n)                                       ↔⟨ ↔-Basic.prod-iff (↔-Basic.neg-iff (Nat-EqualityThroughEq-Nat.mul-inj m n k)) (Leq-Nat.leq-biimpl-mul-succ m n k) ⟩
+        ¬ (m ≡ n) × (m ≤ n)                                       ↔⟨ ↔-Basic.prod-biimpl (↔-Basic.neg-biimpl (Nat-EqualityThroughEq-Nat.mul-inj m n k)) (Leq-Nat.leq-biimpl-mul-succ m n k) ⟩
         ¬ (m * succ k ≡ n * succ k) × (m * succ k ≤ n * succ k)   ↔⟨← lt-biimpl-neq-and-leq (m * succ k) (n * succ k) ⟩
         m * succ k < n * succ k                                   ∎-↔
     
@@ -1143,7 +1143,7 @@ module _ where
 
           equality (succ k) =
             inverse (add-same-order (succ k * m) (succ k * n) m n (
-              ↔-Basic.flip-iff (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
+              ↔-Basic.flip-biimpl (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
                 (mul-comm m (succ k))
                 (mul-comm n (succ k))
                 (leq-biimpl-mul-succ m n k)

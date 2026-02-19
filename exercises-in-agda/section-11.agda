@@ -42,10 +42,10 @@ module _ where
   is-family-of-equivs-iff-tot-is-equiv {A} {B} {C} f =
     begin-↔
       Is-family-of-equivs f                                              ↔⟨⟩
-      ((x : A) → Is-equiv (f x))                                         ↔⟨ depfn-iff (λ x → Is-equiv-iff-is-contr-fn) ⟩
+      ((x : A) → Is-equiv (f x))                                         ↔⟨ depfn-biimpl (λ x → Is-equiv-iff-is-contr-fn) ⟩
       ((x : A) → Is-contr-fn (f x))                                      ↔⟨⟩
-      ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-iff-2 (λ x c → equiv-then-contr-iff-contr (fib-tot-pt-eqv-fib-pr1-pr2 f (x , c))) ⟩
-      ((x : A) → (c : C x) → Is-contr (fib (totalization f) (x , c)))    ↔⟨ uncurry-iff ⟩
+      ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-biimpl-2 (λ x c → equiv-then-contr-iff-contr (fib-tot-pt-eqv-fib-pr1-pr2 f (x , c))) ⟩
+      ((x : A) → (c : C x) → Is-contr (fib (totalization f) (x , c)))    ↔⟨ uncurry-biimpl ⟩
       ((t : Σ A C) → Is-contr (fib (totalization f) t))                  ↔⟨⟩
       Is-contr-fn (totalization f)                                       ↔⟨← Is-equiv-iff-is-contr-fn ⟩
       Is-equiv (totalization f)                                          ∎-↔
@@ -100,7 +100,7 @@ module _ where
                                                                   (htpy-refl _)
                                                                   (leftMap-by-equiv-is-equiv f-eqv)
                                                             ⟩
-      Is-equiv (leftMap f D ∘ totalization g)               ↔⟨ homotope-implies-is-equiv-biimpl (λ { (x , y) → refl }) ⟩
+      Is-equiv (leftMap f D ∘ totalization g)               ↔⟨ homotope-implies-is-equiv-iff (λ { (x , y) → refl }) ⟩
       Is-equiv (totalization-over f D g)                    ∎-↔
 
   -- definition 11.2.1
@@ -153,8 +153,8 @@ module _ where
         Is-contr (Σ A B)                                          ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
         singleton-induction-at (a , b)                            ↔-poly⟨⟩
         ((P : Σ A B → Set) → Sect (ev-pt {Σ A B} {P} (a , b)))    ↔-poly⟨⟩
-        ((P : Σ A B → Set) → Sect (ev-at-pair P a b ∘ ev-pair P)) ↔-poly⟨ depfn-iff (λ P →
-                                                                    Sect-former-then-Sect-comp-iff-Sect-latter
+        ((P : Σ A B → Set) → Sect (ev-at-pair P a b ∘ ev-pair P)) ↔-poly⟨ depfn-biimpl (λ P →
+                                                                    Sect-former-then-Sect-comp-biimpl-Sect-latter
                                                                       (ev-at-pair P a b)
                                                                       (htpy-refl (ev-at-pair P a b ∘ ev-pair P))
                                                                       (ev-pair-sect P)

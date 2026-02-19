@@ -290,31 +290,31 @@ module _ where
   A ↔ B = A ↔-poly B
 
   module ↔-Basic where
-    flip-iff : {i j : Level} → {A : Set i} → {B : Set j} → (A ↔-poly B) → (B ↔-poly A)
-    flip-iff (a→b , b→a) = (b→a , a→b)
+    flip-biimpl : {i j : Level} → {A : Set i} → {B : Set j} → (A ↔-poly B) → (B ↔-poly A)
+    flip-biimpl (a→b , b→a) = (b→a , a→b)
 
-    trans-iff : {i j k : Level} → {A : Set i} → {B : Set j} → {C : Set k} → (A ↔-poly B) → (B ↔-poly C) → (A ↔-poly C)
-    trans-iff (a→b , b→a) (b→c , c→b) = ((λ a → b→c (a→b a)), (λ c → b→a (c→b c)))
+    trans-biimpl : {i j k : Level} → {A : Set i} → {B : Set j} → {C : Set k} → (A ↔-poly B) → (B ↔-poly C) → (A ↔-poly C)
+    trans-biimpl (a→b , b→a) (b→c , c→b) = ((λ a → b→c (a→b a)), (λ c → b→a (c→b c)))
 
-    prod-iff : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
-    prod-iff (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
+    prod-biimpl : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
+    prod-biimpl (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
 
-    depfn-iff : {i j : Level} → {A : Set i} → {B C : A → Set j} → (foralla : (x : A) → (B x ↔-poly C x)) →
+    depfn-biimpl : {i j : Level} → {A : Set i} → {B C : A → Set j} → (foralla : (x : A) → (B x ↔-poly C x)) →
                 ((x : A) → B x) ↔-poly ((x : A) → C x)
-    depfn-iff foralla = ((λ f x → Σ-poly.fst (foralla x) (f x)) , λ f x → Σ-poly.snd (foralla x) (f x))
+    depfn-biimpl foralla = ((λ f x → Σ-poly.fst (foralla x) (f x)) , λ f x → Σ-poly.snd (foralla x) (f x))
 
-    depfn-iff-2 : {i j : Level} → {A0 : Set i} → {A1 : A0 → Set j} → {B C : (a0 : A0) → (a1 : A1 a0) → Set} →
+    depfn-biimpl-2 : {i j : Level} → {A0 : Set i} → {A1 : A0 → Set j} → {B C : (a0 : A0) → (a1 : A1 a0) → Set} →
                   (foralla0a1 : (x : A0) → (y : A1 x) → (B x y ↔-poly C x y)) →
                   ((x : A0) → (y : A1 x) → B x y) ↔-poly ((x : A0) → (y : A1 x) → C x y)
-    depfn-iff-2 foralla0a1 = ((λ f x y → Σ-poly.fst (foralla0a1 x y) (f x y)) , λ f x y → Σ-poly.snd (foralla0a1 x y) (f x y))
+    depfn-biimpl-2 foralla0a1 = ((λ f x y → Σ-poly.fst (foralla0a1 x y) (f x y)) , λ f x y → Σ-poly.snd (foralla0a1 x y) (f x y))
 
-    uncurry-iff : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
+    uncurry-biimpl : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
                   (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
-    uncurry-iff = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
+    uncurry-biimpl = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
 
     open EmptyBasic
-    neg-iff : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
-    neg-iff (a→b , b→a) = ((contrapose b→a), (contrapose a→b))
+    neg-biimpl : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
+    neg-biimpl (a→b , b→a) = ((contrapose b→a), (contrapose a→b))
 
   module ↔-Reasoning where
     open ↔-Basic public
@@ -330,10 +330,10 @@ module _ where
     step-↔-∣ x x↔y = x↔y
 
     step-↔-⟩ : (x : Set) → {y z : Set} → (y ↔ z) → (x ↔ y) → (x ↔ z)
-    step-↔-⟩ x y↔z x↔y = trans-iff x↔y y↔z
+    step-↔-⟩ x y↔z x↔y = trans-biimpl x↔y y↔z
 
     step-↔-⟩⁻¹ : (x : Set) → {y z : Set} → (y ↔ z) → (y ↔ x) → (x ↔ z)
-    step-↔-⟩⁻¹ x y↔z y↔x = trans-iff (flip-iff y↔x) y↔z
+    step-↔-⟩⁻¹ x y↔z y↔x = trans-biimpl (flip-biimpl y↔x) y↔z
 
     syntax step-↔-∣ x x↔y       =  x ↔⟨⟩ x↔y
     syntax step-↔-⟩ x y↔z x↔y   =  x ↔⟨ x↔y ⟩ y↔z
@@ -356,10 +356,10 @@ module _ where
     step-↔-poly-∣ x x↔y = x↔y
 
     step-↔-poly-⟩ : {i j k : Level} → (x : Set i) → {y : Set j} → {z : Set k} → (y ↔-poly z) → (x ↔-poly y) → (x ↔-poly z)
-    step-↔-poly-⟩ x y↔z x↔y = trans-iff x↔y y↔z
+    step-↔-poly-⟩ x y↔z x↔y = trans-biimpl x↔y y↔z
 
     step-↔-poly-⟩⁻¹ : {i j k : Level} → (x : Set i) → {y : Set j} → {z : Set k} → (y ↔-poly z) → (y ↔-poly x) → (x ↔-poly z)
-    step-↔-poly-⟩⁻¹ x y↔z y↔x = trans-iff (flip-iff y↔x) y↔z
+    step-↔-poly-⟩⁻¹ x y↔z y↔x = trans-biimpl (flip-biimpl y↔x) y↔z
 
     syntax step-↔-poly-∣ x x↔y       =  x ↔-poly⟨⟩ x↔y
     syntax step-↔-poly-⟩ x y↔z x↔y   =  x ↔-poly⟨ x↔y ⟩ y↔z

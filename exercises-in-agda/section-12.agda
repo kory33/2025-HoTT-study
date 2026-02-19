@@ -86,8 +86,8 @@ module _ where
           , (λ p → identity-any-two-in-props P _ p)))
     )
 
-  props-equiv-iff-biimpl : ((P , PProp) (Q , QProp) : Props _) → (P ≃ Q) ↔ (P ↔ Q)
-  props-equiv-iff-biimpl P Q =
+  props-equiv-biimpl-iff : ((P , PProp) (Q , QProp) : Props _) → (P ≃ Q) ↔ (P ↔ Q)
+  props-equiv-biimpl-iff P Q =
     (
       (λ { (map , eqv) → (map , Σ.fst (map-between-props-is-equiv-iff-converse P Q map) eqv) }),
       (λ { (forward , backward) → (forward , Σ.snd (map-between-props-is-equiv-iff-converse P Q forward) backward) })
@@ -128,14 +128,14 @@ module _ where
     is-emb-iff-fibs-are-props {A} {B} {f} =
       begin-↔
         Is-emb f                                                            ↔⟨⟩
-        ((x : A) → (y : A) → Is-equiv (λ (p : x ≡ y) → ap f p))             ↔⟨ depfn-iff-2 (λ x y → ap-is-equiv-iff-ap-inverse-if-equiv x y) ⟩
-        ((x : A) → (y : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ flip-dependent-iff ⟩
-        ((y : A) → (x : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ depfn-iff (λ y → fundamental-thm-of-identity-types.i-at-fn↔ii (λ x (p : y ≡ x) → ap f (inverse p))) ⟩
+        ((x : A) → (y : A) → Is-equiv (λ (p : x ≡ y) → ap f p))             ↔⟨ depfn-biimpl-2 (λ x y → ap-is-equiv-iff-ap-inverse-if-equiv x y) ⟩
+        ((x : A) → (y : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ flip-dependent-biimpl ⟩
+        ((y : A) → (x : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ depfn-biimpl (λ y → fundamental-thm-of-identity-types.i-at-fn↔ii (λ x (p : y ≡ x) → ap f (inverse p))) ⟩
         ((y : A) → Is-contr (Σ A (λ x → f x ≡ f y)))                        ↔⟨⟩
-        ((y : A) → Is-contr (fib f (f y)))                                  ↔⟨ depfn-iff (λ y → ((λ contr b p → tr _ p contr) , (λ contr → contr (f y) refl))) ⟩
-        ((y : A) → (b : B) → (p : f y ≡ b) → Is-contr (fib f b))            ↔⟨ flip-dependent-iff ⟩
-        ((b : B) → (y : A) → (p : f y ≡ b) → Is-contr (fib f b))            ↔⟨ depfn-iff (λ b → uncurry-iff) ⟩
-        ((b : B) → fib f b → Is-contr (fib f b))                            ↔⟨← depfn-iff (λ b → Is-prop-characterisation.i↔iii) ⟩
+        ((y : A) → Is-contr (fib f (f y)))                                  ↔⟨ depfn-biimpl (λ y → ((λ contr b p → tr _ p contr) , (λ contr → contr (f y) refl))) ⟩
+        ((y : A) → (b : B) → (p : f y ≡ b) → Is-contr (fib f b))            ↔⟨ flip-dependent-biimpl ⟩
+        ((b : B) → (y : A) → (p : f y ≡ b) → Is-contr (fib f b))            ↔⟨ depfn-biimpl (λ b → uncurry-biimpl) ⟩
+        ((b : B) → fib f b → Is-contr (fib f b))                            ↔⟨← depfn-biimpl (λ b → Is-prop-characterisation.i↔iii) ⟩
         ((b : B) → Is-prop (fib f b))                                       ∎-↔
 
   -- corollary 12.2.4
@@ -143,7 +143,7 @@ module _ where
   fst-is-emb-iff-is-subtype {A} {B} =
     begin-↔
       Is-emb (Σ.fst {A} {B})                           ↔⟨ is-emb-iff-fibs-are-props ⟩
-      ((x : A) → Is-prop (fib (Σ.fst {A} {B}) x))      ↔⟨ depfn-iff (λ x → dom-of-equiv-is-prop-iff-cod-is-prop (tr-from-fib-pr1-is-equiv x)) ⟩
+      ((x : A) → Is-prop (fib (Σ.fst {A} {B}) x))      ↔⟨ depfn-biimpl (λ x → dom-of-equiv-is-prop-iff-cod-is-prop (tr-from-fib-pr1-is-equiv x)) ⟩
       ((x : A) → Is-prop (B x))                        ↔⟨⟩
       Is-subtype B                                     ∎-↔
 
@@ -347,7 +347,7 @@ module _ where
     family-is-k-trunc-iff-tot-is-k-trunc {A} { -2-Trunc } a-is-contr@(ca , _) {B} =
       begin-↔
         ((x : A) → Is-trunc -2-Trunc (B x))   ↔⟨⟩
-        ((x : A) → Is-contr (B x))            ↔⟨ depfn-iff (λ x →
+        ((x : A) → Is-contr (B x))            ↔⟨ depfn-biimpl (λ x →
                                                     equiv-then-contr-iff-contr (
                                                       ≃-comm (Σ-≃-sections-at-base-center
                                                         (x , recenter-contraction-at x a-is-contr)))) ⟩
@@ -358,11 +358,11 @@ module _ where
       begin-↔
         ((x : A) → Is-trunc (succ-Trunc k) (B x))                                                  ↔⟨⟩
         ((x : A) → (bx bx' : B x) → Is-trunc k (bx ≡ bx'))                                         ↔⟨ rel-on-fiber-iff-rel-on-a-transported-fiber ⟩
-        ((x : A) → (bx : B x) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))  ↔⟨ uncurry-iff ⟩
-        (((x , bx) : Σ A B) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))    ↔⟨ depfn-iff (λ s → uncurry-iff) ⟩
-        (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-iff-2 (λ { (x , bx) (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)}) ⟩
+        ((x : A) → (bx : B x) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))  ↔⟨ uncurry-biimpl ⟩
+        (((x , bx) : Σ A B) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))    ↔⟨ depfn-biimpl (λ s → uncurry-biimpl) ⟩
+        (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-biimpl-2 (λ { (x , bx) (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)}) ⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k (Σ (x ≡ y) (λ α → tr B α bx ≡ by)))              ↔⟨⟩
-        (((x , bx) (y , by) : Σ A B) → Is-trunc k (Eq-Σ (x , bx) (y , by)))                        ↔⟨ depfn-iff-2 (λ s t → equiv-then-k-type-iff-k-type (≃-comm pair-eq-≃-Eq-Σ)) ⟩
+        (((x , bx) (y , by) : Σ A B) → Is-trunc k (Eq-Σ (x , bx) (y , by)))                        ↔⟨ depfn-biimpl-2 (λ s t → equiv-then-k-type-iff-k-type (≃-comm pair-eq-≃-Eq-Σ)) ⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k ((x , bx) ≡ (y , by)))                           ↔⟨ {!   !} ⟩
         ((s t : Σ A B) → Is-trunc k (s ≡ t))                                                       ↔⟨⟩
         Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
@@ -452,7 +452,7 @@ module _ where
     Leq-Nat-equiv-exists-diff : (m n : Nat) → (m ≤ n) ≃ (Σ Nat (λ k → m + k ≡ n))
     Leq-Nat-equiv-exists-diff m n =
       Σ.snd
-        (props-equiv-iff-biimpl
+        (props-equiv-biimpl-iff
           (m ≤ n , Leq-Nat-is-prop m n)
           (Σ Nat (λ k → m + k ≡ n) , exists-diff-to-nat-is-prop m n))
         (leq-biimpl-exists-diff m n)
