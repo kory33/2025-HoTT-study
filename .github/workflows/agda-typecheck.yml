@@ -1,0 +1,35 @@
+name: Agda typecheck
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Agda
+        uses: wenkokke/setup-agda@v2
+        with:
+          agda-version: "2.6.4.3"
+          agda-stdlib-version: "2.1"
+
+      - name: Typecheck all Agda files
+        working-directory: exercises-in-agda
+        run: |
+          failed=0
+          for f in $(find . -maxdepth 1 -name '*.agda' | sort); do
+            echo "::group::Typechecking $f"
+            if agda "$f"; then
+              echo "OK: $f"
+            else
+              echo "::error::FAILED: $f"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $failed
