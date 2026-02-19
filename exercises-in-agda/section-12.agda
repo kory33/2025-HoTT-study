@@ -56,7 +56,7 @@ module _ where
             contr-then-const-unit-is-equiv (
               is-contr-if-inhabited x))
         )
-    
+
     iv→i : iv → i
     iv→i const-is-emb x y =
       cod-of-equiv-is-contr-then-dom-is-contr (const-is-emb x y) (Unit-Is-prop unit unit)
@@ -92,7 +92,7 @@ module _ where
       (λ { (map , eqv) → (map , Σ.fst (map-between-props-is-equiv-iff-converse P Q map) eqv) }),
       (λ { (forward , backward) → (forward , Σ.snd (map-between-props-is-equiv-iff-converse P Q forward) backward) })
     )
-  
+
   -- definition 12.2.1
   Is-subtype : {A : Set} → (B : A → Set) → Set
   Is-subtype {A} B = (x : A) → Is-prop (B x)
@@ -205,7 +205,7 @@ module _ where
     (reflexive : (x : A) → R x x) →
     (propositional : (x y : A) → Is-prop (R x y)) →
     (maps-into-identity-types : (x y : A) → R x y → x ≡ y) →
-    Is-set A    
+    Is-set A
   underlying-type-of-reflexive-propositional-relation-is-set
       {A} R reflexive propositional maps-into-identity-types x y =
     Is-prop-pulled-back-by-equiv
@@ -247,7 +247,7 @@ module _ where
   data TruncLevel : Set where
     -2-Trunc : TruncLevel
     succ-Trunc : TruncLevel → TruncLevel
-  
+
   TruncLevel-from-Nat : Nat → TruncLevel
   TruncLevel-from-Nat zero     = succ-Trunc (succ-Trunc -2-Trunc)
   TruncLevel-from-Nat (succ n) = succ-Trunc (TruncLevel-from-Nat n)
@@ -284,8 +284,8 @@ module _ where
   equiv-to-k-type-then-is-k-type {A} {B} {k} (e , e-eqv) A-is-k-type =
     is-k-type-pulled-back-by-equiv A-is-k-type (≃-inverse-map-is-equiv e-eqv)
 
-  equiv-types-iff-k-types : {A B : Set} → (A ≃ B) → {k : TruncLevel} → Is-trunc k A ↔ Is-trunc k B
-  equiv-types-iff-k-types {A} {B} eqv {k} =
+  equiv-then-k-type-iff-k-type : {A B : Set} → (A ≃ B) → {k : TruncLevel} → Is-trunc k A ↔ Is-trunc k B
+  equiv-then-k-type-iff-k-type {A} {B} eqv {k} =
     (equiv-to-k-type-then-is-k-type eqv , equiv-to-k-type-then-is-k-type (≃-comm eqv))
 
   -- corollary 12.4.6
@@ -362,7 +362,7 @@ module _ where
         (((x , bx) : Σ A B) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))    ↔⟨ depfn-iff (λ s → uncurry-iff) ⟩
         (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-iff-2 (λ { (x , bx) (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)}) ⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k (Σ (x ≡ y) (λ α → tr B α bx ≡ by)))              ↔⟨⟩
-        (((x , bx) (y , by) : Σ A B) → Is-trunc k (Eq-Σ (x , bx) (y , by)))                        ↔⟨ depfn-iff-2 (λ s t → equiv-types-iff-k-types (≃-comm pair-eq-≃-Eq-Σ)) ⟩
+        (((x , bx) (y , by) : Σ A B) → Is-trunc k (Eq-Σ (x , bx) (y , by)))                        ↔⟨ depfn-iff-2 (λ s t → equiv-then-k-type-iff-k-type (≃-comm pair-eq-≃-Eq-Σ)) ⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k ((x , bx) ≡ (y , by)))                           ↔⟨ {!   !} ⟩
         ((s t : Σ A B) → Is-trunc k (s ≡ t))                                                       ↔⟨⟩
         Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
@@ -381,7 +381,7 @@ module _ where
       begin-↔
         Is-trunc-map k f                   ↔⟨⟩
         ((b : B) → Is-trunc k (fib f b))   ↔⟨ family-is-k-trunc-iff-tot-is-k-trunc B-is-k-trunc ⟩
-        Is-trunc k (Σ B (fib f))           ↔⟨ equiv-types-iff-k-types (≃-comm (fiber-decomposition f)) ⟩
+        Is-trunc k (Σ B (fib f))           ↔⟨ equiv-then-k-type-iff-k-type (≃-comm (fiber-decomposition f)) ⟩
         Is-trunc k A                       ∎-↔
 
   product-of-props-is-prop : {A B : Set} → Is-prop A → Is-prop B → Is-prop (A × B)
@@ -470,7 +470,7 @@ module _ where
         n
 
   -- TODO: exercise 12.4
-  
+
   -- exercise 12.5
   module _ where
     δ : {A : Set} → A → A × A
