@@ -19,9 +19,9 @@ module _ where
   totalization {A} f (x , b) = (x , f x b)
 
   -- lemma 11.1.2
-  fib-tot-pt-eqv-fib-pr1-pr2 : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) →
+  fib-tot-pt-equiv-fib-pr1-pr2 : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) →
                                (t : Σ A C) → fib (totalization f) t ≃ fib (f (Σ.fst t)) (Σ.snd t)
-  fib-tot-pt-eqv-fib-pr1-pr2 {A} {B} {C} f t =
+  fib-tot-pt-equiv-fib-pr1-pr2 {A} {B} {C} f t =
     (φ t , has-inverse-equiv (ψ t , φψ~id t , ψφ~id t))
     where
       φ : (t' : Σ A C) → fib (totalization f) t' → fib (f (Σ.fst t')) (Σ.snd t')
@@ -44,7 +44,7 @@ module _ where
       Is-family-of-equivs f                                              ↔⟨⟩
       ((x : A) → Is-equiv (f x))                                         ↔⟨ depfn-biimpl (λ x → Is-equiv-iff-is-contr-fn) ⟩
       ((x : A) → Is-contr-fn (f x))                                      ↔⟨⟩
-      ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-biimpl-2 (λ x c → equiv-then-contr-iff-contr (fib-tot-pt-eqv-fib-pr1-pr2 f (x , c))) ⟩
+      ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-biimpl-2 (λ x c → equiv-then-contr-iff-contr (fib-tot-pt-equiv-fib-pr1-pr2 f (x , c))) ⟩
       ((x : A) → (c : C x) → Is-contr (fib (totalization f) (x , c)))    ↔⟨ uncurry-biimpl ⟩
       ((t : Σ A C) → Is-contr (fib (totalization f) t))                  ↔⟨⟩
       Is-contr-fn (totalization f)                                       ↔⟨← Is-equiv-iff-is-contr-fn ⟩
@@ -673,9 +673,9 @@ module _ where
       Σ.fst (latter-is-emb-then-comp-is-emb-iff-former-is-emb h H g-emb) f-emb
 
     -- exercise 11.4.b
-    former-is-eqv-then-comp-is-emb-iff-latter-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
+    former-is-equiv-then-comp-is-emb-iff-latter-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
                                                        (H : f ~ g ∘ h) → Is-equiv h → (Is-emb g ↔ Is-emb f)
-    former-is-eqv-then-comp-is-emb-iff-latter-is-emb {A} {B} {X} h {g} {f} H h-eqv =
+    former-is-equiv-then-comp-is-emb-iff-latter-is-emb {A} {B} {X} h {g} {f} H h-eqv =
       let
         h⁻¹ = ≃-inverse-map-for h-eqv
         f∘h⁻¹~g : f ∘ h⁻¹ ~ g

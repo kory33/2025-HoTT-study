@@ -60,13 +60,13 @@ module _ where
     [_+₀_] f g = ind-+₀ _ (λ x → f x) (λ y → g y)
 
     -- proposition 4.4.3
-    +₀-emptyRight : {A B : Set} → Is-empty B → A +₀ B → A
-    +₀-emptyRight ¬b (left x) = x
-    +₀-emptyRight ¬b (right y) = absurd (¬b y)
+    +₀-empty-right : {A B : Set} → Is-empty B → A +₀ B → A
+    +₀-empty-right ¬b (left x) = x
+    +₀-empty-right ¬b (right y) = absurd (¬b y)
 
-    +₀-emptyLeft : {A B : Set} → Is-empty A → A +₀ B → B
-    +₀-emptyLeft ¬a (left x) = absurd (¬a x)
-    +₀-emptyLeft ¬a (right y) = y
+    +₀-empty-left : {A B : Set} → Is-empty A → A +₀ B → B
+    +₀-empty-left ¬a (left x) = absurd (¬a x)
+    +₀-empty-left ¬a (right y) = y
 
     swap-+₀ : {X Y : Set} → X +₀ Y → Y +₀ X
     swap-+₀ (left x)  = right x

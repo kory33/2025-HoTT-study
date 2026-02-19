@@ -479,10 +479,10 @@ module _ where
     -- exercise 12.5.a
     diagonal-is-equiv-iff-is-prop : {A : Set} → Is-equiv (δ {A}) ↔ Is-prop A
     diagonal-is-equiv-iff-is-prop {A} =
-      ((λ eqv -> Is-prop-characterisation.ii→i (eqv-then-any-two-eq eqv)) , backward)
+      ((λ eqv -> Is-prop-characterisation.ii→i (equiv-then-any-two-eq eqv)) , backward)
       where
-        eqv-then-any-two-eq : Is-equiv (δ {A}) → (x y : A) → x ≡ y
-        eqv-then-any-two-eq ((s , S) , _) x y with (ap Σ.fst (S (x , y)) , ap Σ.snd (S (x , y)))
+        equiv-then-any-two-eq : Is-equiv (δ {A}) → (x y : A) → x ≡ y
+        equiv-then-any-two-eq ((s , S) , _) x y with (ap Σ.fst (S (x , y)) , ap Σ.snd (S (x , y)))
         ...                                      | (sxy≡x , sxy≡y) = (sxy≡x) ⁻¹ · (sxy≡y)
 
         backward : Is-prop A → Is-equiv (δ {A})
