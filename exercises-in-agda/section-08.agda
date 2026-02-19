@@ -65,8 +65,8 @@ module _ where
     decide-Eq-Nat (succ m) (succ n) = decide-Eq-Nat m n
 
     -- lemma 8.1.6
-    biimplying-type-is-decidable-iff-decidable : {A B : Set} → (A ↔ B) → (Is-decidable A ↔ Is-decidable B)
-    biimplying-type-is-decidable-iff-decidable (a→b , b→a) =
+    biimpl-then-decidability-biimpl : {A B : Set} → (A ↔ B) → (Is-decidable A ↔ Is-decidable B)
+    biimpl-then-decidability-biimpl (a→b , b→a) =
       (< a→b +₀ contrapose b→a > , < b→a +₀ contrapose a→b >)
       where open +₀-Basic
 
@@ -128,7 +128,7 @@ module _ where
 
     -- proposition 8.1.7
     Nat-has-decidable-eq : Has-decidable-eq Nat
-    Nat-has-decidable-eq m n = Σ.snd (biimplying-type-is-decidable-iff-decidable (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)) (decide-Eq-Nat m n)
+    Nat-has-decidable-eq m n = Σ.snd (biimpl-then-decidability-biimpl (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)) (decide-Eq-Nat m n)
 
     Unit-has-decidable-eq : Has-decidable-eq Unit
     Unit-has-decidable-eq unit unit = left refl
