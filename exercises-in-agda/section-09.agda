@@ -1073,7 +1073,7 @@ module _ where
                       b'a≡predOrZero-bla = backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt
                       predOrZero-bla≥pt = Lt-Nat.lt-then-leq-predOrZero pointToEliminate (backward (left a)) bla>pt
                       predOrZero-bla<pt = tr (λ e → e < pointToEliminate) b'a≡predOrZero-bla b'a<pt
-                  in absurd (Σ.fst (Lt-Nat.lt-biimpl-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate) predOrZero-bla<pt predOrZero-bla≥pt)
+                  in absurd (Σ.fst (Lt-Nat.lt-iff-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate) predOrZero-bla<pt predOrZero-bla≥pt)
               }
             backward'≥pt-then-backward∘left>pt : (a : A) → (pointToEliminate ≤ backward' a) → (pointToEliminate < backward (left a))
             backward'≥pt-then-backward∘left>pt a b'a≥pt =

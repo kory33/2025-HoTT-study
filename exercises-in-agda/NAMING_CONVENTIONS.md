@@ -138,13 +138,13 @@ Arithmetic and algebraic laws follow the pattern
 - In this codebase, a practical default is:
   - proposition-valued if both sides are named predicates such as `Is-...` / `Has-...`;
   - or if propositionhood is explicit from context (e.g. both sides live in `Props`).
-- Examples: `is-emb-iff-fibs-are-props`, `fst-is-emb-iff-is-subtype`, `Set-iff-axiom-K`.
+- Examples: `Nat-≡-iff-Eq-Nat`, `leq-iff-add-right`, `lt-iff-succ-leq`, `is-emb-iff-fibs-are-props`, `fst-is-emb-iff-is-subtype`, `Set-iff-axiom-K`.
 
 ### `{A}-biimpl-{B}` for general biimplications (A ↔ B)
 - Use `-biimpl-` as the default when propositionhood of both sides is not built
   into the statement naming/context.
-- Examples: `Nat-≡-biimpl-Eq-Nat`, `Bool-≡-biimpl-Eq-Bool`,
-  `Fin-≡-biimpl-Eq-Fin`, `leq-biimpl-exists-diff`, `lt-biimpl-succ-leq`.
+- Examples: `Bool-≡-biimpl-Eq-Bool`,
+  `Fin-≡-biimpl-Eq-Fin`, `leq-biimpl-exists-diff`, `lt-biimpl-exists-diff`.
 
 ### `{A}-preserved-by-{B}` for preservation under some operation
 - `Is-prop-preserved-by-equiv`, `is-emb-preserved-by-homotopy`

@@ -128,7 +128,7 @@ module _ where
 
     -- proposition 8.1.7
     Nat-has-decidable-eq : Has-decidable-eq Nat
-    Nat-has-decidable-eq m n = Σ.snd (biimpl-then-decidability-biimpl (Eq-Nat.Nat-≡-biimpl-Eq-Nat m n)) (decideEqNat m n)
+    Nat-has-decidable-eq m n = Σ.snd (biimpl-then-decidability-biimpl (Eq-Nat.Nat-≡-iff-Eq-Nat m n)) (decideEqNat m n)
 
     Unit-has-decidable-eq : Has-decidable-eq Unit
     Unit-has-decidable-eq unit unit = left refl
@@ -383,7 +383,7 @@ module _ where
             n ,
             (pn , trans n N (succ N) leq-n (self-succ N) , λ x px →
               +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
-                case Σ.snd (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x) (Σ.fst (Lt-Nat.lt-biimpl-succ-leq N x) N<x) of λ {
+                case Σ.snd (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x) (Σ.fst (Lt-Nat.lt-iff-succ-leq N x) N<x) of λ {
                   (left sN<x) → sN<x
                 ; (right refl) → absurd (¬psN px)
                 }
@@ -428,7 +428,7 @@ module _ where
             ; (right m'<m'') →
               case (no-value-from-sm'-upto-m-satisfies m'' pm'') of λ {
                 (left m''≤m') → m''≤m'
-              ; (right m<m'') → absurd (Σ.fst (Lt-Nat.lt-biimpl-not-flip-leq m m'') m<m'' (mub m'' pm'')) -- impossible
+              ; (right m<m'') → absurd (Σ.fst (Lt-Nat.lt-iff-not-flip-leq m m'') m<m'' (mub m'' pm'')) -- impossible
               }
           }))
       ; (right ¬pm'-below-m) → absurd (¬pm'-below-m n (mub n pn) pn) -- impossible

@@ -28,8 +28,8 @@ module _ where
     obseq-then-eq (succ x) zero bot = EmptyBasic.absurd bot
     obseq-then-eq (succ x) (succ y) eq = ap succ (obseq-then-eq x y eq)
 
-    Nat-≡-biimpl-Eq-Nat : (x y : Nat) → ((x ≡ y) ↔ Eq-Nat x y)
-    Nat-≡-biimpl-Eq-Nat x y = (eq-then-obseq x y , obseq-then-eq x y)
+    Nat-≡-iff-Eq-Nat : (x y : Nat) → ((x ≡ y) ↔ Eq-Nat x y)
+    Nat-≡-iff-Eq-Nat x y = (eq-then-obseq x y , obseq-then-eq x y)
 
     Eq-Nat-inverse : (x y : Nat) → Eq-Nat x y → Eq-Nat y x
     Eq-Nat-inverse x y eq = eq-then-obseq y x (inverse (obseq-then-eq x y eq))
@@ -114,8 +114,8 @@ module _ where
     mul-inj-left m n k = tr2 (λ e1 e2 → (m ≡ n) ↔ (e1 ≡ e2)) (mul-comm m (succ k)) (mul-comm n (succ k)) (mul-inj m n k)
 
     -- exercise 6.1.b
-    sum-eq-zero-biimpl-both-zero : (m n : Nat) → (m + n ≡ zero) ↔ ((m ≡ zero) × (n ≡ zero))
-    sum-eq-zero-biimpl-both-zero m n = (forward m n , (λ { (refl , refl) → refl }))
+    sum-eq-zero-iff-both-zero : (m n : Nat) → (m + n ≡ zero) ↔ ((m ≡ zero) × (n ≡ zero))
+    sum-eq-zero-iff-both-zero m n = (forward m n , (λ { (refl , refl) → refl }))
       where
       forward : (m n : Nat) → (m + n ≡ zero) → ((m ≡ zero) × (n ≡ zero))
       forward zero zero eq = refl , refl
@@ -140,8 +140,8 @@ module _ where
         in
           absurd (zero-neq-succ (m + succ m * n) eq')
 
-    product-eq-one-biimpl-both-one : (m n : Nat) → (m * n ≡ one) ↔ ((m ≡ one) × (n ≡ one))
-    product-eq-one-biimpl-both-one m n = (forward m n , (λ { (refl , refl) → refl }))
+    product-eq-one-iff-both-one : (m n : Nat) → (m * n ≡ one) ↔ ((m ≡ one) × (n ≡ one))
+    product-eq-one-iff-both-one m n = (forward m n , (λ { (refl , refl) → refl }))
       where
       forward : (m n : Nat) → (m * n ≡ one) → ((m ≡ one) × (n ≡ one))
       forward zero zero eq = absurd (zero-neq-succ zero eq)
@@ -348,8 +348,8 @@ module _ where
       ; (succ k , eq) → left (from-diff m n k (Σ.snd (Nat-EqualityThroughEq-Nat.succ-inj (m + k) n) eq))
       }
 
-    leq-biimpl-add-right : (x y k : Nat) → (x ≤ y) ↔ (x + k ≤ y + k)
-    leq-biimpl-add-right x y k = (forward x y k , backward x y k)
+    leq-iff-add-right : (x y k : Nat) → (x ≤ y) ↔ (x + k ≤ y + k)
+    leq-iff-add-right x y k = (forward x y k , backward x y k)
       where
       forward : (x y k : Nat) → (x ≤ y) → (x + k ≤ y + k)
       forward x y zero x≤y = x≤y
@@ -359,8 +359,8 @@ module _ where
       backward x y zero x+k≤y+k = x+k≤y+k
       backward x y (succ k) x+succk≤y+succk = backward x y k x+succk≤y+succk
 
-    leq-biimpl-add-left : (x y k : Nat) → (x ≤ y) ↔ (k + x ≤ k + y)
-    leq-biimpl-add-left x y k = tr2 (λ e1 e2 → (x ≤ y) ↔ (e1 ≤ e2)) (add-comm x k) (add-comm y k) (leq-biimpl-add-right x y k)
+    leq-iff-add-left : (x y k : Nat) → (x ≤ y) ↔ (k + x ≤ k + y)
+    leq-iff-add-left x y k = tr2 (λ e1 e2 → (x ≤ y) ↔ (e1 ≤ e2)) (add-comm x k) (add-comm y k) (leq-iff-add-right x y k)
 
     leq-leq-add : (a b c d : Nat) → (a ≤ b) → (c ≤ d) → (a + c ≤ b + d)
     leq-leq-add a b c d a≤b c≤d =
@@ -375,8 +375,8 @@ module _ where
             b + d                ∎
       in from-diff (a + c) (b + d) (b-a + d-c) eq1
 
-    leq-biimpl-mul-succ : (x y k : Nat) → (x ≤ y) ↔ (x * succ k ≤ y * succ k)
-    leq-biimpl-mul-succ x y k = (forward' x y (succ k), backward x y k)
+    leq-iff-mul-succ : (x y k : Nat) → (x ≤ y) ↔ (x * succ k ≤ y * succ k)
+    leq-iff-mul-succ x y k = (forward' x y (succ k), backward x y k)
       where
       forward' : (x y k : Nat) → (x ≤ y) → (x * k ≤ y * k)
       forward' x y k x≤y =
@@ -399,7 +399,7 @@ module _ where
             leq1 = tr2 (λ e1 e2 → e1 ≤ e2) (mul-succ-left x (succ k)) (mul-succ-left y (succ k)) leq
 
             leq2 : x * succ k ≤ y * succ k
-            leq2 = Σ.snd (leq-biimpl-add-right (x * succ k) (y * succ k) (succ k)) leq1
+            leq2 = Σ.snd (leq-iff-add-right (x * succ k) (y * succ k) (succ k)) leq1
         in backward x y k leq2
 
     leq-add-succ-right : (x y : Nat) → (x + y ≤ x + succ y)
@@ -430,8 +430,8 @@ module _ where
       min-leq-right : (m n : Nat) → (min m n ≤ n)
       min-leq-right m n = tr (λ e → e ≤ n) (min-symm n m) (min-leq-left n m)
 
-      leq-min-biimpl-leq-both : (m n k : Nat) → (m ≤ min n k) ↔ ((m ≤ n) × (m ≤ k))
-      leq-min-biimpl-leq-both m n k = (forward , backward m n k)
+      leq-min-iff-leq-both : (m n k : Nat) → (m ≤ min n k) ↔ ((m ≤ n) × (m ≤ k))
+      leq-min-iff-leq-both m n k = (forward , backward m n k)
         where
         forward : (m ≤ min n k) → ((m ≤ n) × (m ≤ k))
         forward m≤minnk =
@@ -469,8 +469,8 @@ module _ where
       max-leq-right : (m n : Nat) → (n ≤ max m n)
       max-leq-right m n = tr (λ e → n ≤ e) (max-symm n m) (max-leq-left n m)
 
-      max-leq-biimpl-leq-both : (m n k : Nat) → (max m n ≤ k) ↔ ((m ≤ k) × (n ≤ k))
-      max-leq-biimpl-leq-both m n k = (forward , backward m n k)
+      max-leq-iff-leq-both : (m n k : Nat) → (max m n ≤ k) ↔ ((m ≤ k) × (n ≤ k))
+      max-leq-iff-leq-both m n k = (forward , backward m n k)
         where
         forward : (max m n ≤ k) → ((m ≤ k) × (n ≤ k))
         forward max≤k =
@@ -604,8 +604,8 @@ module _ where
           predOrZero (succ n) ∎
         )
 
-    lt-biimpl-succ-leq : (m n : Nat) → (m < n) ↔ (succ m ≤ n)
-    lt-biimpl-succ-leq m n = forward , backward
+    lt-iff-succ-leq : (m n : Nat) → (m < n) ↔ (succ m ≤ n)
+    lt-iff-succ-leq m n = forward , backward
       where
       forward : (m < n) → (succ m ≤ n)
       forward m<n =
@@ -692,8 +692,8 @@ module _ where
       ; (right m≡n) → absurd (m≢n m≡n)
       }
 
-    lt-biimpl-neq-and-leq : (m n : Nat) → (m < n) ↔ (¬ (m ≡ n) × (m ≤ n))
-    lt-biimpl-neq-and-leq m n = (forward , backward)
+    lt-iff-neq-and-leq : (m n : Nat) → (m < n) ↔ (¬ (m ≡ n) × (m ≤ n))
+    lt-iff-neq-and-leq m n = (forward , backward)
       where
       forward : (m < n) → (¬ (m ≡ n) × (m ≤ n))
       forward m<n = (neq m n m<n , as-leq m n m<n)
@@ -705,10 +705,10 @@ module _ where
         }
 
     lt-then-neq : (m n : Nat) → (m < n) → ¬ (m ≡ n)
-    lt-then-neq m n m<n = Σ.fst (Σ.fst (lt-biimpl-neq-and-leq m n) m<n)
+    lt-then-neq m n m<n = Σ.fst (Σ.fst (lt-iff-neq-and-leq m n) m<n)
 
-    lt-biimpl-not-flip-leq : (m n : Nat) → (m < n) ↔ ¬ (n ≤ m)
-    lt-biimpl-not-flip-leq m n = (forward m n , backward)
+    lt-iff-not-flip-leq : (m n : Nat) → (m < n) ↔ ¬ (n ≤ m)
+    lt-iff-not-flip-leq m n = (forward m n , backward)
       where
       forward : (m n : Nat) → (m < n) → ¬ (n ≤ m)
       forward zero zero ()
@@ -724,8 +724,8 @@ module _ where
         ; (right n<m) → absurd (notn≤m (Σ.fst (lt-or-eq-biimpl-leq n m) (left n<m)))
         }
     
-    lt-biimpl-add-right : (m n k : Nat) → (m < n) ↔ (m + k < n + k)
-    lt-biimpl-add-right m n k = (forward m n k , backward m n k)
+    lt-iff-add-right : (m n k : Nat) → (m < n) ↔ (m + k < n + k)
+    lt-iff-add-right m n k = (forward m n k , backward m n k)
       where
       forward : (m n k : Nat) → (m < n) → (m + k < n + k)
       forward m n zero m<n = m<n
@@ -735,16 +735,16 @@ module _ where
       backward m n zero m+k<n+k = m+k<n+k
       backward m n (succ k) m+succk<n+succk = backward m n k m+succk<n+succk
 
-    lt-biimpl-add-left : (m n k : Nat) → (m < n) ↔ (k + m < k + n)
-    lt-biimpl-add-left m n k = tr2 (λ e1 e2 → (m < n) ↔ (e1 < e2)) (add-comm m k) (add-comm n k) (lt-biimpl-add-right m n k)
+    lt-iff-add-left : (m n k : Nat) → (m < n) ↔ (k + m < k + n)
+    lt-iff-add-left m n k = tr2 (λ e1 e2 → (m < n) ↔ (e1 < e2)) (add-comm m k) (add-comm n k) (lt-iff-add-right m n k)
 
     open ↔-Reasoning
-    lt-biimpl-mul-succ-right : (m n k : Nat) → (m < n) ↔ (m * succ k < n * succ k)
-    lt-biimpl-mul-succ-right m n k =
+    lt-iff-mul-succ-right : (m n k : Nat) → (m < n) ↔ (m * succ k < n * succ k)
+    lt-iff-mul-succ-right m n k =
       begin-↔
-        m < n                                                     ↔⟨ lt-biimpl-neq-and-leq m n ⟩
-        ¬ (m ≡ n) × (m ≤ n)                                       ↔⟨ ↔-Basic.prod-biimpl (↔-Basic.neg-biimpl (Nat-EqualityThroughEq-Nat.mul-inj m n k)) (Leq-Nat.leq-biimpl-mul-succ m n k) ⟩
-        ¬ (m * succ k ≡ n * succ k) × (m * succ k ≤ n * succ k)   ↔⟨← lt-biimpl-neq-and-leq (m * succ k) (n * succ k) ⟩
+        m < n                                                     ↔⟨ lt-iff-neq-and-leq m n ⟩
+        ¬ (m ≡ n) × (m ≤ n)                                       ↔⟨ ↔-Basic.prod-biimpl (↔-Basic.neg-biimpl (Nat-EqualityThroughEq-Nat.mul-inj m n k)) (Leq-Nat.leq-iff-mul-succ m n k) ⟩
+        ¬ (m * succ k ≡ n * succ k) × (m * succ k ≤ n * succ k)   ↔⟨← lt-iff-neq-and-leq (m * succ k) (n * succ k) ⟩
         m * succ k < n * succ k                                   ∎-↔
     
     trans-leq : (m n k : Nat) → (m < n) → (n ≤ k) → (m < k)
@@ -799,7 +799,7 @@ module _ where
             cases (left m≤n)                   ∎
           )
         )
-        (λ n<m _ → EmptyBasic.absurd (Σ.fst (lt-biimpl-not-flip-leq n m) n<m m≤n))
+        (λ n<m _ → EmptyBasic.absurd (Σ.fst (lt-iff-not-flip-leq n m) n<m m≤n))
         (trichotomy m n) refl
 
     -- an auxiliary function to help with the proof of by-comparing-lt-or-geq-lt-case, otherwise this is inlinable to by-comparing-lt-or-geq
@@ -824,7 +824,7 @@ module _ where
       let motive = by-comparing-lt-or-geq m n cases ≡ cases (right n≤m)
       in ind-+₀ {(m < n) +₀ (Eq-Nat m n)} {n < m} (λ copr → trichotomy m n ≡ copr → motive)
         (ind-+₀ {m < n} {Eq-Nat m n} (λ copr → trichotomy m n ≡ left copr → motive)
-          (λ m<n _ → EmptyBasic.absurd (Σ.fst (lt-biimpl-not-flip-leq m n) m<n n≤m))
+          (λ m<n _ → EmptyBasic.absurd (Σ.fst (lt-iff-not-flip-leq m n) m<n n≤m))
           (λ Eqmn eq → begin
             by-comparing-lt-or-geq m n cases   ≡⟨ ap (by-comparing-lt-or-geq-cases m n cases) eq ⟩
             cases (right _)                    ≡⟨ ap (cases ∘ right) (Leq-Nat.subsingleton n m _ n≤m) ⟩
@@ -1146,7 +1146,7 @@ module _ where
               ↔-Basic.flipBiimpl (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
                 (mul-comm m (succ k))
                 (mul-comm n (succ k))
-                (leq-biimpl-mul-succ m n k)
+                (leq-iff-mul-succ m n k)
               )
             ))
 
