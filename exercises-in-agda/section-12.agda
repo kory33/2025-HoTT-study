@@ -56,7 +56,7 @@ module _ where
             contr-then-const-unit-is-equiv (
               is-contr-if-inhabited x))
         )
-    
+
     iv→i : iv → i
     iv→i const-is-emb x y =
       cod-of-equiv-is-contr-then-dom-is-contr (const-is-emb x y) (Unit-Is-prop unit unit)
@@ -92,7 +92,7 @@ module _ where
       (λ { (map , eqv) → (map , Σ.fst (map-between-props-is-equiv-iff-converse P Q map) eqv) }),
       (λ { (forward , backward) → (forward , Σ.snd (map-between-props-is-equiv-iff-converse P Q forward) backward) })
     )
-  
+
   -- definition 12.2.1
   Is-subtype : {A : Set} → (B : A → Set) → Set
   Is-subtype {A} B = (x : A) → Is-prop (B x)
@@ -205,7 +205,7 @@ module _ where
     (reflexive : (x : A) → R x x) →
     (propositional : (x y : A) → Is-prop (R x y)) →
     (maps-into-identity-types : (x y : A) → R x y → x ≡ y) →
-    Is-set A    
+    Is-set A
   underlying-type-of-reflexive-propositional-relation-is-set
       {A} R reflexive propositional maps-into-identity-types x y =
     Is-prop-pulled-back-by-equiv
@@ -247,7 +247,7 @@ module _ where
   data TruncLevel : Set where
     -2-Trunc : TruncLevel
     succ-Trunc : TruncLevel → TruncLevel
-  
+
   TruncLevel-from-Nat : Nat → TruncLevel
   TruncLevel-from-Nat zero     = succ-Trunc (succ-Trunc -2-Trunc)
   TruncLevel-from-Nat (succ n) = succ-Trunc (TruncLevel-from-Nat n)
@@ -470,7 +470,7 @@ module _ where
         n
 
   -- TODO: exercise 12.4
-  
+
   -- exercise 12.5
   module _ where
     δ : {A : Set} → A → A × A
