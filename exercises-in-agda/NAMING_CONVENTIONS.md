@@ -257,7 +257,6 @@ Symbolic aliases for operations are grouped in nested `Symbolic` or
 
 | Name | Issue | Expected |
 |------|-------|----------|
-| `Enpty-ind` | Typo (should be `Empty-ind`) | `Empty-ind` |
 | `neg-bool` | Hyphen-case but computational (`Bool → Bool`) | `negBool` |
 | `swap-middle` | Hyphen-case but unconditional verb (local `where` in section-05) | `swapMiddle` |
 | `flip-dependent-fn` | Hyphen-case but computational (swaps argument order) | `flipDependentFn` |
@@ -267,10 +266,8 @@ Symbolic aliases for operations are grouped in nested `Symbolic` or
 | `decide-Empty` | Same | `decideEmpty` |
 | `decide-Eq-Nat` | Same (takes plain `Nat` data) | `decideEqNat` |
 | `decide-Fin-depfn` | Same | `decideFinDepfn` |
-| `decide-Σ-P` | Same (but contains symbol, so hyphen is acceptable) | ambiguous |
-| `Nat-is-set` | Lowercase `is` for a named predicate about `Nat` | `Nat-Is-set` (cf. `Unit-Is-contr`, `Unit-Is-prop`) |
-| `Bool-is-set` | Same issue | `Bool-Is-set` |
-| `biimpl` vs `iff` | Mixed usage without proposition-level distinction | Use `iff` only when both sides are proposition-valued; otherwise use `biimpl` |
+| `decide-Σ-P` | Decision procedure naming is mixed with symbol-forced hyphenation | keep as-is (symbolic exception) |
+| `biimpl` vs `iff` | Mixed usage remains across sections | Use `iff` only when both sides are proposition-valued; otherwise use `biimpl` |
 
 ### Style Notes
 
