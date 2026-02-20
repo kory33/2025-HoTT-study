@@ -85,13 +85,13 @@ module _ where
   family-of-maps-over {A} {B} f C D = (x : A) → C x → D (f x)
 
   -- definition 11.1.5
-  totalization-over : {A B : Set} → (f : A → B) → {C : A → Set} → (D : B → Set) →
+  totalizationOver : {A B : Set} → (f : A → B) → {C : A → Set} → (D : B → Set) →
                       family-of-maps-over f C D → Σ A C → Σ B D
-  totalization-over f D g (x , z) = (f x , g x z)
+  totalizationOver f D g (x , z) = (f x , g x z)
 
   -- theorem 11.1.6
   totalization-of-equivs-over-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : A → Set} → {D : B → Set} →
-                                               (g : family-of-maps-over f C D) → (Is-family-of-equivs g) ↔ Is-equiv (totalization-over f D g)
+                                               (g : family-of-maps-over f C D) → (Is-family-of-equivs g) ↔ Is-equiv (totalizationOver f D g)
   totalization-of-equivs-over-equiv-is-equiv {A} {B} {f} f-eqv {C} {D} g =
     begin-↔
       Is-family-of-equivs g                                 ↔⟨ is-family-of-equivs-iff-tot-is-equiv g ⟩
@@ -101,7 +101,7 @@ module _ where
                                                                   (leftMap-by-equiv-is-equiv f-eqv)
                                                             ⟩
       Is-equiv (leftMap f D ∘ totalization g)               ↔⟨ homotope-implies-is-equiv-iff (λ { (x , y) → refl }) ⟩
-      Is-equiv (totalization-over f D g)                    ∎-↔
+      Is-equiv (totalizationOver f D g)                    ∎-↔
 
   -- definition 11.2.1
   Is-identity-system-at : {A : Set} → (a : A) → (B : A → Set) → (b : B a) → Set₁
@@ -1047,9 +1047,9 @@ module _ where
       (h a , ((H ⁻¹ₕₜₚ) a) · p)
 
     -- exercise 11.11.a
-    tot-fib-triangle-fiber-glueing : {A B X : Set} → (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+    tot-fib-triangle-fiber-gluing : {A B X : Set} → (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
                                      fiber-glueing-map g ∘ (totalization (fib-triangle h H)) ~ h ∘ fiber-glueing-map f
-    tot-fib-triangle-fiber-glueing {A} {B} {X} h {f} g H (x , (a , p)) =
+    tot-fib-triangle-fiber-gluing {A} {B} {X} h {f} g H (x , (a , p)) =
       -- a `refl` works as well
       begin
         (fiber-glueing-map g ∘ (totalization (fib-triangle h H))) (x , (a , p))   ≡⟨⟩
@@ -1070,7 +1070,7 @@ module _ where
         Is-equiv h                                            ↔⟨← maps-joined-with-equivs-are-equivs-iff
                                                                     (totalization (fib-triangle h {f} {g} H)) h
                                                                     (fiber-glueing-is-equiv f) (fiber-glueing-is-equiv g)
-                                                                    (tot-fib-triangle-fiber-glueing h g H)
+                                                                    (tot-fib-triangle-fiber-gluing h g H)
                                                               ⟩
         Is-equiv (totalization (fib-triangle h {f} {g} H))    ↔⟨← is-family-of-equivs-iff-tot-is-equiv _ ⟩
         Is-family-of-equivs (fib-triangle h {f} {g} H)        ∎-↔

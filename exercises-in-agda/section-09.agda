@@ -984,8 +984,8 @@ module _ where
                 backward (right unit)  ≡⟨⟩
                 pointToEliminate       ∎
             
-            blackward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
-            blackward-left-is-not-pointToEliminate a pt≡bla =
+            backward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
+            backward-left-is-not-pointToEliminate a pt≡bla =
               let ru≡la = begin
                     (right unit)                     ≡⟨← (Sect (right unit)) ⟩
                     forward (backward (right unit))  ≡⟨ ap forward pt≡bla ⟩
@@ -1081,7 +1081,7 @@ module _ where
                 (left bla≤pt) →
                   let b'a≡bla = backward'≡backward∘left-if-bla≤pt a bla≤pt
                       bla≥pt = tr (λ e → pointToEliminate ≤ e) b'a≡bla b'a≥pt
-                  in Lt-Nat.leq-and-neq-then-lt pointToEliminate (backward (left a)) bla≥pt (blackward-left-is-not-pointToEliminate a)
+                  in Lt-Nat.leq-and-neq-then-lt pointToEliminate (backward (left a)) bla≥pt (backward-left-is-not-pointToEliminate a)
               ; (right bla>pt) → bla>pt
               }
 
