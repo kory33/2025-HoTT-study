@@ -383,7 +383,7 @@ module _ where
             n ,
             (pn , trans n N (succ N) leq-n (self-succ N) , λ x px →
               +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
-                case Σ.snd (Lt-Nat.lt-or-eq-biimpl-leq (succ N) x) (Σ.fst (Lt-Nat.lt-iff-succ-leq N x) N<x) of λ {
+                case Σ.snd (Lt-Nat.lt-or-eq-iff-leq (succ N) x) (Σ.fst (Lt-Nat.lt-iff-succ-leq N x) N<x) of λ {
                   (left sN<x) → sN<x
                 ; (right refl) → absurd (¬psN px)
                 }

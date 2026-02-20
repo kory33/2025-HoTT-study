@@ -617,8 +617,8 @@ module _ where
     ≃-comm : {A B : Set} → A ≃ B → B ≃ A
     ≃-comm eqv = ≃-inverse eqv
 
-    ≃-then-iff : {A B : Set} → A ≃ B → (A ↔ B)
-    ≃-then-iff {A} {B} (fwd , (bwd , _) , _) = (fwd , bwd)
+    ≃-then-biimpl : {A B : Set} → A ≃ B → (A ↔ B)
+    ≃-then-biimpl {A} {B} (fwd , (bwd , _) , _) = (fwd , bwd)
 
     module Equivalence-Reasoning where
       infix  1 begin-≃_

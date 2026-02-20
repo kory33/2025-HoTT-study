@@ -150,7 +150,7 @@ module _ where
     ii↔iii : (b : B a) → ii ↔-poly (iii b)
     ii↔iii b =
       begin-↔-poly
-        Is-contr (Σ A B)                                          ↔-poly⟨ is-contr-iff-sing-ind-at (a , b) ⟩
+        Is-contr (Σ A B)                                          ↔-poly⟨ is-contr-biimpl-sing-ind-at (a , b) ⟩
         singleton-induction-at (a , b)                            ↔-poly⟨⟩
         ((P : Σ A B → Set) → Sect (ev-pt {Σ A B} {P} (a , b)))    ↔-poly⟨⟩
         ((P : Σ A B → Set) → Sect (ev-at-pair P a b ∘ ev-pair P)) ↔-poly⟨ depfn-biimpl (λ P →

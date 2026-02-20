@@ -143,8 +143,8 @@ Arithmetic and algebraic laws follow the pattern
 ### `{A}-biimpl-{B}` for general biimplications (A ↔ B)
 - Use `-biimpl-` as the default when propositionhood of both sides is not built
   into the statement naming/context.
-- Examples: `Bool-≡-biimpl-Eq-Bool`,
-  `Fin-≡-biimpl-Eq-Fin`, `leq-biimpl-exists-diff`, `lt-biimpl-exists-diff`.
+- Examples: `product-eq-zero-biimpl-some-zero`,
+  `triangle-eq-biimpl-ordered`, `Copr-≡-biimpl-Eq-Copr`, `+₀-deceq-biimpl-both-deceq`.
 
 ### `{A}-preserved-by-{B}` for preservation under some operation
 - `Is-prop-preserved-by-equiv`, `is-emb-preserved-by-homotopy`
@@ -258,7 +258,6 @@ Symbolic aliases for operations are grouped in nested `Symbolic` or
 | Name | Issue | Expected |
 |------|-------|----------|
 | `decide-Σ-P` | Decision procedure naming is mixed with symbol-forced hyphenation | keep as-is (symbolic exception) |
-| `biimpl` vs `iff` | Mixed usage remains across sections | Use `iff` only when both sides are proposition-valued; otherwise use `biimpl` |
 
 ---
 

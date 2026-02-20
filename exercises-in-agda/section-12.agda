@@ -334,7 +334,7 @@ module _ where
          ; false true  → Empty-Is-prop
          ; true false  → Empty-Is-prop
          ; true true   → Unit-Is-prop })
-      (λ x y → Σ.snd (Eq-Bool.Bool-≡-biimpl-Eq-Bool x y))
+      (λ x y → Σ.snd (Eq-Bool.Bool-≡-iff-Eq-Bool x y))
 
   -- exercise 12.6 (will be useful in 12.2)
   module _ where
@@ -357,7 +357,7 @@ module _ where
     family-is-k-trunc-iff-tot-is-k-trunc {A} { succ-Trunc k } a-is-sk-trunc {B} =
       begin-↔
         ((x : A) → Is-trunc (succ-Trunc k) (B x))                                                  ↔⟨⟩
-        ((x : A) → (bx bx' : B x) → Is-trunc k (bx ≡ bx'))                                         ↔⟨ rel-on-fiber-iff-rel-on-a-transported-fiber ⟩
+        ((x : A) → (bx bx' : B x) → Is-trunc k (bx ≡ bx'))                                         ↔⟨ rel-on-fiber-biimpl-rel-on-a-transported-fiber ⟩
         ((x : A) → (bx : B x) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))  ↔⟨ uncurry-biimpl ⟩
         (((x , bx) : Σ A B) → (y : A) → (by : B y) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))    ↔⟨ depfn-biimpl (λ s → uncurry-biimpl) ⟩
         (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-biimpl-2 (λ { (x , bx) (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)}) ⟩
@@ -367,10 +367,10 @@ module _ where
         ((s t : Σ A B) → Is-trunc k (s ≡ t))                                                       ↔⟨⟩
         Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
       where
-        rel-on-fiber-iff-rel-on-a-transported-fiber :
+        rel-on-fiber-biimpl-rel-on-a-transported-fiber :
           {A : Set} → {B : A → Set} → {C : (x : A) → B x → B x → Set} →
           ((x : A) → (bx bx' : B x) → C x bx bx') ↔ ((x : A) → (bx : B x) → (y : A) → (by : B y) → (p : x ≡ y) → C y (tr B p bx) by)
-        rel-on-fiber-iff-rel-on-a-transported-fiber {A} {B} {C} =
+        rel-on-fiber-biimpl-rel-on-a-transported-fiber {A} {B} {C} =
           ((λ { lhs x bx .x bx' refl → lhs x bx bx' }) , (λ { rhs x bx bx' → rhs x bx x bx' refl }))
 
     -- exercise 12.6.b
@@ -455,7 +455,7 @@ module _ where
         (props-equiv-biimpl-iff
           (m ≤ n , Leq-Nat-is-prop m n)
           (Σ Nat (λ k → m + k ≡ n) , exists-diff-to-nat-is-prop m n))
-        (leq-biimpl-exists-diff m n)
+        (leq-iff-exists-diff m n)
 
     -- exercise 12.3.c
     mul-succnat-left-is-emb : (m : Nat) → Is-emb (λ n → (succ m) * n)

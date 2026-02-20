@@ -161,12 +161,12 @@ module _ where
     Eq-Fin-refl {succ k} (right unit) = unit
 
     -- exercise 7.5.a
-    Fin-≡-biimpl-Eq-Fin : {k : Nat} → (x y : Fin k) → (x ≡ y) ↔ (Eq-Fin k x y)
-    Fin-≡-biimpl-Eq-Fin {zero} () ()
-    Fin-≡-biimpl-Eq-Fin {succ k} x y = ((λ { refl → Eq-Fin-refl x }), backward x y)
+    Fin-≡-iff-Eq-Fin : {k : Nat} → (x y : Fin k) → (x ≡ y) ↔ (Eq-Fin k x y)
+    Fin-≡-iff-Eq-Fin {zero} () ()
+    Fin-≡-iff-Eq-Fin {succ k} x y = ((λ { refl → Eq-Fin-refl x }), backward x y)
       where
       backward : (x y : Fin (succ k)) → (Eq-Fin (succ k) x y) → (x ≡ y)
-      backward (left x) (left y) eq-fin = ap left (Σ.snd (Fin-≡-biimpl-Eq-Fin {k} x y) eq-fin)
+      backward (left x) (left y) eq-fin = ap left (Σ.snd (Fin-≡-iff-Eq-Fin {k} x y) eq-fin)
       backward (left x) (right unit) ()
       backward (right unit) (left y) ()
       backward (right unit) (right unit) eq-fin = refl
@@ -187,9 +187,9 @@ module _ where
     open ≡-Reasoning
 
     -- exercise 7.7.a
-    eq-biimpl-pr₁-eq : {k : Nat} → (x y : classical-Fin k) → (x ≡ y) ↔ (pr₁ x ≡ pr₁ y)
-    eq-biimpl-pr₁-eq {zero} (k , k<zero) = EmptyBasic.absurd (Lt-Nat.not-lt-zero k k<zero)
-    eq-biimpl-pr₁-eq {succ k} (x , x<sk) (y , y<sk) =
+    eq-iff-pr₁-eq : {k : Nat} → (x y : classical-Fin k) → (x ≡ y) ↔ (pr₁ x ≡ pr₁ y)
+    eq-iff-pr₁-eq {zero} (k , k<zero) = EmptyBasic.absurd (Lt-Nat.not-lt-zero k k<zero)
+    eq-iff-pr₁-eq {succ k} (x , x<sk) (y , y<sk) =
       (
         eq-implies-pr₁-eq ,
         (λ { refl → case (Lt-Nat.subsingleton x (succ k) x<sk y<sk) of λ { refl → refl }})

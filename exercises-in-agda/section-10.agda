@@ -71,8 +71,8 @@ module _ where
   sing-ind-then-contr : {A : Set} → (a : A) → singleton-induction-at a → Is-contr A
   sing-ind-then-contr a ind = (a , λ x → Σ.fst (ind (λ x → a ≡ x)) refl x)
 
-  is-contr-iff-sing-ind-at : {A : Set} → (a : A) → (Is-contr A) ↔-poly (singleton-induction-at a)
-  is-contr-iff-sing-ind-at {A} a = (contr-then-sing-ind-at a , sing-ind-then-contr a)
+  is-contr-biimpl-sing-ind-at : {A : Set} → (a : A) → (Is-contr A) ↔-poly (singleton-induction-at a)
+  is-contr-biimpl-sing-ind-at {A} a = (contr-then-sing-ind-at a , sing-ind-then-contr a)
 
   -- definition 10.3.1
   fib : {A B : Set} → (f : A → B) → (b : B) → Set
