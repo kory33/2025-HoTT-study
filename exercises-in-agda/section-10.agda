@@ -33,12 +33,12 @@ module _ where
   contraction-to c = const c ~ id
 
   -- example 10.1.3
-  Unit-Is-contr : Is-contr Unit
-  Unit-Is-contr = (unit , Unit-ind { λ (u : Unit) → unit ≡ u } refl)
+  Unit-is-contr : Is-contr Unit
+  Unit-is-contr = (unit , Unit-ind { λ (u : Unit) → unit ≡ u } refl)
 
   -- theorem 10.1.4
-  identity-with-an-endpoint-fixed-Is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → a ≡ x))
-  identity-with-an-endpoint-fixed-Is-contr a =
+  identity-with-an-endpoint-fixed-is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → a ≡ x))
+  identity-with-an-endpoint-fixed-is-contr a =
     ((a , refl) , λ pt → ≡-Basic1.refl-uniq a pt)
 
   -- definition 10.2.1
@@ -359,8 +359,8 @@ module _ where
           rwhisker f H ∎-htpy
     in (G' , K)
 
-  Has-inverse-then-Is-coh-invertible : {A B : Set} → (f : A → B) → Has-inverse f → Is-coh-invertible f
-  Has-inverse-then-Is-coh-invertible {A} {B} f (g , G , H) =
+  Has-inverse-then-is-coh-invertible : {A B : Set} → (f : A → B) → Has-inverse f → Is-coh-invertible f
+  Has-inverse-then-is-coh-invertible {A} {B} f (g , G , H) =
     let (G' , K) = improve-section-of-inverse-to-be-coherent f (g , G , H) in ((g , G' , H) , K)
 
   -- theorem 10.4.6
@@ -368,7 +368,7 @@ module _ where
   Is-equiv-then-is-contr-fn {A} {B} {f} is-eqv =
     let
       has-inv     = equiv-has-inverse is-eqv
-      is-coh-inv  = Has-inverse-then-Is-coh-invertible f has-inv
+      is-coh-inv  = Has-inverse-then-is-coh-invertible f has-inv
       is-contr-fn = coh-invertible-then-contr-fn f is-coh-inv
     in is-contr-fn
 
@@ -402,13 +402,13 @@ module _ where
 
   -- exercise 10.3.a
   const-unit-is-equiv-then-contr : {A : Set} → Is-equiv (λ (a : A) → const unit a) → Is-contr A
-  const-unit-is-equiv-then-contr {A} (_ , retr) = retraction-preserves-contr retr Unit-Is-contr
+  const-unit-is-equiv-then-contr {A} (_ , retr) = retraction-preserves-contr retr Unit-is-contr
 
   map-to-unit-is-equiv-then-contr : {A : Set} → {f : A → Unit} → Is-equiv f → Is-contr A
   map-to-unit-is-equiv-then-contr {A} {f} eqv =
     const-unit-is-equiv-then-contr (
       is-equiv-preserved-by-homotopy (λ a →
-        let (_ , C) = Unit-Is-contr
+        let (_ , C) = Unit-is-contr
         in inverse (C (f a))
       ) eqv
     )
@@ -565,9 +565,9 @@ module _ where
         contr-fn-then-equiv fib-pr1-is-contr
 
     -- exercise 10.7.c, (i) → (ii)
-    dep-pairing-Is-equiv-then-is-contr-fn-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
+    dep-pairing-is-equiv-then-is-contr-fn-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
                                               Is-equiv (λ (x : A) → (x , b x)) → Is-contr-fam B
-    dep-pairing-Is-equiv-then-is-contr-fn-fam {A} {B} b dep-pairing-is-eqv =
+    dep-pairing-is-equiv-then-is-contr-fn-fam {A} {B} b dep-pairing-is-eqv =
       let
         dep-pairing : A → Σ A B
         dep-pairing = λ (x : A) → (x , b x)

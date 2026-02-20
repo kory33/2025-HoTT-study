@@ -49,8 +49,8 @@ module _ where
         (λ succeq → obseq-then-eq x y (eq-then-obseq (succ x) (succ y) succeq))
       )
 
-    eq-if-succ-eq : (x y : Nat) → (succ x ≡ succ y) → (x ≡ y)
-    eq-if-succ-eq x y eq = Σ.snd (succ-inj x y) eq
+    succ-eq-then-eq : (x y : Nat) → (succ x ≡ succ y) → (x ≡ y)
+    succ-eq-then-eq x y eq = Σ.snd (succ-inj x y) eq
 
     -- theorem 6.4.2
     zero-neq-succ : (x : Nat) → ¬ (zero ≡ succ x)
@@ -599,7 +599,7 @@ module _ where
     lt-then-leq-predOrZero m (succ n) m<sn =
       let (k , m+sk≡sn) = extract-diff m (succ n) m<sn
       in Leq-Nat.from-diff m (predOrZero (succ n)) k (begin
-          m + k               ≡⟨ Nat-EqualityThroughEq-Nat.eq-if-succ-eq (m + k) n (m+sk≡sn) ⟩
+          m + k               ≡⟨ Nat-EqualityThroughEq-Nat.succ-eq-then-eq (m + k) n (m+sk≡sn) ⟩
           n                   ≡⟨← (Nat-EqualityThroughEq-Nat.predOrZero-succ n) ⟩
           predOrZero (succ n) ∎
         )

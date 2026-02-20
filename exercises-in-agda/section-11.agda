@@ -130,7 +130,7 @@ module _ where
       begin-↔
         Is-family-of-equivs f                                          ↔⟨ is-family-of-equivs-iff-tot-is-equiv f ⟩
         Is-equiv (totalization f)                                      ↔⟨⟩
-        Is-equiv ((totalization f) typed (Σ A (λ x → a ≡ x) → Σ A B))  ↔⟨ dom-is-contr-then-is-equiv-iff-cod-is-contr (identity-with-an-endpoint-fixed-Is-contr a) ⟩
+        Is-equiv ((totalization f) typed (Σ A (λ x → a ≡ x) → Σ A B))  ↔⟨ dom-is-contr-then-is-equiv-iff-cod-is-contr (identity-with-an-endpoint-fixed-is-contr a) ⟩
         Is-contr (Σ A B)                                               ∎-↔
 
     i↔ii : (b : B a) → i ↔ ii
@@ -245,7 +245,7 @@ module _ where
     -- proposition 11.5.4
     eq-copr-is-contr : {A B : Set} → (s : A +₀ B) → Is-contr (Σ (A +₀ B) (Eq-Copr s))
     eq-copr-is-contr {A} {B} (left x) =
-      Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-Is-contr x)
+      Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-is-contr x)
       where
         eqv : Σ (A +₀ B) (E (left x)) ≃ Σ A (λ x' → x ≡ x')
         eqv =
@@ -256,7 +256,7 @@ module _ where
              (Σ A (λ x' → x ≡ x')) +₀ Empty                                                       ≃⟨ +₀-runit ⟩
              Σ A (λ x' → x ≡ x')                                                                  ∎-≃
     eq-copr-is-contr {A} {B} (right y) =
-      Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-Is-contr y)
+      Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-is-contr y)
       where
         eqv : Σ (A +₀ B) (E (right y)) ≃ (Σ B (λ y' → y ≡ y'))
         eqv =
@@ -397,9 +397,9 @@ module _ where
         eqvs-is-family-of-equivs =
           SIP.ii→iv
             (λ (y : A) → f y ≡ b) p
-            (λ (y : A) → x ≡ y) (fundamental-thm-of-identity-types.is-contr-then-has-identity-system-at-any-pt (identity-with-an-endpoint-fixed-Is-contr x) refl)
+            (λ (y : A) → x ≡ y) (fundamental-thm-of-identity-types.is-contr-then-has-identity-system-at-any-pt (identity-with-an-endpoint-fixed-is-contr x) refl)
             (λ (y : A) (q : f y ≡ b) (α : x ≡ y) → ap f α ≡ p · q ⁻¹) (inverse (≡-Basic.·-rinv p))
-            (Σ.snd (equiv-then-contr-iff-contr equivalence) (identity-with-an-endpoint-fixed-Is-contr _))
+            (Σ.snd (equiv-then-contr-iff-contr equivalence) (identity-with-an-endpoint-fixed-is-contr _))
             eqvs
 
   -- exercise 11.1
@@ -415,7 +415,7 @@ module _ where
         equiv : Σ A (λ z → left x ≡ left z) ≃ Σ A (λ z → x ≡ z)
         equiv = pointwise-equiv-then-tot-equiv (λ z → left-left-eq-equiv-eq x z B)
         contr : Is-contr (Σ A (λ z → left x ≡ left z))
-        contr = Σ.snd (equiv-then-contr-iff-contr equiv) (identity-with-an-endpoint-fixed-Is-contr x)
+        contr = Σ.snd (equiv-then-contr-iff-contr equiv) (identity-with-an-endpoint-fixed-is-contr x)
       in fundamental-thm-of-identity-types.ii→i-at-fn contr (λ _ → ap (left {A} {B})) y
 
     right-is-emb : (A B : Set) → Is-emb (right {A} {B})
@@ -424,7 +424,7 @@ module _ where
         equiv : Σ B (λ z → right x ≡ right z) ≃ Σ B (λ z → x ≡ z)
         equiv = pointwise-equiv-then-tot-equiv (λ z → right-right-eq-equiv-eq A x z)
         contr : Is-contr (Σ B (λ z → right x ≡ right z))
-        contr = Σ.snd (equiv-then-contr-iff-contr equiv) (identity-with-an-endpoint-fixed-Is-contr x)
+        contr = Σ.snd (equiv-then-contr-iff-contr equiv) (identity-with-an-endpoint-fixed-is-contr x)
       in fundamental-thm-of-identity-types.ii→i-at-fn contr (λ _ → ap (right {A} {B})) y
 
     open EmptyBasic
@@ -996,7 +996,7 @@ module _ where
       fundamental-thm-of-identity-types.ii→i-at-fn
         (retract-of-contr-is-contr
           (fibers-retract-then-total-space-retracts retrs)
-          (identity-with-an-endpoint-fixed-Is-contr a))
+          (identity-with-an-endpoint-fixed-is-contr a))
         (λ x → let (_ , (r , _)) = retrs x in r)
         x
 

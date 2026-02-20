@@ -26,11 +26,11 @@ module _ where
   Is-contr-then-is-prop : {A : Set} → Is-contr A → Is-prop A
   Is-contr-then-is-prop contr = Is-contr-then-identity-is-contr contr
 
-  Unit-Is-prop : Is-prop Unit
-  Unit-Is-prop = Is-contr-then-is-prop Unit-Is-contr
+  Unit-is-prop : Is-prop Unit
+  Unit-is-prop = Is-contr-then-is-prop Unit-is-contr
 
-  Empty-Is-prop : Is-prop Empty
-  Empty-Is-prop _ ()
+  Empty-is-prop : Is-prop Empty
+  Empty-is-prop _ ()
 
   -- proposition 12.1.3
   module Is-prop-characterisation {A : Set} where
@@ -59,7 +59,7 @@ module _ where
 
     iv→i : iv → i
     iv→i const-is-emb x y =
-      cod-of-equiv-is-contr-then-dom-is-contr (const-is-emb x y) (Unit-Is-prop unit unit)
+      cod-of-equiv-is-contr-then-dom-is-contr (const-is-emb x y) (Unit-is-prop unit unit)
 
     ii→i : ii → i
     ii→i = iv→i ∘ iii→iv ∘ ii→iii
@@ -86,8 +86,8 @@ module _ where
           , (λ p → identity-any-two-in-props P _ p)))
     )
 
-  props-equiv-biimpl-iff : ((P , PProp) (Q , QProp) : Props _) → (P ≃ Q) ↔ (P ↔ Q)
-  props-equiv-biimpl-iff P Q =
+  props-equiv-iff-iff : ((P , PProp) (Q , QProp) : Props _) → (P ≃ Q) ↔ (P ↔ Q)
+  props-equiv-iff-iff P Q =
     (
       (λ { (map , eqv) → (map , Σ.fst (map-between-props-is-equiv-iff-converse P Q map) eqv) }),
       (λ { (forward , backward) → (forward , Σ.snd (map-between-props-is-equiv-iff-converse P Q forward) backward) })
@@ -116,8 +116,8 @@ module _ where
 
   -- theorem 12.2.3
   module _ where
-    ap-is-equiv-iff-ap-inverse-if-equiv : {A B : Set} → {f : A → B} → (x y : A) → Is-equiv (ap f {x} {y}) ↔ Is-equiv (λ p → ap f {x} {y} (inverse p))
-    ap-is-equiv-iff-ap-inverse-if-equiv x y =
+    ap-is-equiv-iff-ap-inverse-is-equiv : {A B : Set} → {f : A → B} → (x y : A) → Is-equiv (ap f {x} {y}) ↔ Is-equiv (λ p → ap f {x} {y} (inverse p))
+    ap-is-equiv-iff-ap-inverse-is-equiv x y =
       (
         (λ eqv → comp-equivs-is-equiv eqv EqualityOps.inv-is-equiv)
       , (λ eqv → former-and-comp-are-equivs-then-latter-is-equiv (λ { refl → refl }) EqualityOps.inv-is-equiv eqv)
@@ -128,7 +128,7 @@ module _ where
     is-emb-iff-fibs-are-props {A} {B} {f} =
       begin-↔
         Is-emb f                                                            ↔⟨⟩
-        ((x : A) → (y : A) → Is-equiv (λ (p : x ≡ y) → ap f p))             ↔⟨ depfn-biimpl-2 (λ x y → ap-is-equiv-iff-ap-inverse-if-equiv x y) ⟩
+        ((x : A) → (y : A) → Is-equiv (λ (p : x ≡ y) → ap f p))             ↔⟨ depfn-biimpl-2 (λ x y → ap-is-equiv-iff-ap-inverse-is-equiv x y) ⟩
         ((x : A) → (y : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ flipDependentBiimpl ⟩
         ((y : A) → (x : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ depfn-biimpl (λ y → fundamental-thm-of-identity-types.i-at-fn↔ii (λ x (p : y ≡ x) → ap f (inverse p))) ⟩
         ((y : A) → Is-contr (Σ A (λ x → f x ≡ f y)))                        ↔⟨⟩
@@ -157,9 +157,9 @@ module _ where
 
   -- example 12.3.2
   Eq-Nat-is-prop : (n m : Nat) → Is-prop (Eq-Nat n m)
-  Eq-Nat-is-prop zero zero         = Unit-Is-prop
-  Eq-Nat-is-prop zero (succ m)     = Empty-Is-prop
-  Eq-Nat-is-prop (succ n) zero     = Empty-Is-prop
+  Eq-Nat-is-prop zero zero         = Unit-is-prop
+  Eq-Nat-is-prop zero (succ m)     = Empty-is-prop
+  Eq-Nat-is-prop (succ n) zero     = Empty-is-prop
   Eq-Nat-is-prop (succ n) (succ m) = Eq-Nat-is-prop n m
 
   Nat-is-set : Is-set Nat
@@ -198,7 +198,7 @@ module _ where
       ΣARx-is-contr =
         retract-of-contr-is-contr
           (f , f-retr)
-          (identity-with-an-endpoint-fixed-Is-contr x)
+          (identity-with-an-endpoint-fixed-is-contr x)
 
   underlying-type-of-reflexive-propositional-relation-is-set :
     {A : Set} → (R : A → A → Set) →
@@ -232,8 +232,8 @@ module _ where
 
       R-applied-is-prop : (x y : A) → Is-prop (R x y)
       R-applied-is-prop x y with decide-eq x y
-      ...                      | (left p)      = Unit-Is-prop
-      ...                      | (right ¬p)    = Empty-Is-prop
+      ...                      | (left p)      = Unit-is-prop
+      ...                      | (right ¬p)    = Empty-is-prop
 
       R-is-reflexive : (x : A) → R x x
       R-is-reflexive x with decide-eq x x
@@ -330,10 +330,10 @@ module _ where
     underlying-type-of-reflexive-propositional-relation-is-set
       Eq-Bool
       Eq-Bool.Eq-Bool-refl
-      (λ { false false → Unit-Is-prop
-         ; false true  → Empty-Is-prop
-         ; true false  → Empty-Is-prop
-         ; true true   → Unit-Is-prop })
+      (λ { false false → Unit-is-prop
+         ; false true  → Empty-is-prop
+         ; true false  → Empty-is-prop
+         ; true true   → Unit-is-prop })
       (λ x y → Σ.snd (Eq-Bool.Bool-≡-iff-Eq-Bool x y))
 
   -- exercise 12.6 (will be useful in 12.2)
@@ -431,8 +431,8 @@ module _ where
     open Leq-Nat.Symbolic
 
     Leq-Nat-is-prop : (m n : Nat) → Is-prop (m ≤ n)
-    Leq-Nat-is-prop zero y = Unit-Is-prop
-    Leq-Nat-is-prop (succ x) zero = Empty-Is-prop
+    Leq-Nat-is-prop zero y = Unit-is-prop
+    Leq-Nat-is-prop (succ x) zero = Empty-is-prop
     Leq-Nat-is-prop (succ x) (succ y) = Leq-Nat-is-prop x y
 
     set-elem-having-preimage-under-inj-is-prop : {A B : Set} → Is-set A → {f : B → A} → Is-inj f →
@@ -452,7 +452,7 @@ module _ where
     Leq-Nat-equiv-exists-diff : (m n : Nat) → (m ≤ n) ≃ (Σ Nat (λ k → m + k ≡ n))
     Leq-Nat-equiv-exists-diff m n =
       Σ.snd
-        (props-equiv-biimpl-iff
+        (props-equiv-iff-iff
           (m ≤ n , Leq-Nat-is-prop m n)
           (Σ Nat (λ k → m + k ≡ n) , exists-diff-to-nat-is-prop m n))
         (leq-iff-exists-diff m n)

@@ -177,8 +177,8 @@ When a result is about a specific type, prefix with the type name:
 | `Nat-`   | `Nat-ind`, `Nat-is-set`, `Nat-has-decidable-eq`, `Nat-minus` |
 | `Int-`   | `Int-succ`, `Int-pred-succ`, `Int-has-decidable-eq` |
 | `Bool-`  | `Bool-is-set` |
-| `Unit-`  | `Unit-Is-contr`, `Unit-Is-prop`, `Unit-has-decidable-eq` |
-| `Empty-` | `Empty-Is-prop` |
+| `Unit-`  | `Unit-is-contr`, `Unit-is-prop`, `Unit-has-decidable-eq` |
+| `Empty-` | `Empty-is-prop` |
 | `Leq-Nat-` | `Leq-Nat-refl`, `Leq-Nat-is-prop` |
 | `Lt-Nat-`  | (inside `Lt-Nat` module) `lt-succ`, `zero-lt-succ`, `trichotomy` |
 | `Fin-`   | `Fin-has-decidable-eq`, `Fin-de-Morgan` |
