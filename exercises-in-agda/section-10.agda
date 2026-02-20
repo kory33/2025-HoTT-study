@@ -52,7 +52,7 @@ module _ where
   -- theorem 10.2.3 (This is stronger than 10.2.3 in the book: a : A is arbitrary with this definition)
   contr-then-sing-ind-at : {A : Set} → (a : A) → Is-contr A → singleton-induction-at a
   contr-then-sing-ind-at {A} a contr =
-    λ B → 
+    λ B →
       let
         recenteredC = (a , recenter-contraction-at a contr)
         C = untangle recenteredC
@@ -172,17 +172,17 @@ module _ where
     ap f (H x) · refl                 ≡⟨ ·-runit _ ⟩
     ap f (H x)                        ∎
 
-  --   ┊   │     │   ┊  
-  --  [H]  │  =  │  [H] 
-  --   │   │     │   │  
-  --   f   f     f   f  
+  --   ┊   │     │   ┊
+  --  [H]  │  =  │  [H]
+  --   │   │     │   │
+  --   f   f     f   f
   comm-htpy-whisk : {A : Set} → (f : A → A) → (H : f ~ id) → (lwhisker H f ~ rwhisker f H)
   comm-htpy-whisk = comm-htpy
 
   open Homotopy.Reasoning
 
   Is-coh-invertible-then-inverse-is-coh-invertible : {A B : Set} →
-        (f : A → B) → (g : B → A) → (G : f ∘ g ~ id) → (H : g ∘ f ~ id) → 
+        (f : A → B) → (g : B → A) → (G : f ∘ g ~ id) → (H : g ∘ f ~ id) →
         (lwhisker G f ~ rwhisker f H) →
         (lwhisker H g ~ rwhisker g G) -- this makes ((f , H , G) , ∙) : Is-coh-invertible g
   Is-coh-invertible-then-inverse-is-coh-invertible {A} {B} f g G H K =
@@ -241,8 +241,8 @@ module _ where
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (rwhisker g (lwhisker G (f ∘ g)))        ·ₕₜₚ (lwhisker H g)
 
                     ~⟨ ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (rwhisker-rhtpe _ (comm-htpy-whisk (f ∘ g) G))) _ ⟩
-      --    ┊     │     ┊  
-      -- ╭─[H]─╮  │     ┊  
+      --    ┊     │     ┊
+      -- ╭─[H]─╮  │     ┊
       -- g     │  │   ╭[G]╮
       -- ╰[H⁻¹]╯  │   │   │
       --    ┊     │   │   │
@@ -258,7 +258,7 @@ module _ where
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (              hcomp-rl H (rwhisker g G)              )
 
                     ~⟨← ·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (hcomp-lr-rl H (rwhisker g G)) ⟩
-      --    ┊     │     ┊  
+      --    ┊     │     ┊
       --    ┊     │   ╭[G]╮
       -- ╭─[H]─╮  │   │   │
       -- ╰[H⁻¹]╯  │   │   │
@@ -271,14 +271,14 @@ module _ where
       hcomp (H ⁻¹ₕₜₚ ·ₕₜₚ H) (rwhisker g G)
 
               ~⟨ hcomp-lhtpe (·ₕₜₚ-linv H) _ ⟩
-      -- ┊  │     ┊  
+      -- ┊  │     ┊
       -- ┊  │   ╭[G]╮
       -- ┊  │   │   │
       --    g   f   g
       hcomp (htpy-refl id) (rwhisker g G)
 
               ~⟨ hcomp-lunit (rwhisker g G) ⟩
-      -- │     ┊  
+      -- │     ┊
       -- │   ╭[G]╮
       -- │   │   │
       -- g   f   g
@@ -290,12 +290,12 @@ module _ where
                                               (Σ (f ∘ g ~ id) (λ G' → lwhisker G' f ~ rwhisker f H))
   improve-section-of-inverse-to-be-coherent {A} {B} f (g , G , H) =
     let
-      -- ╭───────────[G]╮ 
-      -- │              │ 
-      -- │      ╭─[H]╮  │ 
-      -- ╰[G⁻¹]─╯    │  │ 
-      --             │  │ 
-      --             f  g 
+      -- ╭───────────[G]╮
+      -- │              │
+      -- │      ╭─[H]╮  │
+      -- ╰[G⁻¹]─╯    │  │
+      --             │  │
+      --             f  g
       G' : f ∘ g ~ id
       G' = lwhisker (G ⁻¹ₕₜₚ) (f ∘ g) ·ₕₜₚ (rwhisker f (lwhisker H g)) ·ₕₜₚ G
 
@@ -312,25 +312,25 @@ module _ where
           lwhisker G' f                                                                                        ~⟨⟩
           lwhisker ((lwhisker (G ⁻¹ₕₜₚ) (f ∘ g)) ·ₕₜₚ (rwhisker f (lwhisker H g)) ·ₕₜₚ G) f                    ~⟨⟩
           (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (lwhisker (rwhisker f (lwhisker H g)) f) ·ₕₜₚ (lwhisker G f)   ~⟨⟩
-          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f (lwhisker H (g ∘ f))) ·ₕₜₚ (lwhisker G f)          
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f (lwhisker H (g ∘ f))) ·ₕₜₚ (lwhisker G f)
 
                   ~⟨ ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) (rwhisker-rhtpe f
                       (comm-htpy-whisk (g ∘ f) H)
                     )) _ ⟩
-          --     ┊     │     ┊   
-          --  ╭─[G]─╮  │     ┊   
-          --  │     │  │   ╭[H]╮ 
-          --  ╰[G⁻¹]╯  │   │   │ 
-          --     ┊     │   │   │ 
-          --           f   g   f 
+          --     ┊     │     ┊
+          --  ╭─[G]─╮  │     ┊
+          --  │     │  │   ╭[H]╮
+          --  ╰[G⁻¹]╯  │   │   │
+          --     ┊     │   │   │
+          --           f   g   f
           (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (rwhisker f (rwhisker (g ∘ f) H)) ·ₕₜₚ (lwhisker G f)           ~⟨← ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) (rwhisker-comp f (g ∘ f) H)) _ ⟩
           (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ  (rwhisker (f ∘ g ∘ f) H) ·ₕₜₚ (lwhisker G f)                   ~⟨⟩
           (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ  (rwhisker (f ∘ g ∘ f) H) ·ₕₜₚ (lwhisker (lwhisker G f) id)     ~⟨ ·ₕₜₚ-assoc (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) _ _ ⟩
           (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ ((rwhisker (f ∘ g ∘ f) H) ·ₕₜₚ (lwhisker (lwhisker G f) id))    ~⟨⟩
-          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (                hcomp-rl (lwhisker G f) H                 )    
+          (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) ·ₕₜₚ (                hcomp-rl (lwhisker G f) H                 )
 
                   ~⟨← ·ₕₜₚ-rhtpe (lwhisker (G ⁻¹ₕₜₚ) (f ∘ g ∘ f)) (hcomp-lr-rl (lwhisker G f) H) ⟩
-          --     ┊     │     ┊  
+          --     ┊     │     ┊
           --     ┊     │   ╭[H]╮
           --  ╭─[G]─╮  │   │   │
           --  ╰[G⁻¹]╯  │   │   │
@@ -345,14 +345,14 @@ module _ where
           hcomp (G ⁻¹ₕₜₚ ·ₕₜₚ G) (rwhisker f H)
 
                   ~⟨ hcomp-lhtpe (·ₕₜₚ-linv G) _ ⟩
-          --  ┊  │     ┊  
+          --  ┊  │     ┊
           --  ┊  │   ╭[H]╮
           --  ┊  │   │   │
           --     f   g   f
           hcomp (htpy-refl id) (rwhisker f H)
 
                   ~⟨ hcomp-lunit _ ⟩
-          -- │     ┊  
+          -- │     ┊
           -- │   ╭[H]╮
           -- │   │   │
           -- f   g   f
@@ -541,7 +541,7 @@ module _ where
         (λ y → refl) ,
         (λ { ((x , y) , refl) → refl })
       )
-    
+
     Is-contr-fam : {A : Set} → (B : A → Set) → Set
     Is-contr-fam {A} B = (a : A) → Is-contr (B a)
 
@@ -612,30 +612,30 @@ module _ where
   module _ where
     open Equivalence.Symbolic
 
-    fiber-decomposition-map : {A B : Set} → (f : A → B) → (a : A) → Σ B (λ y → fib f y)
-    fiber-decomposition-map {A} {B} f a = ((f a) , (a , refl))
+    decomposeToFibs : {A B : Set} → (f : A → B) → (a : A) → Σ B (λ y → fib f y)
+    decomposeToFibs {A} {B} f a = ((f a) , (a , refl))
 
-    fiber-glueing-map : {A B : Set} → (f : A → B) → Σ B (λ y → fib f y) → A
-    fiber-glueing-map {A} {B} f (b , (a , p)) = a
+    glueFibers : {A B : Set} → (f : A → B) → Σ B (λ y → fib f y) → A
+    glueFibers {A} {B} f (b , (a , p)) = a
 
-    decomposition-glueing-id : {A B : Set} → (f : A → B) → Is-sect-of (fiber-decomposition-map f) (fiber-glueing-map f)
-    decomposition-glueing-id {A} {B} f (b , (a , refl)) = refl
+    decompose-glue-is-id : {A B : Set} → (f : A → B) → Is-sect-of (decomposeToFibs f) (glueFibers f)
+    decompose-glue-is-id {A} {B} f (b , (a , refl)) = refl
 
-    glueing-decomposition-id : {A B : Set} → (f : A → B) → Is-retraction-of (fiber-decomposition-map f) (fiber-glueing-map f)
-    glueing-decomposition-id {A} {B} f a = refl
+    glue-decompose-is-id : {A B : Set} → (f : A → B) → Is-retraction-of (decomposeToFibs f) (glueFibers f)
+    glue-decompose-is-id {A} {B} f a = refl
 
-    fiber-decomposition-is-equiv : {A B : Set} → (f : A → B) → Is-equiv (fiber-decomposition-map f)
-    fiber-decomposition-is-equiv {A} {B} f =
-      has-inverse-equiv (fiber-glueing-map f , decomposition-glueing-id f , glueing-decomposition-id f)
+    decomposeToFibs-is-equiv : {A B : Set} → (f : A → B) → Is-equiv (decomposeToFibs f)
+    decomposeToFibs-is-equiv {A} {B} f =
+      has-inverse-equiv (glueFibers f , decompose-glue-is-id f , glue-decompose-is-id f)
 
-    fiber-glueing-is-equiv : {A B : Set} → (f : A → B) → Is-equiv (fiber-glueing-map f)
-    fiber-glueing-is-equiv {A} {B} f = ≃-inverse-map-is-equiv (fiber-decomposition-is-equiv f)
+    glueFibers-is-equiv : {A B : Set} → (f : A → B) → Is-equiv (glueFibers f)
+    glueFibers-is-equiv {A} {B} f = ≃-inverse-map-is-equiv (decomposeToFibs-is-equiv f)
 
     fiber-decomposition : {A B : Set} → (f : A → B) → A ≃ (Σ B (λ y → fib f y))
-    fiber-decomposition {A} {B} f = (fiber-decomposition-map f , fiber-decomposition-is-equiv f)
-    
-    fib-replacement : {A B : Set} → (f : A → B) → (Σ B (λ y → fib f y)) → B
-    fib-replacement f = Σ.fst
+    fiber-decomposition {A} {B} f = (decomposeToFibs f , decomposeToFibs-is-equiv f)
 
-    fiber-decomposition-fib-replacement : {A B : Set} → (f : A → B) → f ~ ((fib-replacement f) ∘ (fiber-decomposition-map f))
-    fiber-decomposition-fib-replacement {A} {B} f a = refl
+    fibrantReplacement : {A B : Set} → (f : A → B) → (Σ B (λ y → fib f y)) → B
+    fibrantReplacement f = Σ.fst
+
+    fibrantReplacement-factors : {A B : Set} → (f : A → B) → f ~ ((fibrantReplacement f) ∘ (decomposeToFibs f))
+    fibrantReplacement-factors {A} {B} f a = refl

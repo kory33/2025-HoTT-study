@@ -200,7 +200,7 @@ module _ where
         γ (succ m) zero ()
         γ (succ m) (succ n) e = -- want : (succ m , Eq-Nat-refl (succ m)) ≡ (succ n , e)
           ap (λ { (n , e) → (succ n , e) })
-             (γ m n e)          --      : (m , Eq-Nat-refl m) ≡ (n , e) 
+             (γ m n e)          --      : (m , Eq-Nat-refl m) ≡ (n , e)
                                 -- ... since Eq-Nat-refl (succ m) = Eq-Nat-refl m, this typechecks
 
         contr : (m : Nat) → Is-contr (Σ Nat (λ n → Eq-Nat m n))
@@ -252,8 +252,8 @@ module _ where
            begin-≃
              Σ (A +₀ B) (E (left x))                                                              ≃⟨ Σ-rdistr-+₀ ⟩
              (Σ A (λ x' → E {A} {B} (left x) (left x'))) +₀ (Σ B (λ y' → E (left x) (right y')))  ≃⟨⟩
-             (Σ A (λ x' → x ≡ x')) +₀ (Σ B (λ y' → Empty))                                        ≃⟨ +₀-both-≃ ≃-refl Σ-rzero ⟩     
-             (Σ A (λ x' → x ≡ x')) +₀ Empty                                                       ≃⟨ +₀-runit ⟩     
+             (Σ A (λ x' → x ≡ x')) +₀ (Σ B (λ y' → Empty))                                        ≃⟨ +₀-both-≃ ≃-refl Σ-rzero ⟩
+             (Σ A (λ x' → x ≡ x')) +₀ Empty                                                       ≃⟨ +₀-runit ⟩
              Σ A (λ x' → x ≡ x')                                                                  ∎-≃
     eq-copr-is-contr {A} {B} (right y) =
       Σ.snd (equiv-then-contr-iff-contr eqv) (identity-with-an-endpoint-fixed-Is-contr y)
@@ -264,7 +264,7 @@ module _ where
              Σ (A +₀ B) (E (right y))                                                               ≃⟨ Σ-rdistr-+₀ ⟩
              (Σ A (λ x' → E (right y) (left x'))) +₀ (Σ B (λ y' → E {A} {B} (right y) (right y')))  ≃⟨⟩
              (Σ A (λ x' → Empty)) +₀ (Σ B (λ y' → y ≡ y'))                                          ≃⟨ +₀-both-≃ Σ-rzero ≃-refl ⟩
-             Empty +₀ (Σ B (λ y' → y ≡ y'))                                                         ≃⟨ +₀-lunit ⟩     
+             Empty +₀ (Σ B (λ y' → y ≡ y'))                                                         ≃⟨ +₀-lunit ⟩
              (Σ B (λ y' → y ≡ y'))                                                                  ∎-≃
 
     -- theorem 11.5.1
@@ -354,7 +354,7 @@ module _ where
               ) ⟩
             Σ (Σ A B) (λ xy → Σ (C (Σ-poly.fst xy)) (λ z → D (Σ-poly.fst xy) (Σ-poly.snd xy) z))  ∎-≃
         )
-      
+
       ii→iv : (d : D a b c) → ii → iv
       ii→iv d = (Σ.snd (iv↔v d)) ∘ (Σ.fst ii↔v)
 
@@ -440,7 +440,7 @@ module _ where
           (λ a → refl)
         ))
       )
-    
+
     right-is-equiv-iff-left-type-is-empty : (A B : Set) → Is-equiv (right {A} {B}) ↔ Is-empty A
     right-is-equiv-iff-left-type-is-empty A B =
       (
@@ -493,7 +493,7 @@ module _ where
             })
           )
         )
-    
+
     equivalence-ladjoint-counit-universality : {A B : Set} → ((e , e-eqv) : A ≃ B) → (x : A) → (y : B) →
                                                let e⁻¹               = ≃-inverse-map-for e-eqv
                                                    (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
@@ -587,7 +587,7 @@ module _ where
         )
       )
 
-    homotope-ap-is-equiv-then-ap-target-is-equiv : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) → 
+    homotope-ap-is-equiv-then-ap-target-is-equiv : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) →
                                                    Is-equiv (homotope-ap f g H {x} {y}) → Is-equiv (ap g {x} {y})
     homotope-ap-is-equiv-then-ap-target-is-equiv {A} {B} {f} {g} x y H is-equiv-homotope-ap =
       let
@@ -947,7 +947,7 @@ module _ where
         (x , g x b)             ≡⟨⟩
         totalization g (x , b)  ∎
       }
-    
+
     -- exercise 11.8.b
     tot-comp : {A : Set} → {B C D : A → Set} →
                (f : (x : A) → B x → C x) → (g : (x : A) → C x → D x) →
@@ -958,7 +958,7 @@ module _ where
         (x , g x (f x b))                          ≡⟨⟩
         (totalization g ∘ totalization f) (x , b)  ∎
       }
-    
+
     -- exercise 11.8.c
     tot-id : {A : Set} → {B : A → Set} → (totalization (λ x → id {B x}) ~ id)
     tot-id = λ { (x , b) → refl }
@@ -1021,7 +1021,7 @@ module _ where
 
     Is-path-split : {A B : Set} → (f : A → B) → Set
     Is-path-split {A} {B} f = (Sect f) × ((x y : A) → Sect (ap f {x} {y}))
-    
+
     equivalence-is-path-split : {A B : Set} → {f : A → B} → Is-equiv f → Is-path-split f
     equivalence-is-path-split {A} {B} {f} f-eqv@(S , _) =
       (S , λ x y → let (S-ap , _) = is-equiv-then-is-emb f-eqv x y in S-ap)
@@ -1048,17 +1048,17 @@ module _ where
 
     -- exercise 11.11.a
     tot-fib-triangle-fiber-gluing : {A B X : Set} → (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
-                                     fiber-glueing-map g ∘ (totalization (fib-triangle h H)) ~ h ∘ fiber-glueing-map f
+                                     glueFibers g ∘ (totalization (fib-triangle h H)) ~ h ∘ glueFibers f
     tot-fib-triangle-fiber-gluing {A} {B} {X} h {f} g H (x , (a , p)) =
       -- a `refl` works as well
       begin
-        (fiber-glueing-map g ∘ (totalization (fib-triangle h H))) (x , (a , p))   ≡⟨⟩
-        fiber-glueing-map g (totalization (fib-triangle h H) (x , (a , p)))       ≡⟨⟩
-        fiber-glueing-map g (x , fib-triangle h H x (a , p))                      ≡⟨⟩
-        fiber-glueing-map g (x , (h a , ((H ⁻¹ₕₜₚ) a) · p))                       ≡⟨⟩
+        (glueFibers g ∘ (totalization (fib-triangle h H))) (x , (a , p))   ≡⟨⟩
+        glueFibers g (totalization (fib-triangle h H) (x , (a , p)))       ≡⟨⟩
+        glueFibers g (x , fib-triangle h H x (a , p))                      ≡⟨⟩
+        glueFibers g (x , (h a , ((H ⁻¹ₕₜₚ) a) · p))                       ≡⟨⟩
         h a                                                                       ≡⟨⟩
-        h (fiber-glueing-map f (x , (a , p)))                                     ≡⟨⟩
-        (h ∘ fiber-glueing-map f) (x , (a , p))                                   ∎
+        h (glueFibers f (x , (a , p)))                                     ≡⟨⟩
+        (h ∘ glueFibers f) (x , (a , p))                                   ∎
 
     open ↔-Reasoning
 
@@ -1069,7 +1069,7 @@ module _ where
       begin-↔
         Is-equiv h                                            ↔⟨← maps-joined-with-equivs-are-equivs-iff
                                                                     (totalization (fib-triangle h {f} {g} H)) h
-                                                                    (fiber-glueing-is-equiv f) (fiber-glueing-is-equiv g)
+                                                                    (glueFibers-is-equiv f) (glueFibers-is-equiv g)
                                                                     (tot-fib-triangle-fiber-gluing h g H)
                                                               ⟩
         Is-equiv (totalization (fib-triangle h {f} {g} H))    ↔⟨← is-family-of-equivs-iff-tot-is-equiv _ ⟩
