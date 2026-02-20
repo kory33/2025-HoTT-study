@@ -42,12 +42,12 @@ module _ where
   is-family-of-equivs-iff-tot-is-equiv {A} {B} {C} f =
     begin-↔
       Is-family-of-equivs f                                              ↔⟨⟩
-      ((x : A) → Is-equiv (f x))                                         ↔⟨ depfn-biimpl (λ x → Is-equiv-iff-is-contr-fn) ⟩
+      ((x : A) → Is-equiv (f x))                                         ↔⟨ depfn-biimpl (λ x → is-equiv-iff-is-contr-fn) ⟩
       ((x : A) → Is-contr-fn (f x))                                      ↔⟨⟩
       ((x : A) → (c : C x) → Is-contr (fib (f x) c))                     ↔⟨← depfn-biimpl-2 (λ x c → equiv-then-contr-iff-contr (fib-tot-pt-equiv-fib-pr1-pr2 f (x , c))) ⟩
       ((x : A) → (c : C x) → Is-contr (fib (totalization f) (x , c)))    ↔⟨ uncurry-biimpl ⟩
       ((t : Σ A C) → Is-contr (fib (totalization f) t))                  ↔⟨⟩
-      Is-contr-fn (totalization f)                                       ↔⟨← Is-equiv-iff-is-contr-fn ⟩
+      Is-contr-fn (totalization f)                                       ↔⟨← is-equiv-iff-is-contr-fn ⟩
       Is-equiv (totalization f)                                          ∎-↔
 
   pointwise-equiv-then-tot-equiv : {A : Set} → {B C : A → Set} → (equivs : (x : A) → B x ≃ C x) → (Σ A B ≃ Σ A C)
@@ -69,7 +69,7 @@ module _ where
     contr-fn-then-equiv (λ t →
       cod-of-equiv-is-contr-then-dom-is-contr
         (has-inverse-equiv (ψ t , G t , H t))
-        (Is-equiv-then-is-contr-fn f-is-eqv (Σ.fst t))
+        (is-equiv-then-is-contr-fn f-is-eqv (Σ.fst t))
     )
     where
       φ : (t : Σ B C) → fib (leftMap f C) t → fib f (Σ.fst t)
@@ -221,7 +221,7 @@ module _ where
       fundamental-thm-of-identity-types.ii→i-at-fn contr (λ y → ap e {x} {y})
       where
         fib-e-ex-is-contr : Is-contr (fib e (e x))
-        fib-e-ex-is-contr = Is-equiv-then-is-contr-fn e-eqv (e x)
+        fib-e-ex-is-contr = is-equiv-then-is-contr-fn e-eqv (e x)
 
         flipped-is-contr : Is-contr (Σ A (λ y → e y ≡ e x))
         flipped-is-contr = fib-e-ex-is-contr -- Σ A (λ y → e y ≡ e x) = fib e (e x)
@@ -461,7 +461,7 @@ module _ where
         e⁻¹               = ≃-inverse-map-for e-eqv
         (S , R)           = ≃-inverse-map-is-inverse-of-original e-eqv
         (R' , R'e⁻¹~e⁻¹S) = improve-section-of-inverse-to-be-coherent e⁻¹ (e , R , S)
-        Se~eR'            = Is-coh-invertible-then-inverse-is-coh-invertible e⁻¹ e R' S R'e⁻¹~e⁻¹S
+        Se~eR'            = is-coh-invertible-then-inverse-is-coh-invertible e⁻¹ e R' S R'e⁻¹~e⁻¹S
 
         forward : (e x ≡ y) → (x ≡ e⁻¹ y)
         forward p = (R' x)⁻¹ · (ap e⁻¹ p)

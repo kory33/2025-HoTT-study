@@ -130,7 +130,7 @@ Arithmetic and algebraic laws follow the pattern
 ## 7. Implications and Biimplications
 
 ### `{A}-then-{B}` for implications (A → B)
-- `Is-contr-then-is-prop`, `is-equiv-then-is-emb`, `contr-fn-then-equiv`, `has-decidable-equality-then-is-set`
+- `is-contr-then-is-prop`, `is-equiv-then-is-emb`, `contr-fn-then-equiv`, `has-decidable-equality-then-is-set`
 - Long chains are fine: `is-emb-then-homotope-ap-is-equiv`
 
 ### `{A}-iff-{B}` for proposition-level biimplications (A ↔ B)
@@ -147,10 +147,10 @@ Arithmetic and algebraic laws follow the pattern
   `triangle-eq-biimpl-ordered`, `Copr-≡-biimpl-Eq-Copr`, `+₀-deceq-biimpl-both-deceq`.
 
 ### `{A}-preserved-by-{B}` for preservation under some operation
-- `Is-prop-preserved-by-equiv`, `is-emb-preserved-by-homotopy`
+- `is-prop-preserved-by-equiv`, `is-emb-preserved-by-homotopy`
 
 ### `{A}-pulled-back-by-{B}`
-- `Is-prop-pulled-back-by-equiv`, `is-k-type-pulled-back-by-equiv`
+- `is-prop-pulled-back-by-equiv`, `is-k-type-pulled-back-by-equiv`
 
 ---
 
@@ -290,7 +290,7 @@ For **computational** names, compose descriptively in camelCase
 |------|---------------|
 | `add-comm` | `add` + `comm` |
 | `mul-ldistr` | `mul` + `l` + `distr` |
-| `Is-contr-then-is-prop` | `Is-contr` + `then` + `is-prop` |
+| `is-contr-then-is-prop` | `is-contr` + `then` + `is-prop` |
 | `is-emb-iff-fibs-are-props` | `is-emb` + `iff` + `fibs-are-props` |
 | `dom-of-equiv-is-prop-iff-cod-is-prop` | `dom-of-equiv` + `is-prop` + `iff` + `cod-is-prop` |
 | `is-family-of-equivs-iff-tot-is-equiv` | `is-family-of-equivs` + `iff` + `tot-is-equiv` |

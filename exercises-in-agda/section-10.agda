@@ -181,11 +181,11 @@ module _ where
 
   open Homotopy.Reasoning
 
-  Is-coh-invertible-then-inverse-is-coh-invertible : {A B : Set} →
+  is-coh-invertible-then-inverse-is-coh-invertible : {A B : Set} →
         (f : A → B) → (g : B → A) → (G : f ∘ g ~ id) → (H : g ∘ f ~ id) →
         (lwhisker G f ~ rwhisker f H) →
         (lwhisker H g ~ rwhisker g G) -- this makes ((f , H , G) , ∙) : Is-coh-invertible g
-  Is-coh-invertible-then-inverse-is-coh-invertible {A} {B} f g G H K =
+  is-coh-invertible-then-inverse-is-coh-invertible {A} {B} f g G H K =
     begin-htpy
       --   ┊    │
       -- ╭[H]╮  │
@@ -359,33 +359,33 @@ module _ where
           rwhisker f H ∎-htpy
     in (G' , K)
 
-  Has-inverse-then-is-coh-invertible : {A B : Set} → (f : A → B) → Has-inverse f → Is-coh-invertible f
-  Has-inverse-then-is-coh-invertible {A} {B} f (g , G , H) =
+  has-inverse-then-is-coh-invertible : {A B : Set} → (f : A → B) → Has-inverse f → Is-coh-invertible f
+  has-inverse-then-is-coh-invertible {A} {B} f (g , G , H) =
     let (G' , K) = improve-section-of-inverse-to-be-coherent f (g , G , H) in ((g , G' , H) , K)
 
   -- theorem 10.4.6
-  Is-equiv-then-is-contr-fn : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr-fn f
-  Is-equiv-then-is-contr-fn {A} {B} {f} is-eqv =
+  is-equiv-then-is-contr-fn : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr-fn f
+  is-equiv-then-is-contr-fn {A} {B} {f} is-eqv =
     let
       has-inv     = equiv-has-inverse is-eqv
-      is-coh-inv  = Has-inverse-then-is-coh-invertible f has-inv
+      is-coh-inv  = has-inverse-then-is-coh-invertible f has-inv
       is-contr-fn = coh-invertible-then-contr-fn f is-coh-inv
     in is-contr-fn
 
-  Is-equiv-iff-is-contr-fn : {A B : Set} → {f : A → B} → (Is-equiv f ↔ Is-contr-fn f)
-  Is-equiv-iff-is-contr-fn = (Is-equiv-then-is-contr-fn , contr-fn-then-equiv)
+  is-equiv-iff-is-contr-fn : {A B : Set} → {f : A → B} → (Is-equiv f ↔ Is-contr-fn f)
+  is-equiv-iff-is-contr-fn = (is-equiv-then-is-contr-fn , contr-fn-then-equiv)
 
   -- corollary 10.4.7
   inverse-paths-type-is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → x ≡ a))
   inverse-paths-type-is-contr {A} a =
     let
       id-is-contr-fn : Is-contr-fn id
-      id-is-contr-fn = Is-equiv-then-is-contr-fn Equivalence.id-is-equiv
+      id-is-contr-fn = is-equiv-then-is-contr-fn Equivalence.id-is-equiv
     in id-is-contr-fn a -- `Σ A (λ x → x ≡ a)` is judgementally equal to `fib id a`
 
   -- exercise 10.1
-  Is-contr-then-identity-is-contr : {A : Set} → Is-contr A → (x y : A) → Is-contr (x ≡ y)
-  Is-contr-then-identity-is-contr {A} (a , C) x y =
+  is-contr-then-identity-is-contr : {A : Set} → Is-contr A → (x y : A) → Is-contr (x ≡ y)
+  is-contr-then-identity-is-contr {A} (a , C) x y =
     ((C x)⁻¹ · (C y), λ { refl → ·-linv (C x) })
 
   -- exercise 10.2
@@ -550,7 +550,7 @@ module _ where
     pr1-equiv-then-contractible-family {A} {B} eqv a =
       let
         fib-pr1-is-contr : Is-contr (fib (pr1-of B) a)
-        fib-pr1-is-contr = Is-equiv-then-is-contr-fn eqv a
+        fib-pr1-is-contr = is-equiv-then-is-contr-fn eqv a
       in dom-of-equiv-is-contr-then-cod-is-contr (tr-from-fib-pr1-is-equiv a) fib-pr1-is-contr
 
     -- exercise 10.7.b, (ii) → (i)

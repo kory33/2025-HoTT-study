@@ -23,11 +23,11 @@ module _ where
   Props l = Σ-poly (Set l) (λ X → Is-prop X)
 
   -- example 12.1.2
-  Is-contr-then-is-prop : {A : Set} → Is-contr A → Is-prop A
-  Is-contr-then-is-prop contr = Is-contr-then-identity-is-contr contr
+  is-contr-then-is-prop : {A : Set} → Is-contr A → Is-prop A
+  is-contr-then-is-prop contr = is-contr-then-identity-is-contr contr
 
   Unit-is-prop : Is-prop Unit
-  Unit-is-prop = Is-contr-then-is-prop Unit-is-contr
+  Unit-is-prop = is-contr-then-is-prop Unit-is-contr
 
   Empty-is-prop : Is-prop Empty
   Empty-is-prop _ ()
@@ -98,19 +98,19 @@ module _ where
   Is-subtype {A} B = (x : A) → Is-prop (B x)
 
   -- lemma 12.2.2
-  Is-prop-pulled-back-by-equiv : {A B : Set} → {f : A → B} → Is-equiv f → Is-prop B → Is-prop A
-  Is-prop-pulled-back-by-equiv {A} {B} {f} equiv is-prop x y =
+  is-prop-pulled-back-by-equiv : {A B : Set} → {f : A → B} → Is-equiv f → Is-prop B → Is-prop A
+  is-prop-pulled-back-by-equiv {A} {B} {f} equiv is-prop x y =
     cod-of-equiv-is-contr-then-dom-is-contr
       (is-equiv-then-is-emb equiv x y)
       (is-prop (f x) (f y))
 
-  Is-prop-preserved-by-equiv : {A B : Set} → {f : A → B} → Is-equiv f → Is-prop A → Is-prop B
-  Is-prop-preserved-by-equiv {A} {B} {f} equiv is-prop =
-    Is-prop-pulled-back-by-equiv (≃-inverse-map-is-equiv equiv) is-prop
+  is-prop-preserved-by-equiv : {A B : Set} → {f : A → B} → Is-equiv f → Is-prop A → Is-prop B
+  is-prop-preserved-by-equiv {A} {B} {f} equiv is-prop =
+    is-prop-pulled-back-by-equiv (≃-inverse-map-is-equiv equiv) is-prop
 
   dom-of-equiv-is-prop-iff-cod-is-prop : {A B : Set} → {f : A → B} → Is-equiv f → Is-prop A ↔ Is-prop B
   dom-of-equiv-is-prop-iff-cod-is-prop {A} {B} {f} equiv =
-    (Is-prop-preserved-by-equiv equiv , Is-prop-pulled-back-by-equiv equiv)
+    (is-prop-preserved-by-equiv equiv , is-prop-pulled-back-by-equiv equiv)
 
   open ↔-Reasoning
 
@@ -163,7 +163,7 @@ module _ where
   Eq-Nat-is-prop (succ n) (succ m) = Eq-Nat-is-prop n m
 
   Nat-is-set : Is-set Nat
-  Nat-is-set = λ n m → Is-prop-pulled-back-by-equiv (Eq-Nat-refl-is-equiv n m) (Eq-Nat-is-prop n m)
+  Nat-is-set = λ n m → is-prop-pulled-back-by-equiv (Eq-Nat-refl-is-equiv n m) (Eq-Nat-is-prop n m)
 
   -- proposition 12.3.3
   axiom-K : Set → Set
@@ -208,7 +208,7 @@ module _ where
     Is-set A
   underlying-type-of-reflexive-propositional-relation-is-set
       {A} R reflexive propositional maps-into-identity-types x y =
-    Is-prop-pulled-back-by-equiv
+    is-prop-pulled-back-by-equiv
       (reflexive-propositional-relation-makes-fam-of-maps-from-identity-types-equivs
         R propositional maps-into-identity-types
         (λ { x .x refl → reflexive x })
@@ -265,7 +265,7 @@ module _ where
 
   -- proposition 12.4.3
   k-type-is-succ-k-type : {A : Set} → {k : TruncLevel} → Is-trunc k A → Is-trunc (succ-Trunc k) A
-  k-type-is-succ-k-type {A} { -2-Trunc } A-is-contr = Is-contr-then-is-prop A-is-contr
+  k-type-is-succ-k-type {A} { -2-Trunc } A-is-contr = is-contr-then-is-prop A-is-contr
   k-type-is-succ-k-type {A} { (succ-Trunc k) } A-is-sk-trunc x y = k-type-is-succ-k-type (A-is-sk-trunc x y)
 
   -- corollary 12.4.4
