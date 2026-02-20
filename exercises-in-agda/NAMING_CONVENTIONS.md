@@ -40,7 +40,7 @@ descriptive name is needed.
 When a name embeds a **symbolic operator** (e.g. `+₀`, `ΣΣ`, `↔`), hyphens
 are used regardless of whether the definition is computational, because
 symbols are not readable in camelCase and underscores are reserved for Agda
-mixfix operators. Examples: `swap-+₀`, `swap-ΣΣ-fn`, `swap-ΣΣ-families`.
+mixfix operators. Examples: `swap-+₀`, `swap-ΣΣ-fn`, `swap-ΣΣ-families`, `decide-Σ-P`.
 
 ### CamelCase for Module Names
 - **CamelCase is also used for Agda module names** (e.g. `NatBasic`,
@@ -250,14 +250,6 @@ Symbolic aliases for operations are grouped in nested `Symbolic` or
 - **`{concept}`** module scoping related definitions (`Is-decidable`, `Has-decidable-eq`, `Leq-Nat`, `Lt-Nat`)
 - **`{concept}-Reasoning`** module: equational reasoning combinators (`≡-Reasoning`, `↔-Reasoning`, `≃-Reasoning`, `~-Reasoning`)
 - **`exercise-{n}-{m}`** modules for multi-part exercises
-
----
-
-## Known Exceptions and Legacy Inconsistencies
-
-| Name | Issue | Expected |
-|------|-------|----------|
-| `decide-Σ-P` | Decision procedure naming is mixed with symbol-forced hyphenation | keep as-is (symbolic exception) |
 
 ---
 
