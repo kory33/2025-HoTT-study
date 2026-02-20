@@ -164,7 +164,7 @@ Arithmetic and algebraic laws follow the pattern
 - `pair-eq-≃-Eq-Σ`
 
 ### `{description}-is-equiv`
-- `pair-eq-Eq-Σ-is-equiv`, `fiber-decomposition-is-equiv`, `tr-is-equiv`, `prepend-path-is-equiv`
+- `pair-eq-Eq-Σ-is-equiv`, `decomposeToFibs-is-equiv`, `tr-is-equiv`, `prepend-path-is-equiv`
 
 ---
 
