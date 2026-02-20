@@ -95,13 +95,9 @@ Reflexivity proofs: `Eq-{Type}-refl` (e.g. `Eq-Nat-refl`, `Eq-Σ-refl`).
 
 ## 5. Induction Principles
 
-Named `ind-{Type}` or `{Type}-ind`:
+Named `ind-{symbol|Type}`:
 - `ind-≡`, `ind-Σ`, `ind-×`, `ind-+₀`, `ind-Bool`, `ind-List`, `ind-Fk`
-- `Nat-ind`, `Unit-ind`
-
-Both patterns appear; the `ind-{symbol}` form is preferred for symbolic types
-(`ind-Σ`, `ind-+₀`), while `{Type}-ind` is used for named types
-(`Nat-ind`, `Unit-ind`).
+- `ind-Nat`, `ind-Unit`
 
 ---
 
@@ -170,17 +166,18 @@ Arithmetic and algebraic laws follow the pattern
 
 ## 9. Concrete-Type Qualified Names: `{Type}-{property}`
 
-When a result is about a specific type, prefix with the type name:
+When a theorem or a function is about a specific type, prefix with the type name.
+The most common type is `{Type}-{is|has}-{property}`,
+but `{Type}-{function|more generic symbol name}` are also possible.
 
 | Type prefix | Examples |
 |-------------|----------|
-| `Nat-`   | `Nat-ind`, `Nat-is-set`, `Nat-has-decidable-eq`, `Nat-minus` |
+| `Nat-`   | `Nat-is-set`, `Nat-has-decidable-eq`, `Nat-minus` |
 | `Int-`   | `Int-succ`, `Int-pred-succ`, `Int-has-decidable-eq` |
 | `Bool-`  | `Bool-is-set` |
 | `Unit-`  | `Unit-is-contr`, `Unit-is-prop`, `Unit-has-decidable-eq` |
 | `Empty-` | `Empty-is-prop` |
 | `Leq-Nat-` | `Leq-Nat-refl`, `Leq-Nat-is-prop` |
-| `Lt-Nat-`  | (inside `Lt-Nat` module) `lt-succ`, `zero-lt-succ`, `trichotomy` |
 | `Fin-`   | `Fin-has-decidable-eq`, `Fin-de-Morgan` |
 
 ---

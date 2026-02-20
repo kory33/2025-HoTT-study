@@ -7,19 +7,19 @@ module _ where
   data Unit : Set where
     unit : Unit
 
-  Unit-ind : {P : Unit → Set} → P unit → (x : Unit) → P x 
-  Unit-ind pu unit = pu
+  ind-Unit : {P : Unit → Set} → P unit → (x : Unit) → P x 
+  ind-Unit pu unit = pu
 
   -- definition 4.3.1
   data Empty : Set where
 
-  Empty-ind : {P : Empty → Set} → (x : Empty) → P x
-  Empty-ind ()
+  ind-Empty : {P : Empty → Set} → (x : Empty) → P x
+  ind-Empty ()
 
   module EmptyBasic where
     -- alias
     absurd : {A : Set} → Empty → A
-    absurd = Empty-ind
+    absurd = ind-Empty
 
     -- alias
     ex-falso : {A : Set} → Empty → A

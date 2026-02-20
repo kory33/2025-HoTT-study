@@ -34,7 +34,7 @@ module _ where
 
   -- example 10.1.3
   Unit-is-contr : Is-contr Unit
-  Unit-is-contr = (unit , Unit-ind { λ (u : Unit) → unit ≡ u } refl)
+  Unit-is-contr = (unit , ind-Unit { λ (u : Unit) → unit ≡ u } refl)
 
   -- theorem 10.1.4
   identity-with-an-endpoint-fixed-is-contr : {A : Set} → (a : A) → Is-contr (Σ A (λ x → a ≡ x))
