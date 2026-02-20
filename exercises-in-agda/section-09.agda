@@ -26,7 +26,7 @@ module _ where
     -- example 9.1.3
     module _ where
       open BoolBasic
-      neg-neg-bool : neg-bool ∘ neg-bool ~ id
+      neg-neg-bool : negBool ∘ negBool ~ id
       neg-neg-bool true = refl
       neg-neg-bool false = refl
 
@@ -1347,11 +1347,11 @@ module _ where
       )
 
   -- We cannot yet prove the equivalence of this function
-  flip-dependent-fn : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) → ((y : B) → (x : A) → C x y)
-  flip-dependent-fn f y x = f x y
+  flipDependentFn : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) → ((y : B) → (x : A) → C x y)
+  flipDependentFn f y x = f x y
 
-  flip-dependent-biimpl : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) ↔ ((y : B) → (x : A) → C x y)
-  flip-dependent-biimpl = (flip-dependent-fn , flip-dependent-fn)
+  flipDependentBiimpl : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) ↔ ((y : B) → (x : A) → C x y)
+  flipDependentBiimpl = (flipDependentFn , flipDependentFn)
 
   -- exercise 9.6
   module _ where

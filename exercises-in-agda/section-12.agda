@@ -129,11 +129,11 @@ module _ where
       begin-↔
         Is-emb f                                                            ↔⟨⟩
         ((x : A) → (y : A) → Is-equiv (λ (p : x ≡ y) → ap f p))             ↔⟨ depfn-biimpl-2 (λ x y → ap-is-equiv-iff-ap-inverse-if-equiv x y) ⟩
-        ((x : A) → (y : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ flip-dependent-biimpl ⟩
+        ((x : A) → (y : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ flipDependentBiimpl ⟩
         ((y : A) → (x : A) → Is-equiv (λ (p : y ≡ x) → ap f (inverse p)))   ↔⟨ depfn-biimpl (λ y → fundamental-thm-of-identity-types.i-at-fn↔ii (λ x (p : y ≡ x) → ap f (inverse p))) ⟩
         ((y : A) → Is-contr (Σ A (λ x → f x ≡ f y)))                        ↔⟨⟩
         ((y : A) → Is-contr (fib f (f y)))                                  ↔⟨ depfn-biimpl (λ y → ((λ contr b p → tr _ p contr) , (λ contr → contr (f y) refl))) ⟩
-        ((y : A) → (b : B) → (p : f y ≡ b) → Is-contr (fib f b))            ↔⟨ flip-dependent-biimpl ⟩
+        ((y : A) → (b : B) → (p : f y ≡ b) → Is-contr (fib f b))            ↔⟨ flipDependentBiimpl ⟩
         ((b : B) → (y : A) → (p : f y ≡ b) → Is-contr (fib f b))            ↔⟨ depfn-biimpl (λ b → uncurry-biimpl) ⟩
         ((b : B) → fib f b → Is-contr (fib f b))                            ↔⟨← depfn-biimpl (λ b → Is-prop-characterisation.i↔iii) ⟩
         ((b : B) → Is-prop (fib f b))                                       ∎-↔
@@ -264,13 +264,13 @@ module _ where
   Is-trunc-map k {A} {B} f = (b : B) → Is-trunc k (fib f b)
 
   -- proposition 12.4.3
-  k-type-is-a-succ-k-type : {A : Set} → {k : TruncLevel} → Is-trunc k A → Is-trunc (succ-Trunc k) A
-  k-type-is-a-succ-k-type {A} { -2-Trunc } A-is-contr = Is-contr-then-is-prop A-is-contr
-  k-type-is-a-succ-k-type {A} { (succ-Trunc k) } A-is-sk-trunc x y = k-type-is-a-succ-k-type (A-is-sk-trunc x y)
+  k-type-is-succ-k-type : {A : Set} → {k : TruncLevel} → Is-trunc k A → Is-trunc (succ-Trunc k) A
+  k-type-is-succ-k-type {A} { -2-Trunc } A-is-contr = Is-contr-then-is-prop A-is-contr
+  k-type-is-succ-k-type {A} { (succ-Trunc k) } A-is-sk-trunc x y = k-type-is-succ-k-type (A-is-sk-trunc x y)
 
   -- corollary 12.4.4
-  identity-type-of-a-k-type-is-a-k-type : {A : Set} → {k : TruncLevel} → Is-trunc k A → (x y : A) → Is-trunc k (x ≡ y)
-  identity-type-of-a-k-type-is-a-k-type {A} {k} = k-type-is-a-succ-k-type
+  identity-type-of-k-type-is-k-type : {A : Set} → {k : TruncLevel} → Is-trunc k A → (x y : A) → Is-trunc k (x ≡ y)
+  identity-type-of-k-type-is-k-type {A} {k} = k-type-is-succ-k-type
 
   -- proposition 12.4.5
   is-k-type-pulled-back-by-equiv : {A B : Set} → {k : TruncLevel} → Is-trunc k B →

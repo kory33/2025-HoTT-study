@@ -267,9 +267,9 @@ module _ where
 
   module BoolBasic where
     -- exercise 4.2.a
-    neg-bool : Bool → Bool
-    neg-bool true = false
-    neg-bool false = true
+    negBool : Bool → Bool
+    negBool true = false
+    negBool false = true
 
     _∧_ : Bool → Bool → Bool
     true ∧ true = true
@@ -290,8 +290,8 @@ module _ where
   A ↔ B = A ↔-poly B
 
   module ↔-Basic where
-    flip-biimpl : {i j : Level} → {A : Set i} → {B : Set j} → (A ↔-poly B) → (B ↔-poly A)
-    flip-biimpl (a→b , b→a) = (b→a , a→b)
+    flipBiimpl : {i j : Level} → {A : Set i} → {B : Set j} → (A ↔-poly B) → (B ↔-poly A)
+    flipBiimpl (a→b , b→a) = (b→a , a→b)
 
     trans-biimpl : {i j k : Level} → {A : Set i} → {B : Set j} → {C : Set k} → (A ↔-poly B) → (B ↔-poly C) → (A ↔-poly C)
     trans-biimpl (a→b , b→a) (b→c , c→b) = ((λ a → b→c (a→b a)), (λ c → b→a (c→b c)))
@@ -333,7 +333,7 @@ module _ where
     step-↔-⟩ x y↔z x↔y = trans-biimpl x↔y y↔z
 
     step-↔-⟩⁻¹ : (x : Set) → {y z : Set} → (y ↔ z) → (y ↔ x) → (x ↔ z)
-    step-↔-⟩⁻¹ x y↔z y↔x = trans-biimpl (flip-biimpl y↔x) y↔z
+    step-↔-⟩⁻¹ x y↔z y↔x = trans-biimpl (flipBiimpl y↔x) y↔z
 
     syntax step-↔-∣ x x↔y       =  x ↔⟨⟩ x↔y
     syntax step-↔-⟩ x y↔z x↔y   =  x ↔⟨ x↔y ⟩ y↔z
@@ -359,7 +359,7 @@ module _ where
     step-↔-poly-⟩ x y↔z x↔y = trans-biimpl x↔y y↔z
 
     step-↔-poly-⟩⁻¹ : {i j k : Level} → (x : Set i) → {y : Set j} → {z : Set k} → (y ↔-poly z) → (y ↔-poly x) → (x ↔-poly z)
-    step-↔-poly-⟩⁻¹ x y↔z y↔x = trans-biimpl (flip-biimpl y↔x) y↔z
+    step-↔-poly-⟩⁻¹ x y↔z y↔x = trans-biimpl (flipBiimpl y↔x) y↔z
 
     syntax step-↔-poly-∣ x x↔y       =  x ↔-poly⟨⟩ x↔y
     syntax step-↔-poly-⟩ x y↔z x↔y   =  x ↔-poly⟨ x↔y ⟩ y↔z

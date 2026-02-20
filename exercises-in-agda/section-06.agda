@@ -239,7 +239,7 @@ module _ where
       backward true false bot = EmptyBasic.absurd bot
       backward true true _ = refl
 
-    self-neq-neg-bool : (x : Bool) → ¬ (x ≡ neg-bool x)
+    self-neq-neg-bool : (x : Bool) → ¬ (x ≡ negBool x)
     self-neq-neg-bool false eq = Σ.fst (Bool-≡-biimpl-Eq-Bool false true) eq
     self-neq-neg-bool true eq = Σ.fst (Bool-≡-biimpl-Eq-Bool true false) eq
 
@@ -1143,7 +1143,7 @@ module _ where
 
           equality (succ k) =
             inverse (add-same-order (succ k * m) (succ k * n) m n (
-              ↔-Basic.flip-biimpl (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
+              ↔-Basic.flipBiimpl (tr2 (λ e1 e2 → (m ≤ n) ↔ (e1 ≤ e2))
                 (mul-comm m (succ k))
                 (mul-comm n (succ k))
                 (leq-biimpl-mul-succ m n k)

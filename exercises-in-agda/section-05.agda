@@ -1289,8 +1289,8 @@ module _ where
             ((x₊ *ℕ y₋ +ℕ x₊ *ℕ z₋) +ℕ (x₋ *ℕ y₊ +ℕ x₋ *ℕ z₊))
           ≡⟨ (
             let
-              swap-middle : (a b c d : Nat) → (a +ℕ b) +ℕ (c +ℕ d) ≡ (a +ℕ c) +ℕ (b +ℕ d)
-              swap-middle a b c d =
+              swapMiddle : (a b c d : Nat) → (a +ℕ b) +ℕ (c +ℕ d) ≡ (a +ℕ c) +ℕ (b +ℕ d)
+              swapMiddle a b c d =
                 let
                   unassoc-lhs : (a +ℕ b) +ℕ (c +ℕ d) ≡ a +ℕ b +ℕ c +ℕ d
                   unassoc-lhs = NatCommSemiring.add-unassoc (a +ℕ b) c d
@@ -1301,8 +1301,8 @@ module _ where
                 in unassoc-lhs · permute · (inverse unassoc-rhs)
             in
               ap2 (λ e1 e2 → e1 -ℕ e2)
-                (swap-middle (x₊ *ℕ y₊) (x₊ *ℕ z₊) (x₋ *ℕ y₋) (x₋ *ℕ z₋))
-                (swap-middle (x₊ *ℕ y₋) (x₊ *ℕ z₋) (x₋ *ℕ y₊) (x₋ *ℕ z₊))
+                (swapMiddle (x₊ *ℕ y₊) (x₊ *ℕ z₊) (x₋ *ℕ y₋) (x₋ *ℕ z₋))
+                (swapMiddle (x₊ *ℕ y₋) (x₊ *ℕ z₋) (x₋ *ℕ y₊) (x₋ *ℕ z₊))
           ) ⟩
             ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) +ℕ (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋)) -ℕ
             ((x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) +ℕ (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊))
@@ -1339,8 +1339,8 @@ module _ where
             ((x₊ *ℕ z₋ +ℕ y₊ *ℕ z₋) +ℕ (x₋ *ℕ z₊ +ℕ y₋ *ℕ z₊))
           ≡⟨ (
             let
-              swap-middle : (a b c d : Nat) → (a +ℕ b) +ℕ (c +ℕ d) ≡ (a +ℕ c) +ℕ (b +ℕ d)
-              swap-middle a b c d =
+              swapMiddle : (a b c d : Nat) → (a +ℕ b) +ℕ (c +ℕ d) ≡ (a +ℕ c) +ℕ (b +ℕ d)
+              swapMiddle a b c d =
                 let
                   unassoc-lhs : (a +ℕ b) +ℕ (c +ℕ d) ≡ a +ℕ b +ℕ c +ℕ d
                   unassoc-lhs = NatCommSemiring.add-unassoc (a +ℕ b) c d
@@ -1351,8 +1351,8 @@ module _ where
                 in unassoc-lhs · permute · (inverse unassoc-rhs)
             in
               ap2 (λ e1 e2 → e1 -ℕ e2)
-                (swap-middle (x₊ *ℕ z₊) (y₊ *ℕ z₊) (x₋ *ℕ z₋) (y₋ *ℕ z₋))
-                (swap-middle (x₊ *ℕ z₋) (y₊ *ℕ z₋) (x₋ *ℕ z₊) (y₋ *ℕ z₊))
+                (swapMiddle (x₊ *ℕ z₊) (y₊ *ℕ z₊) (x₋ *ℕ z₋) (y₋ *ℕ z₋))
+                (swapMiddle (x₊ *ℕ z₋) (y₊ *ℕ z₋) (x₋ *ℕ z₊) (y₋ *ℕ z₊))
           ) ⟩
             ((x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) +ℕ (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋)) -ℕ
             ((x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊) +ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊))

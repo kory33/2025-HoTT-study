@@ -24,7 +24,7 @@ of the definition:
 - **hyphen-case** — for *propositions, theorems, and proof-relevant
   definitions*: anything whose focus is on proving a property or constructing
   evidence of a mathematical statement.
-  - Examples: `add-comm`, `mul-ldistr`, `is-equiv-then-is-emb`, `identity-type-of-a-k-type-is-a-k-type`
+  - Examples: `add-comm`, `mul-ldistr`, `is-equiv-then-is-emb`, `identity-type-of-k-type-is-k-type`
 
 The line between "computational" and "propositional" is inevitably blurred in
 HoTT (every definition computes), but the intent is clear: a map
@@ -257,23 +257,8 @@ Symbolic aliases for operations are grouped in nested `Symbolic` or
 
 | Name | Issue | Expected |
 |------|-------|----------|
-| `neg-bool` | Hyphen-case but computational (`Bool → Bool`) | `negBool` |
-| `swap-middle` | Hyphen-case but unconditional verb (local `where` in section-05) | `swapMiddle` |
-| `flip-dependent-fn` | Hyphen-case but computational (swaps argument order) | `flipDependentFn` |
-| `flip-dependent-biimpl` | Hyphen-case but computational (biimplication of the above) | `flipDependentBiimpl` |
-| `flip-biimpl` | Hyphen-case but computational (flips a biimplication) | `flipBiimpl` |
-| `decide-Unit` | Hyphen-case but decision procedure | `decideUnit` |
-| `decide-Empty` | Same | `decideEmpty` |
-| `decide-Eq-Nat` | Same (takes plain `Nat` data) | `decideEqNat` |
-| `decide-Fin-depfn` | Same | `decideFinDepfn` |
 | `decide-Σ-P` | Decision procedure naming is mixed with symbol-forced hyphenation | keep as-is (symbolic exception) |
 | `biimpl` vs `iff` | Mixed usage remains across sections | Use `iff` only when both sides are proposition-valued; otherwise use `biimpl` |
-
-### Style Notes
-
-- Articles (`-a-`) should be elided from names when we can naturally recover them in our mind.
-  Current exceptions like `k-type-is-a-succ-k-type` and `identity-type-of-a-k-type-is-a-k-type`
-  should drop the `-a-`.
 
 ---
 
