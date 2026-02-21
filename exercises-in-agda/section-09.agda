@@ -1160,8 +1160,8 @@ module _ where
       ((s , (lwhisker (FG ⁻¹ₕₜₚ) s ·ₕₜₚ S)),
         (r , (rwhisker r (FG ⁻¹ₕₜₚ) ·ₕₜₚ R)))
 
-    homotope-implies-is-equiv-iff : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f ↔ Is-equiv g
-    homotope-implies-is-equiv-iff {A} {B} {f} {g} FG =
+    homotope-then-is-equiv-iff : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f ↔ Is-equiv g
+    homotope-then-is-equiv-iff {A} {B} {f} {g} FG =
       (is-equiv-preserved-by-homotopy FG , is-equiv-preserved-by-homotopy (FG ⁻¹ₕₜₚ))
 
     sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retraction-of f)) → Is-retraction-of f g

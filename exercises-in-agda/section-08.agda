@@ -18,9 +18,9 @@ module _ where
   decideInhabited (left a) = true
   decideInhabited (right ¬a) = false
 
-  reflect-inhabitance : {A : Set} → (deca : Is-decidable A) → (decideInhabited deca ≡ true) → A
-  reflect-inhabitance (left a) _ = a
-  reflect-inhabitance (right ¬a) eq = absurd (Eq-Bool.false-neq-true (refl · eq))
+  reflectInhabitance : {A : Set} → (deca : Is-decidable A) → (decideInhabited deca ≡ true) → A
+  reflectInhabitance (left a) _ = a
+  reflectInhabitance (right ¬a) eq = absurd (Eq-Bool.false-neq-true (refl · eq))
 
   open Leq-Nat.Symbolic
 
@@ -105,9 +105,9 @@ module _ where
             case (deceqa a1 a2) of λ {
               (left eqa) → case (deceqb b1 b2) of λ {
                 (left eqb) → left (ap (λ e → e , b1) eqa · ap (λ e → a2 , e) eqb)
-              ; (right ¬eqb) → right (λ paireq → ¬eqb (eq-×-implies-pr₂-eq paireq))
+              ; (right ¬eqb) → right (λ paireq → ¬eqb (eq-×-then-pr₂-eq paireq))
               }
-            ; (right ¬eqa) → right (λ paireq → ¬eqa (eq-implies-pr₁-eq paireq))
+            ; (right ¬eqa) → right (λ paireq → ¬eqa (eq-then-pr₁-eq paireq))
             }
 
         backward : Has-decidable-eq (A × B) → (B → Has-decidable-eq A) × (A → Has-decidable-eq B)
@@ -116,13 +116,13 @@ module _ where
             f : B → Has-decidable-eq A
             f b a1 a2 =
               case (deceqab (a1 , b) (a2 , b)) of λ {
-                (left eqab) → left (eq-implies-pr₁-eq eqab)
+                (left eqab) → left (eq-then-pr₁-eq eqab)
               ; (right ¬eqab) → right (λ eqa → ¬eqab (ap (λ e → e , b) eqa))
               }
             g : A → Has-decidable-eq B
             g a b1 b2 =
               case (deceqab (a , b1) (a , b2)) of λ {
-                (left eqab) → left (eq-×-implies-pr₂-eq eqab)
+                (left eqab) → left (eq-×-then-pr₂-eq eqab)
               ; (right ¬eqab) → right (λ eqb → ¬eqab (ap (λ e → a , e) eqb))
               }
 
@@ -277,7 +277,7 @@ module _ where
       --         (left b1≡b2) → left (ap (pair a1) b1≡b2)
       --       ; (right b1≠b2) → right (λ paireq → b1≠b2 ({!   !}))
       --       }
-      --   ; (right a1≠a2) → right (λ paireq → a1≠a2 (eq-implies-pr₁-eq paireq))
+      --   ; (right a1≠a2) → right (λ paireq → a1≠a2 (eq-then-pr₁-eq paireq))
       --   }
 
       postulate backward : Has-decidable-eq (Σ A B) → (a : A) → Has-decidable-eq (B a)
@@ -290,7 +290,7 @@ module _ where
     section-and-iii-imply-i : (b : (x : A) → B x) → iii → i
     section-and-iii-imply-i b deceq-pair a1 a2 =
       case (deceq-pair (a1 , b a1) (a2 , b a2)) of λ {
-        (left paireq) → left (eq-implies-pr₁-eq paireq)
+        (left paireq) → left (eq-then-pr₁-eq paireq)
       ; (right ¬paireq) → right (λ { refl → ¬paireq refl })
       }
 

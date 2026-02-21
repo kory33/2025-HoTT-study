@@ -143,7 +143,7 @@ module _ where
   fst-is-emb-iff-is-subtype {A} {B} =
     begin-↔
       Is-emb (Σ.fst {A} {B})                           ↔⟨ is-emb-iff-fibs-are-props ⟩
-      ((x : A) → Is-prop (fib (Σ.fst {A} {B}) x))      ↔⟨ depfn-biimpl (λ x → dom-of-equiv-is-prop-iff-cod-is-prop (tr-from-fib-pr1-is-equiv x)) ⟩
+      ((x : A) → Is-prop (fib (Σ.fst {A} {B}) x))      ↔⟨ depfn-biimpl (λ x → dom-of-equiv-is-prop-iff-cod-is-prop (tr-from-fib-pr₁-is-equiv x)) ⟩
       ((x : A) → Is-prop (B x))                        ↔⟨⟩
       Is-subtype B                                     ∎-↔
 
@@ -458,15 +458,15 @@ module _ where
         (leq-iff-exists-diff m n)
 
     -- exercise 12.3.c
-    mul-succnat-left-is-emb : (m : Nat) → Is-emb (λ n → (succ m) * n)
-    mul-succnat-left-is-emb m = inj-to-a-set-is-emb Nat-is-set (λ n1 n2 → Σ.snd (mul-inj-left n1 n2 m))
+    succ-mul-is-emb : (m : Nat) → Is-emb (λ n → (succ m) * n)
+    succ-mul-is-emb m = inj-to-a-set-is-emb Nat-is-set (λ n1 n2 → Σ.snd (mul-inj-left n1 n2 m))
 
     open DivisibilityBasic.Symbolic
     divisibility-is-prop : (d n : Nat) → Is-prop (succ d ∣ n)
     divisibility-is-prop d n =
       set-elem-having-preimage-under-inj-is-prop
         Nat-is-set
-        (is-emb-then-is-inj (mul-succnat-left-is-emb d))
+        (is-emb-then-is-inj (succ-mul-is-emb d))
         n
 
   -- TODO: exercise 12.4

@@ -191,7 +191,7 @@ module _ where
     eq-iff-pr₁-eq {zero} (k , k<zero) = EmptyBasic.absurd (Lt-Nat.not-lt-zero k k<zero)
     eq-iff-pr₁-eq {succ k} (x , x<sk) (y , y<sk) =
       (
-        eq-implies-pr₁-eq ,
+        eq-then-pr₁-eq ,
         (λ { refl → case (Lt-Nat.subsingleton x (succ k) x<sk y<sk) of λ { refl → refl }})
       )
 
