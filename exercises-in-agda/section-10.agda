@@ -29,8 +29,8 @@ module _ where
   two-points-eq-in-contr-type (a , C) x y = (C x)⁻¹ · (C y)
 
   -- remark 10.1.2
-  contraction-to : {A : Set} → (c : A) → Set
-  contraction-to c = const c ~ id
+  ContractionTo-const~id : {A : Set} → (c : A) → Set
+  ContractionTo-const~id c = const c ~ id
 
   -- example 10.1.3
   Unit-is-contr : Is-contr Unit
