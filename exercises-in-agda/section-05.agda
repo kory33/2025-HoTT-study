@@ -24,7 +24,7 @@ module _ where
     concat refl yz = yz
 
     _·_ : {A : Set} → {x y z : A} →
-          (x ≡ y) → (y ≡ z) → (x ≡ z) 
+          (x ≡ y) → (y ≡ z) → (x ≡ z)
     _·_ = concat
 
     infixl 40 _·_
@@ -122,7 +122,7 @@ module _ where
 
     ap-comp : {A B C : Set} → (g : B → C) → (f : A → B) →
              {x y : A} → (p : x ≡ y) →
-             ap (g ∘ f) p ≡ ap g (ap f p) 
+             ap (g ∘ f) p ≡ ap g (ap f p)
     ap-comp g f refl = refl
 
     -- definition 5.3.2
@@ -137,7 +137,7 @@ module _ where
                 (p : x ≡ y) → (q : y ≡ z) →
                 ap f (p · q) ≡ ap f p · ap f q
     ap-concat f refl q = refl
- 
+
     -- definition 5.4.1
     tr : {A : Set} → (B : A → Set) →
          {x y : A} → (p : x ≡ y) →
@@ -271,7 +271,7 @@ module _ where
         q : b ≡ c
         r : c ≡ d
         s : d ≡ e
-      
+
       -- exercise 5.4.a
       α₁ : (p : a ≡ b) → (q : b ≡ c) → (r : c ≡ d) → (s : d ≡ e) →
            ((p · q) · r) · s ≡ (p · (q · r)) · s
@@ -318,7 +318,7 @@ module _ where
         zero + (succ n)
       ≡⟨⟩
         succ (zero + n)
-      ≡⟨ ap succ (add-lunit _) ⟩ 
+      ≡⟨ ap succ (add-lunit _) ⟩
         succ n
       ∎
 
@@ -357,7 +357,7 @@ module _ where
 
     add-unassoc : (m n k : Nat) → m + (n + k) ≡ (m + n) + k
     add-unassoc m n k = inverse (add-assoc m n k)
-    
+
     -- proposition 5.6.4
     add-comm : (m n : Nat) → m + n ≡ n + m
     add-comm zero n = add-lunit n
@@ -405,7 +405,7 @@ module _ where
       ≡⟨ mul-lzero n ⟩
         zero
       ∎
-    
+
     mul-runit : (n : Nat) → n * one ≡ n
     mul-runit n = refl
 
@@ -508,7 +508,7 @@ module _ where
       ≡⟨⟩
         (m * n) + (m * (succ k))
       ∎
-    
+
     mul-rdistr : (m n k : Nat) → (m + n) * k ≡ (m * k) + (n * k)
     mul-rdistr m n k =
       begin
@@ -762,7 +762,7 @@ module _ where
           ≡⟨⟩
             pred (x + y)
           ∎
-      
+
       add-pred-right : (x y : Int) → x + pred y ≡ pred (x + y)
       add-pred-right x y =
         let
@@ -806,7 +806,7 @@ module _ where
           ≡⟨⟩
             Int-succ (x + y)
           ∎
-      
+
       add-succ-right : (x y : Int) → x + Int-succ y ≡ Int-succ (x + y)
       add-succ-right x y =
         let
@@ -899,7 +899,7 @@ module _ where
         ≡⟨ ap (λ e → e -ℕ n) (NatEquality.add-lunit n) ⟩
           n -ℕ n
         ≡⟨ Nat-minus-eq-zero n ⟩
-          zeroInt          
+          zeroInt
         ∎
       left-inverse (negSucc n) =
         begin
@@ -909,9 +909,9 @@ module _ where
         ≡⟨ ap (λ e → n -ℕ e) (NatEquality.add-lunit n) ⟩
           n -ℕ n
         ≡⟨ Nat-minus-eq-zero n ⟩
-          zeroInt          
+          zeroInt
         ∎
-      
+
       right-inverse : (x : Int) → x + (- x) ≡ zeroInt
       right-inverse zeroInt = refl
       right-inverse (posSucc n) =
@@ -964,7 +964,7 @@ module _ where
           ≡⟨⟩
             zeroInt
           ∎
-      
+
       mul-rzero : (x : Int) → x * zeroInt ≡ zeroInt
       mul-rzero x = refl
 
@@ -990,7 +990,7 @@ module _ where
           ≡⟨ Nat-minus-asNatDiff x ⟩
             x
           ∎
-              
+
       mul-runit : (x : Int) → x * Int-one ≡ x
       mul-runit x =
         let
@@ -1459,4 +1459,3 @@ module _ where
           ≡⟨ ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
             y * x
           ∎
-  

@@ -36,7 +36,7 @@ module _ where
           x + d * l       ≡⟨ ap (λ e → x + e) q ⟩
           x + y           ∎)
       )
-    
+
     -- proposition 7.1.5 (exercise 7.1); TODO: prove
     postulate divides-summand-and-sum-then-divides-other : (d x y : Nat) → d ∣ x → d ∣ (x + y) → d ∣ y
 
@@ -73,7 +73,7 @@ module _ where
     congr-to-zero-mod-self : (x : Nat) → x ≡ zero mod x
     congr-to-zero-mod-self x =
       tr (λ e → x ∣ e) (inverse (Nat-dist.dist-to-zero x)) (DivisibilityBasic.divides-refl x)
-    
+
     -- proposition 7.2.4
     -- TODO: prove
     postulate congr-is-equiv : {k : Nat} → TypalEquivalence (λ x y → x ≡ y mod k)

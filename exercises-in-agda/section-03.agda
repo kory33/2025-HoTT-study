@@ -1,7 +1,7 @@
 module _ where
   -- Hack: Writing a public open import here in a top-level anonymous module
-  --       allows all section modules (e.g. section-05, section-06, ...) following this module (section-03) to use 
-  --       all transitively past section modules (e.g. section-02) without needing to additionally import them. 
+  --       allows all section modules (e.g. section-05, section-06, ...) following this module (section-03) to use
+  --       all transitively past section modules (e.g. section-02) without needing to additionally import them.
   open import section-02 public
 
   data Nat : Set where
@@ -116,4 +116,3 @@ module _ where
           succ prevprev
         ) m
       ) n
- 

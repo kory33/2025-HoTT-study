@@ -7,7 +7,7 @@ module _ where
   data Unit : Set where
     unit : Unit
 
-  ind-Unit : {P : Unit → Set} → P unit → (x : Unit) → P x 
+  ind-Unit : {P : Unit → Set} → P unit → (x : Unit) → P x
   ind-Unit pu unit = pu
 
   -- definition 4.3.1
@@ -95,7 +95,7 @@ module _ where
     field
       fst : A
       snd : B fst
-  
+
   Σ : (A : Set) → (B : A → Set) → Set
   Σ A B = Σ-poly A B
 
@@ -197,7 +197,7 @@ module _ where
     asNatDiff zeroInt = (zero , zero)
     asNatDiff (posSucc n) = ((succ n), zero)
     asNatDiff (negSucc n) = (zero , (succ n))
-     
+
     add : Int → Int → Int
     add n m = let (n₊ , n₋) = asNatDiff n
                   (m₊ , m₋) = asNatDiff m
@@ -251,7 +251,7 @@ module _ where
 
   data Bool : Set where
     true false : Bool
-  
+
   ind-Bool : {P : Bool → Set} →
              (pT : P true) → (pF : P false) →
              (b : Bool) → P b
@@ -425,7 +425,7 @@ module _ where
     -- some intuitive lemmas
     not-bot : ¬ ⊥
     not-bot = id
-    
+
     not-not-not-bot : ¬ ¬ ¬ ⊥
     not-not-not-bot = ex-b-i not-bot
 
@@ -534,7 +534,7 @@ module _ where
   data List (A : Set) : Set where
     nil : List A
     cons : A → List A → List A
-  
+
   -- exercise 4.4.a
   ind-List : {A : Set} → {P : List A → Set} →
              (pNil : P nil) →
@@ -563,7 +563,7 @@ module _ where
     sum : List Nat → Nat
     sum nil = zero
     sum (cons x xs) = NatBasic.add x (sum xs)
-    
+
     product : List Nat → Nat
     product nil = NatBasic.one
     product (cons x xs) = NatBasic.mul x (product xs)

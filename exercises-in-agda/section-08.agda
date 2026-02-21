@@ -341,7 +341,7 @@ module _ where
     open Is-decidable
     open ≡-Reasoning
     open Fin-Basic
-  
+
     -- exercise 8.3
     Fin-de-Morgan : {k : Nat} → {P : Fin k → Set} → Is-decidable-family P → ¬ ((x : Fin k) → P x) → Σ (Fin k) (λ x → ¬ P x)
     Fin-de-Morgan {zero} decide-p ¬ΠP = absurd (¬ΠP λ { () })
@@ -382,7 +382,7 @@ module _ where
           left (
             n ,
             (pn , trans n N (succ N) leq-n (self-succ N) , λ x px →
-              +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x → 
+              +₀-Basic.mapRightOf (any-satisfying-Nat-is-≤n-or-N< x px) (λ N<x →
                 case Σ.snd (Lt-Nat.lt-or-eq-iff-leq (succ N) x) (Σ.fst (Lt-Nat.lt-iff-succ-leq N x) N<x) of λ {
                   (left sN<x) → sN<x
                 ; (right refl) → absurd (¬psN px)
@@ -433,5 +433,5 @@ module _ where
           }))
       ; (right ¬pm'-below-m) → absurd (¬pm'-below-m n (mub n pn) pn) -- impossible
       }
- 
+
     -- TODO: exercise 8.10.c
