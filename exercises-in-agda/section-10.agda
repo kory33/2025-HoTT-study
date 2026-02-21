@@ -200,7 +200,7 @@ module _ where
       --     g   f  g
       hcomp (htpy-refl id) (lwhisker H g)
 
-                ~⟨← hcomp-lhtpe (·ₕₜₚ-linv H) _ ⟩
+              ~⟨← hcomp-lhtpe (·ₕₜₚ-linv H) _ ⟩
       --    ┊       ┊    │
       --    ┊     ╭[H]╮  │
       -- ╭─[H]─╮  │   │  │
@@ -212,7 +212,7 @@ module _ where
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (hcomp    H (lwhisker H g))  ~⟨⟩
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (hcomp-lr H (lwhisker H g))
 
-                    ~⟨ ·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (hcomp-lr-rl H (lwhisker H g)) ⟩
+              ~⟨ ·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (hcomp-lr-rl H (lwhisker H g)) ⟩
       --    ┊       ┊    │
       -- ╭─[H]─╮    ┊    │
       -- │     │    ┊    │
@@ -230,7 +230,7 @@ module _ where
                                                                                                             )) _ ⟩
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (rwhisker g (lwhisker (rwhisker f H) g)) ·ₕₜₚ (lwhisker H g)
 
-                    ~⟨← ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (rwhisker-rhtpe _ (lwhisker-lhtpe K _))) _ ⟩
+              ~⟨← ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (rwhisker-rhtpe _ (lwhisker-lhtpe K _))) _ ⟩
       --    ┊             │
       -- ╭─[H]─────────╮  │
       -- g     ╭[G]╮   │  │
@@ -240,7 +240,7 @@ module _ where
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (rwhisker g (lwhisker (lwhisker G f) g)) ·ₕₜₚ (lwhisker H g) ~⟨⟩
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (rwhisker g (lwhisker G (f ∘ g)))        ·ₕₜₚ (lwhisker H g)
 
-                    ~⟨ ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (rwhisker-rhtpe _ (comm-htpy-whisk (f ∘ g) G))) _ ⟩
+              ~⟨ ·ₕₜₚ-lhtpe (·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (rwhisker-rhtpe _ (comm-htpy-whisk (f ∘ g) G))) _ ⟩
       --    ┊     │     ┊
       -- ╭─[H]─╮  │     ┊
       -- g     │  │   ╭[G]╮
@@ -257,7 +257,7 @@ module _ where
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ ((rwhisker (g ∘ f) (rwhisker g G)) ·ₕₜₚ (lwhisker H g))   ~⟨⟩
       (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) ·ₕₜₚ (              hcomp-rl H (rwhisker g G)              )
 
-                    ~⟨← ·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (hcomp-lr-rl H (rwhisker g G)) ⟩
+              ~⟨← ·ₕₜₚ-rhtpe (lwhisker (H ⁻¹ₕₜₚ) (g ∘ f ∘ g)) (hcomp-lr-rl H (rwhisker g G)) ⟩
       --    ┊     │     ┊
       --    ┊     │   ╭[G]╮
       -- ╭─[H]─╮  │   │   │
