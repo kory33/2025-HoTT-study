@@ -90,9 +90,9 @@ module _ where
   totalizationOver f D g (x , z) = (f x , g x z)
 
   -- theorem 11.1.6
-  totalization-of-equivs-over-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : A → Set} → {D : B → Set} →
+  totalization-over-equiv-is-equiv-iff-equivs : {A B : Set} → {f : A → B} → Is-equiv f → {C : A → Set} → {D : B → Set} →
                                                (g : family-of-maps-over f C D) → (Is-family-of-equivs g) ↔ Is-equiv (totalizationOver f D g)
-  totalization-of-equivs-over-equiv-is-equiv {A} {B} {f} f-eqv {C} {D} g =
+  totalization-over-equiv-is-equiv-iff-equivs {A} {B} {f} f-eqv {C} {D} g =
     begin-↔
       Is-family-of-equivs g                                 ↔⟨ is-family-of-equivs-iff-tot-is-equiv g ⟩
       Is-equiv (totalization g)                             ↔⟨← latter-is-equiv-then-comp-is-equiv-iff-former-is-equiv
