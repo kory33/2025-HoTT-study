@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use open qw(:std :encoding(UTF-8));
+use List::Util 'max';
 
 # Written primarily by Codex.
 # Rule:
@@ -89,7 +90,7 @@ for my $file (@files) {
   my @lines = <$fh>;
   chomp @lines;
 
-  my $changed = 0;
+  my $changed_in_current_file = 0;
 
   for (my $i = 0; $i < @lines; $i++) {
     my $start = $lines[$i];
@@ -107,38 +108,35 @@ for my $file (@files) {
     my $base = leading_spaces($start);
 
     my @cont_idxs = ();
+    # advance until we hit a non-declaration line
     for (my $j = $i + 1; $j < @lines; $j++) {
       my $ln = $lines[$j];
-      last if $ln =~ /^\s*$/;
-      last if $ln =~ /^\s*--/;
-
-      my $ind = leading_spaces($ln);
-      last if $ind <= $base;
-      last if $ln =~ /^\s*[^-].*=/;
+      last if leading_spaces($ln) <= $base || $ln =~ /=/;
       push @cont_idxs, $j;
     }
     next unless @cont_idxs;
 
+    # Determine the base indent for the continuation block.
+    # We'll keep the relative indent of continuation lines,
+    #   so $delta is the only quantity we care in checking/applying fixes.
     my $start_ind = leading_spaces($lines[$cont_idxs[0]]);
     my $start_rel = $start_ind - $base;
     my $target = ($start_rel <= $hanging_threshold_rel && $start_ind < $hanging)
       ? ($base + $small_rel_indent)
       : $hanging;
-
     my $delta = $target - $start_ind;
 
     for my $j (@cont_idxs) {
       my $ln = $lines[$j];
       my $ind = leading_spaces($ln);
-      my $expected = $ind + $delta;
-      $expected = 0 if $expected < 0;
+      my $expected = max($ind + $delta, 0);
 
       if ($ind != $expected) {
         $total_hits++;
         if ($mode eq 'fix') {
           $ln =~ s/^\s+//;
           $lines[$j] = (' ' x $expected) . $ln;
-          $changed++;
+          $changed_in_current_file++;
           $total_changes++;
         } else {
           print "$file:" . ($j + 1) . ": expected indent $expected (base=$base, start=$start_ind, target_start=$target, delta=$delta, hanging=$hanging), found $ind | $ln\n";
@@ -147,11 +145,11 @@ for my $file (@files) {
     }
   }
 
-  if ($mode eq 'fix' && $changed > 0) {
+  if ($mode eq 'fix' && $changed_in_current_file > 0) {
     open my $out, '>:encoding(UTF-8)', $file or die "write $file: $!";
     print {$out} join("\n", @lines), "\n";
     close $out;
-    $file_changes{$file} = $changed;
+    $file_changes{$file} = $changed_in_current_file;
   }
 }
 
