@@ -12,11 +12,11 @@ module _ where
 
     module Symbolic where
       -- When K : f ~ g, we will diagramatically write the situation as:
-      --         g 
-      --         │ 
+      --         g
+      --         │
       --        [K]
-      --         │ 
-      --         f 
+      --         │
+      --         f
       _~_ : {A : Set} → {B : (x : A) → Set} → (f g : (x : A) → B x) → Set
       f ~ g = Homotopy f g
 
@@ -26,7 +26,7 @@ module _ where
     -- example 9.1.3
     module _ where
       open BoolBasic
-      neg-neg-bool : neg-bool ∘ neg-bool ~ id
+      neg-neg-bool : negBool ∘ negBool ~ id
       neg-neg-bool true = refl
       neg-neg-bool false = refl
 
@@ -36,31 +36,31 @@ module _ where
         A : Set
         B : (x : A) → Set
 
-      --       f       
-      --       │       
+      --       f
+      --       │
       --  [htpy-refl f]
-      --       │       
-      --       f       
+      --       │
+      --       f
       htpy-refl    : (f : (x : A) → B x)     → f ~ f
       htpy-refl f x = refl
 
-      --  g                  f          
-      --  │                  │          
+      --  g                  f
+      --  │                  │
       -- [K]  then  [htpy-inverse f g K]
-      --  │                  │          
-      --  f                  g          
+      --  │                  │
+      --  f                  g
       htpy-inverse : (f g : (x : A) → B x)   → f ~ g → g ~ f
       htpy-inverse f g K x = inverse (K x)
 
-      --  h                      h            
-      --  │                      │            
-      -- [G]                     │            
-      --  │                      │            
-      --  │ g   then  [htpy-concat f g h H G] 
-      --  │                      │            
-      -- [H]                     │            
-      --  │                      │            
-      --  f                      f            
+      --  h                      h
+      --  │                      │
+      -- [G]                     │
+      --  │                      │
+      --  │ g   then  [htpy-concat f g h H G]
+      --  │                      │
+      -- [H]                     │
+      --  │                      │
+      --  f                      f
       htpy-concat  : (f g h : (x : A) → B x) → f ~ g → g ~ h → f ~ h
       htpy-concat f g h H G x = (H x) · (G x)
 
@@ -68,25 +68,25 @@ module _ where
       htpy-eq-refl f {g} refl = htpy-refl f
 
       module HomotopyGroupoidSymbolic where
-        --  h               h      
-        --  │               │      
-        -- [G]              │      
-        --  │               │      
-        --  │ g   then  [H ·ₕₜₚ G] 
-        --  │               │      
-        -- [H]              │      
-        --  │               │      
-        --  f               f      
+        --  h               h
+        --  │               │
+        -- [G]              │
+        --  │               │
+        --  │ g   then  [H ·ₕₜₚ G]
+        --  │               │
+        -- [H]              │
+        --  │               │
+        --  f               f
         _·ₕₜₚ_ : {f g h : (x : A) → B x} → f ~ g → g ~ h → f ~ h
         H ·ₕₜₚ G = htpy-concat _ _ _ H G
 
         infixl 40 _·ₕₜₚ_
 
-        --  g             f     
-        --  │             │     
-        -- [K]  then  [K ⁻¹ₕₜₚ] 
-        --  │             │     
-        --  f             g     
+        --  g             f
+        --  │             │
+        -- [K]  then  [K ⁻¹ₕₜₚ]
+        --  │             │
+        --  f             g
         --
         -- In diagrams we will usually write K⁻¹ for K ⁻¹ₕₜₚ.
         _⁻¹ₕₜₚ : {f g : (x : A) → B x} → f ~ g → g ~ f
@@ -131,12 +131,12 @@ module _ where
       -- "Left-homotope" a concatenation.
       --
       -- If p : H1 ~ H2, then:
-      --     │       │  
-      --    [K]     [K] 
-      --     │   ~   │  
-      --   [H1]    [H2] 
-      --     │       │  
-      --     f       f  
+      --     │       │
+      --    [K]     [K]
+      --     │   ~   │
+      --   [H1]    [H2]
+      --     │       │
+      --     f       f
       ·ₕₜₚ-lhtpe : {A B : Set} → {f g h : A → B} → {H1 H2 : f ~ g} → (p : H1 ~ H2) → (K : g ~ h) → (H1 ·ₕₜₚ K ~ H2 ·ₕₜₚ K)
       ·ₕₜₚ-lhtpe {A} {B} {f} {g} {h} {H1} {H2} p K x =
         begin
@@ -148,12 +148,12 @@ module _ where
       -- "Right-homotope" a concatenation.
       --
       -- If p : K1 ~ K2, then:
-      --     │       │  
-      --   [K1]    [K2] 
-      --     │   ~   │  
-      --    [H]     [H] 
-      --     │       │  
-      --     f       f  
+      --     │       │
+      --   [K1]    [K2]
+      --     │   ~   │
+      --    [H]     [H]
+      --     │       │
+      --     f       f
       ·ₕₜₚ-rhtpe : {A B : Set} → {f g h : A → B} → (H : f ~ g) → {K1 K2 : g ~ h} → (p : K1 ~ K2) → (H ·ₕₜₚ K1 ~ H ·ₕₜₚ K2)
       ·ₕₜₚ-rhtpe {A} {B} {f} {g} {h} H {K1} {K2} p x =
         begin
@@ -162,65 +162,65 @@ module _ where
           (H x) · (K2 x)        ≡⟨⟩
           (H ·ₕₜₚ K2) x         ∎
 
-      --     │       │          │       │ 
-      --    [L]      │      [K ·ₕₜₚ L]  │ 
-      --     │       │   =      │       │ 
-      -- [H ·ₕₜₚ K]  │         [H]      │ 
-      --     │       │          │       │ 
-      --     f       x          f       x 
+      --     │       │          │       │
+      --    [L]      │      [K ·ₕₜₚ L]  │
+      --     │       │   =      │       │
+      -- [H ·ₕₜₚ K]  │         [H]      │
+      --     │       │          │       │
+      --     f       x          f       x
       -- By an abuse of notation, x in the diagram stands for const x : Unit → A.
       -- When we don't have function extensionality, this is the best we can say about
       -- these "equality" between homotopies.
       --
       -- The same claim can be written using a higher homotopy, and we will usually be writing in this way:
-      --     │              │     
+      --     │              │
       --    [L]         [K ·ₕₜₚ L]
-      --     │       ~      │     
-      -- [H ·ₕₜₚ K]        [H]    
-      --     │              │     
-      --     f              f     
+      --     │       ~      │
+      -- [H ·ₕₜₚ K]        [H]
+      --     │              │
+      --     f              f
       ·ₕₜₚ-assoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ K ·ₕₜₚ L ~ H ·ₕₜₚ (K ·ₕₜₚ L)
       ·ₕₜₚ-assoc H K L x = ·-assoc (H x) (K x) (L x)
 
       ·ₕₜₚ-unassoc : (H : f ~ g) → (K : g ~ h) → (L : h ~ i) → H ·ₕₜₚ (K ·ₕₜₚ L) ~ H ·ₕₜₚ K ·ₕₜₚ L
       ·ₕₜₚ-unassoc H K L = (·ₕₜₚ-assoc H K L) ⁻¹ₕₜₚ
 
-      --       │            │  
-      --      [H]          [H] 
-      --       │        ~   │  
-      -- [htpy-refl f]      │  
-      --       │            │  
-      --       f            f  
+      --       │            │
+      --      [H]          [H]
+      --       │        ~   │
+      -- [htpy-refl f]      │
+      --       │            │
+      --       f            f
       ·ₕₜₚ-lunit : (H : f ~ g) → (htpy-refl f) ·ₕₜₚ H ~ H
       ·ₕₜₚ-lunit H x = ·-lunit (H x)
 
-      --       g             g  
-      --       │             │  
-      -- [htpy-refl g]       │  
-      --       │        ~    │  
-      --      [H]           [H] 
-      --       │             │  
-      --       f             f  
+      --       g             g
+      --       │             │
+      -- [htpy-refl g]       │
+      --       │        ~    │
+      --      [H]           [H]
+      --       │             │
+      --       f             f
       ·ₕₜₚ-runit : (H : f ~ g) → H ·ₕₜₚ (htpy-refl g) ~ H
       ·ₕₜₚ-runit H x = ·-runit (H x)
 
-      --       g       g 
-      --       │       │ 
-      --      [H]      │ 
-      --       │    ~  │ 
-      --     [H⁻¹]     │ 
-      --       │       │ 
-      --       f       f 
+      --       g       g
+      --       │       │
+      --      [H]      │
+      --       │    ~  │
+      --     [H⁻¹]     │
+      --       │       │
+      --       f       f
       ·ₕₜₚ-linv : (H : f ~ g) → (H ⁻¹ₕₜₚ ·ₕₜₚ H) ~ htpy-refl g
       ·ₕₜₚ-linv H x = ·-linv (H x)
 
-      --       g       g 
-      --       │       │ 
-      --     [H⁻¹]     │ 
-      --       │    ~  │ 
-      --      [H]      │ 
-      --       │       │ 
-      --       f       f 
+      --       g       g
+      --       │       │
+      --     [H⁻¹]     │
+      --       │    ~  │
+      --      [H]      │
+      --       │       │
+      --       f       f
       ·ₕₜₚ-rinv : (H : f ~ g) → (H ·ₕₜₚ H ⁻¹ₕₜₚ) ~ htpy-refl f
       ·ₕₜₚ-rinv H x = ·-rinv (H x)
 
@@ -243,19 +243,19 @@ module _ where
       private variable
         A B C : Set
 
-      --  h    g 
-      --  │    │ 
+      --  h    g
+      --  │    │
       --  │   [G]
-      --  │    │ 
-      --  h    f 
+      --  │    │
+      --  h    f
       rwhisker : (h : B → C) → {f g : A → B} → (G : f ~ g) → h ∘ f ~ h ∘ g
       rwhisker h G x = ap h (G x)
 
-      --  ┊   │       │  
-      --  ┊  [G]  ~  [G] 
-      --  ┊   │       │  
-      --  ┊   │       │  
-      --      f       f  
+      --  ┊   │       │
+      --  ┊  [G]  ~  [G]
+      --  ┊   │       │
+      --  ┊   │       │
+      --      f       f
       rwhisker-id : {f g : A → B} → (G : f ~ g) → rwhisker id G ~ G
       rwhisker-id G x =
         begin
@@ -263,11 +263,11 @@ module _ where
           ap id (G x)             ≡⟨ ap-id (G x) ⟩
           G x                     ∎
 
-      --    │   │      │   │   │  
-      --    │  [G]  ~  │   │  [G] 
-      --    │   │      │   │   │  
-      --    │   │      │   │   │  
-      --   f∘g  h      f   g   h  
+      --    │   │      │   │   │
+      --    │  [G]  ~  │   │  [G]
+      --    │   │      │   │   │
+      --    │   │      │   │   │
+      --   f∘g  h      f   g   h
       rwhisker-comp : {A B C D : Set} → (f : C → D) → (g : B → C) → {h k : A → B} → (G : h ~ k) →
                       rwhisker (f ∘ g) G ~ rwhisker f (rwhisker g G)
       rwhisker-comp {A} {B} {C} {D} f g {h} {k} G x =
@@ -278,11 +278,11 @@ module _ where
           rwhisker f (rwhisker g G) x    ∎
 
       -- If p : G1 ~ G2, then:
-      --  h   g       h   g   
-      --  │   │       │   │   
-      --  │  [G1]  ~  │  [G2] 
-      --  │   │       │   │   
-      --  h   f       h   f   
+      --  h   g       h   g
+      --  │   │       │   │
+      --  │  [G1]  ~  │  [G2]
+      --  │   │       │   │
+      --  h   f       h   f
       rwhisker-rhtpe : {A B C : Set} → (h : B → C) → {f g : A → B} → {G1 G2 : f ~ g} → (p : G1 ~ G2) → rwhisker h G1 ~ rwhisker h G2
       rwhisker-rhtpe {A} {B} {C} h {f} {g} {G1} {G2} p x =
         begin
@@ -291,19 +291,19 @@ module _ where
           ap h (G2 x)             ≡⟨⟩
           rwhisker h G2 x         ∎
 
-      --  h    f 
-      --  │    │ 
-      -- [H]   │ 
-      --  │    │ 
-      --  g    f 
+      --  h    f
+      --  │    │
+      -- [H]   │
+      --  │    │
+      --  g    f
       lwhisker : {g h : B → C} → (H : g ~ h) → (f : A → B) → g ∘ f ~ h ∘ f
       lwhisker H f x = H (f x)
-    
-      --  │   ┊      │  
-      -- [G]  ┊  ~  [G] 
-      --  │   ┊      │  
-      --  │   ┊      │  
-      --  f          f  
+
+      --  │   ┊      │
+      -- [G]  ┊  ~  [G]
+      --  │   ┊      │
+      --  │   ┊      │
+      --  f          f
       lwhisker-id : {f g : A → B} → (G : f ~ g) → lwhisker G id ~ G
       lwhisker-id G x =
         begin
@@ -311,31 +311,31 @@ module _ where
           id (G x)                ≡⟨⟩
           G x                     ∎
 
-      --   │   │       │   │   │  
-      --  [G]  │   ~  [G]  │   │  
-      --   │   │       │   │   │  
-      --   │   │       │   │   │  
-      --   h  f∘g      h   f   g  
-      lwhisker-comp : {A B C D : Set} → {h k : C → D} → (G : h ~ k) → (f : B → C) → (g : A → B) → 
+      --   │   │       │   │   │
+      --  [G]  │   ~  [G]  │   │
+      --   │   │       │   │   │
+      --   │   │       │   │   │
+      --   h  f∘g      h   f   g
+      lwhisker-comp : {A B C D : Set} → {h k : C → D} → (G : h ~ k) → (f : B → C) → (g : A → B) →
                       lwhisker G (f ∘ g) ~ lwhisker (lwhisker G f) g
       lwhisker-comp {A} {B} {C} {D} {h} {k} G f g x = refl
 
-      --   │   │         │      │ 
-      --  [H]  │         │      │ 
-      --   │   │  =  [G ·ₕₜₚ H] │ 
-      --  [G]  │         │      │ 
-      --   │   │         │      │ 
-      --   f   k         f      k 
+      --   │   │         │      │
+      --  [H]  │         │      │
+      --   │   │  =  [G ·ₕₜₚ H] │
+      --  [G]  │         │      │
+      --   │   │         │      │
+      --   f   k         f      k
       lwhisker-concat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) → (k : A → B) →
-                      lwhisker (G ·ₕₜₚ H) k ~ (lwhisker G k) ·ₕₜₚ (lwhisker H k)
+                        lwhisker (G ·ₕₜₚ H) k ~ (lwhisker G k) ·ₕₜₚ (lwhisker H k)
       lwhisker-concat {A} {B} {C} {f} {g} {h} G H k x = refl
 
       -- If p : G1 ~ G2, then:
-      --  g    h      g    h 
-      --  │    │      │    │ 
-      -- [G1]  │  ~  [G2]  │ 
-      --  │    │      │    │ 
-      --  f    h      f    h 
+      --  g    h      g    h
+      --  │    │      │    │
+      -- [G1]  │  ~  [G2]  │
+      --  │    │      │    │
+      --  f    h      f    h
       lwhisker-lhtpe : {A B C : Set} → {f g : B → C} → {G1 G2 : f ~ g} → (p : G1 ~ G2) → (h : A → B) → lwhisker G1 h ~ lwhisker G2 h
       lwhisker-lhtpe {A} {B} {C} {f} {g} {G1} {G2} p h x =
         begin
@@ -346,42 +346,42 @@ module _ where
 
       -- horizontal composition
 
-      --  k    g  
-      --  │    │  
-      --  │   [G] 
-      -- [K]   │  
-      --  │    │  
-      --  h    f  
+      --  k    g
+      --  │    │
+      --  │   [G]
+      -- [K]   │
+      --  │    │
+      --  h    f
       hcomp-lr : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
       hcomp-lr {A} {B} {C} {h} {k} K {f} {g} G = (lwhisker K f) ·ₕₜₚ (rwhisker k G)
 
-      --  k    g  
-      --  │    │  
-      -- [K]   │  
-      --  │   [G] 
-      --  │    │  
-      --  h    f  
+      --  k    g
+      --  │    │
+      -- [K]   │
+      --  │   [G]
+      --  │    │
+      --  h    f
       hcomp-rl : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → (h ∘ f) ~ (k ∘ g)
       hcomp-rl {A} {B} {C} {h} {k} K {f} {g} G = (rwhisker h G) ·ₕₜₚ (lwhisker K g)
 
-      --  k    g  
-      --  │    │  
-      --  │   [G] 
-      -- [K]   │  
-      --  │    │  
-      --  h    f  
+      --  k    g
+      --  │    │
+      --  │   [G]
+      -- [K]   │
+      --  │    │
+      --  h    f
       hcomp : {h k : B → C} → (h ~ k) → {f g : A → B} → (f ~ g) → (h ∘ f) ~ (k ∘ g)
       hcomp = hcomp-lr
 
-      --  k    g       k    g  
-      --  │    │       │    │  
-      --  │   [G]  ~  [K]   │  
-      -- [K]   │       │   [G] 
-      --  │    │       │    │  
-      --  h    f       h    f  
+      --  k    g       k    g
+      --  │    │       │    │
+      --  │   [G]  ~  [K]   │
+      -- [K]   │       │   [G]
+      --  │    │       │    │
+      --  h    f       h    f
       hcomp-lr-rl : {A B C : Set} →
-                              {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) → 
-                              hcomp-lr K G ~ hcomp-rl K G
+                    {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) →
+                    hcomp-lr K G ~ hcomp-rl K G
       hcomp-lr-rl {A} {B} {C} {h} {k} K {f} {g} G x =
         begin
           hcomp-lr K G x                 ≡⟨⟩
@@ -392,14 +392,14 @@ module _ where
           ((rwhisker h G) ·ₕₜₚ (lwhisker K g)) x   ≡⟨⟩
           hcomp-rl K G x                 ∎
 
-      --  h    f       h        f        
-      --  │    │       │        │        
-      --  │    │   ~   │  [htpy-refl f]  
-      -- [H]   │      [H]       │        
-      --  │    │       │        │        
-      --  g    f       g        f        
+      --  h    f       h        f
+      --  │    │       │        │
+      --  │    │   ~   │  [htpy-refl f]
+      -- [H]   │      [H]       │
+      --  │    │       │        │
+      --  g    f       g        f
       lwhisker-to-hcomp : {A B C : Set} → {g h : B → C} → (H : g ~ h) → (f : A → B) →
-                                    lwhisker H f ~ hcomp H (htpy-refl f)
+                          lwhisker H f ~ hcomp H (htpy-refl f)
       lwhisker-to-hcomp {A} {B} {C} {g} {h} H f =
         begin-htpy
           lwhisker H f                                         ~⟨ (·ₕₜₚ-runit (lwhisker H f)) ⁻¹ₕₜₚ ⟩
@@ -407,14 +407,14 @@ module _ where
           lwhisker H f ·ₕₜₚ rwhisker h (htpy-refl f)           ~⟨⟩
           hcomp H (htpy-refl f)                      ∎-htpy
 
-      --  h    g           h        g  
-      --  │    │           │        │  
-      --  │   [G]  ~       │       [G] 
-      --  │    │     [htpy-refl h]  │  
-      --  │    │           │        │  
-      --  h    f           h        f  
+      --  h    g           h        g
+      --  │    │           │        │
+      --  │   [G]  ~       │       [G]
+      --  │    │     [htpy-refl h]  │
+      --  │    │           │        │
+      --  h    f           h        f
       rwhisker-to-hcomp : {A B C : Set} → (h : B → C) → {f g : A → B} → (G : f ~ g) →
-                                    rwhisker h G ~ hcomp (htpy-refl h) G
+                          rwhisker h G ~ hcomp (htpy-refl h) G
       rwhisker-to-hcomp {A} {B} {C} h {f} {g} G =
         begin-htpy
           rwhisker h G                                       ~⟨ (·ₕₜₚ-lunit (rwhisker h G)) ⁻¹ₕₜₚ ⟩
@@ -422,13 +422,13 @@ module _ where
           (lwhisker (htpy-refl h) f) ·ₕₜₚ (rwhisker h G)     ~⟨⟩
           hcomp (htpy-refl h) G                    ∎-htpy
 
-      --       ┊         │       │  
-      --       ┊        [G]  ~  [G] 
-      -- [htpy-refl id]  │       │  
-      --       ┊         │       │  
-      --                 f       f  
+      --       ┊         │       │
+      --       ┊        [G]  ~  [G]
+      -- [htpy-refl id]  │       │
+      --       ┊         │       │
+      --                 f       f
       hcomp-lunit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
-                              hcomp (htpy-refl id) G ~ G
+                    hcomp (htpy-refl id) G ~ G
       hcomp-lunit {A} {B} {f} {g} G =
         begin-htpy
           hcomp (htpy-refl id) G                     ~⟨⟩
@@ -437,13 +437,13 @@ module _ where
           rwhisker id G                                        ~⟨ rwhisker-id G ⟩
           G                                                    ∎-htpy
 
-      --  │        ┊             │  
-      --  │  [htpy-refl id]      │  
-      -- [G]       ┊         ~  [G] 
-      --  │        ┊             │  
-      --  f                      f  
+      --  │        ┊             │
+      --  │  [htpy-refl id]      │
+      -- [G]       ┊         ~  [G]
+      --  │        ┊             │
+      --  f                      f
       hcomp-runit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
-                              hcomp G (htpy-refl id) ~ G
+                    hcomp G (htpy-refl id) ~ G
       hcomp-runit {A} {B} {f} {g} G =
         begin-htpy
           hcomp G (htpy-refl id)                     ~⟨⟩
@@ -452,16 +452,16 @@ module _ where
           lwhisker G id                                        ~⟨ lwhisker-id G ⟩
           G                                                    ∎-htpy
 
-      --      │       │      │    │  
-      --      │      [K]     │   [K] 
-      -- [G ·ₕₜₚ H]   │  =  [H]   │  
-      --      │       │      │    │  
-      --      │       │     [G]   │  
-      --      │       │      │    │  
-      --      f       k      f    k  
+      --      │       │      │    │
+      --      │      [K]     │   [K]
+      -- [G ·ₕₜₚ H]   │  =  [H]   │
+      --      │       │      │    │
+      --      │       │     [G]   │
+      --      │       │      │    │
+      --      f       k      f    k
       hcomp-lconcat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) →
-                                {k i : A → B} → (K : k ~ i) →
-                                hcomp (G ·ₕₜₚ H) K ~ (lwhisker G k) ·ₕₜₚ (hcomp H K)
+                      {k i : A → B} → (K : k ~ i) →
+                      hcomp (G ·ₕₜₚ H) K ~ (lwhisker G k) ·ₕₜₚ (hcomp H K)
       hcomp-lconcat {A} {B} {C} {f} {g} {h} G H {k} {i} K =
         begin-htpy
           hcomp (G ·ₕₜₚ H) K                                ~⟨⟩
@@ -471,15 +471,15 @@ module _ where
           (lwhisker G k) ·ₕₜₚ (hcomp H K)                   ∎-htpy
 
       -- If p : K1 ~ K2, then:
-      --  k    g       k    g  
-      --  │    │       │    │  
-      --  │   [G]  ~   │   [G] 
-      -- [K1]  │      [K2]  │  
-      --  │    │       │    │  
-      --  h    f       h    f  
+      --  k    g       k    g
+      --  │    │       │    │
+      --  │   [G]  ~   │   [G]
+      -- [K1]  │      [K2]  │
+      --  │    │       │    │
+      --  h    f       h    f
       hcomp-lhtpe : {A B C : Set} → {h k : B → C} → {K1 K2 : h ~ k} →
-                              (p : K1 ~ K2) → {f g : A → B} → (G : f ~ g) →
-                              hcomp K1 G ~ hcomp K2 G
+                    (p : K1 ~ K2) → {f g : A → B} → (G : f ~ g) →
+                    hcomp K1 G ~ hcomp K2 G
       hcomp-lhtpe {A} {B} {C} {h} {k} {K1} {K2} p {f} {g} G =
         begin-htpy
           hcomp K1 G                                 ~⟨⟩
@@ -488,14 +488,14 @@ module _ where
           hcomp K2 G                                 ∎-htpy
 
       -- If p : G1 ~ G2, then:
-      --  k    g       k    g  
-      --  │    │       │    │  
-      --  │  [G1]  ~   │  [G2] 
-      -- [K]   │      [K]   │  
-      --  │    │       │    │  
-      --  h    f       h    f  
+      --  k    g       k    g
+      --  │    │       │    │
+      --  │  [G1]  ~   │  [G2]
+      -- [K]   │      [K]   │
+      --  │    │       │    │
+      --  h    f       h    f
       hcomp-rhtpe : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} →
-                              {G1 G2 : f ~ g} → (p : G1 ~ G2) → hcomp K G1 ~ hcomp K G2
+                    {G1 G2 : f ~ g} → (p : G1 ~ G2) → hcomp K G1 ~ hcomp K G2
       hcomp-rhtpe {A} {B} {C} {h} {k} K {f} {g} {G1} {G2} p =
         begin-htpy
           hcomp K G1                                 ~⟨⟩
@@ -526,7 +526,7 @@ module _ where
 
       Is-equiv : {A B : Set} → (f : A → B) → Set
       Is-equiv {A} {B} f = Sect f × Retr f
-    
+
   module Equivalence where
     open BiInvertibleMaps public
 
@@ -555,8 +555,8 @@ module _ where
     id-is-equiv : {A : Set} → Is-equiv (id {A})
     id-is-equiv {A} = ((id , λ x → refl), (id , λ x → refl))
 
-    comp-equivs-is-equiv : {A B C : Set} → {g : B → C} → {f : A → B} → 
-      Is-equiv g → Is-equiv f → Is-equiv (g ∘ f)
+    comp-equivs-is-equiv : {A B C : Set} → {g : B → C} → {f : A → B} →
+          Is-equiv g → Is-equiv f → Is-equiv (g ∘ f)
     comp-equivs-is-equiv {A} {B} {C} {g} {f} ((sg , Sg), (rg , Rg)) ((sf , Sf), (rf , Rf)) =
       (
         (sf ∘ sg , λ c → (ap g (Sf (sg c)) · (Sg c))) ,
@@ -597,7 +597,7 @@ module _ where
       where
         fsect : Is-sect-of g f
         fsect = Σ.snd (Σ.snd (equiv-has-inverse f-is-equiv))
-    
+
     ≃-inverse-map-is-sect-of-original : {A B : Set} → {f : A → B} → (f-is-eqv : Is-equiv f) → Is-sect-of f (≃-inverse-map-for f-is-eqv)
     ≃-inverse-map-is-sect-of-original ((g , gsect) , _) = gsect
 
@@ -617,8 +617,8 @@ module _ where
     ≃-comm : {A B : Set} → A ≃ B → B ≃ A
     ≃-comm eqv = ≃-inverse eqv
 
-    ≃-then-iff : {A B : Set} → A ≃ B → (A ↔ B)
-    ≃-then-iff {A} {B} (fwd , (bwd , _) , _) = (fwd , bwd)
+    ≃-then-biimpl : {A B : Set} → A ≃ B → (A ↔ B)
+    ≃-then-biimpl {A} {B} (fwd , (bwd , _) , _) = (fwd , bwd)
 
     module Equivalence-Reasoning where
       infix  1 begin-≃_
@@ -643,7 +643,7 @@ module _ where
 
       _∎-≃ : (A : Set) → A ≃ A
       A ∎-≃  =  ≃-refl
-    
+
     -- example 9.2.9
     module _ where
       open +₀-Basic
@@ -716,7 +716,7 @@ module _ where
             (λ { (unit , a) → refl })
           )
         )
-      
+
       ×-runit : {A : Set} → A × Unit ≃ A
       ×-runit = ≃-trans ×-comm ×-lunit
 
@@ -741,7 +741,7 @@ module _ where
             (λ { (a , left b)   → refl         ; (a , right c)   → refl })
           )
         )
-      
+
       ×-rdistr-+₀ : {A B C : Set} → (B +₀ C) × A ≃ (B × A) +₀ (C × A)
       ×-rdistr-+₀ =
         (
@@ -752,7 +752,7 @@ module _ where
             (λ { (left b , a) → refl           ; (right c , a)   → refl })
           )
         )
-    
+
     -- example 9.2.10
     module _ where
       open Σ-Basic
@@ -772,7 +772,7 @@ module _ where
             (λ { b          → (unit , b) }) ,
             (λ { b          → refl }) ,
             (λ { (unit , b) → refl })))
-  
+
       Σ-runit : {A : Set} → Σ A (λ x → Unit) ≃ A
       Σ-runit =
         ((   λ { (a , unit) → a }) ,
@@ -873,7 +873,7 @@ module _ where
     private variable
       A : Set
       B : (x : A) → Set
-    
+
     inv-is-equiv : {x y : A} → Is-equiv (λ (p : x ≡ y) → inverse p)
     inv-is-equiv {x} {y} = ((inverse , (λ { refl → refl })), (inverse , (λ { refl → refl })))
 
@@ -983,9 +983,9 @@ module _ where
                 backward (forward n)   ≡⟨ ap backward (fn≡unit) ⟩
                 backward (right unit)  ≡⟨⟩
                 pointToEliminate       ∎
-            
-            blackward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
-            blackward-left-is-not-pointToEliminate a pt≡bla =
+
+            backward-left-is-not-pointToEliminate : (a : A) → pointToEliminate ≢ backward (left a)
+            backward-left-is-not-pointToEliminate a pt≡bla =
               let ru≡la = begin
                     (right unit)                     ≡⟨← (Sect (right unit)) ⟩
                     forward (backward (right unit))  ≡⟨ ap forward pt≡bla ⟩
@@ -1053,7 +1053,7 @@ module _ where
               left (forward'-cases n (right n≥pt))       ≡⟨⟩
               left (extract-a-from-forward (succ n) _)   ≡⟨ extract-a-from-forward-eq-forward (succ n) ⟩
               forward (succ n)                           ∎
-            
+
             backward'≡predOrZero∘backward∘left-if-bla>pt : (a : A) → (pointToEliminate < backward (left a)) → (backward' a ≡ NatBasic.predOrZero (backward (left a)))
             backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt = begin
               backward' a                              ≡⟨ Lt-Nat.by-comparing-leq-or-gt-gt-case (backward (left a)) bla>pt ⟩
@@ -1063,7 +1063,7 @@ module _ where
             backward'≡backward∘left-if-bla≤pt a bla≤pt = begin
               backward' a        ≡⟨ Lt-Nat.by-comparing-leq-or-gt-leq-case (backward (left a)) bla≤pt ⟩
               backward (left a)  ∎
-            
+
             backward'<pt-then-backward∘left≤pt : (a : A) → (backward' a < pointToEliminate) → (backward (left a) ≤ pointToEliminate)
             backward'<pt-then-backward∘left≤pt a b'a<pt =
               Lt-Nat.by-comparing-leq-or-gt (backward (left a)) pointToEliminate λ {
@@ -1073,7 +1073,7 @@ module _ where
                       b'a≡predOrZero-bla = backward'≡predOrZero∘backward∘left-if-bla>pt a bla>pt
                       predOrZero-bla≥pt = Lt-Nat.lt-then-leq-predOrZero pointToEliminate (backward (left a)) bla>pt
                       predOrZero-bla<pt = tr (λ e → e < pointToEliminate) b'a≡predOrZero-bla b'a<pt
-                  in absurd (Σ.fst (Lt-Nat.lt-biimpl-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate) predOrZero-bla<pt predOrZero-bla≥pt)
+                  in absurd (Σ.fst (Lt-Nat.lt-iff-not-flip-leq (NatBasic.predOrZero (backward (left a))) pointToEliminate) predOrZero-bla<pt predOrZero-bla≥pt)
               }
             backward'≥pt-then-backward∘left>pt : (a : A) → (pointToEliminate ≤ backward' a) → (pointToEliminate < backward (left a))
             backward'≥pt-then-backward∘left>pt a b'a≥pt =
@@ -1081,7 +1081,7 @@ module _ where
                 (left bla≤pt) →
                   let b'a≡bla = backward'≡backward∘left-if-bla≤pt a bla≤pt
                       bla≥pt = tr (λ e → pointToEliminate ≤ e) b'a≡bla b'a≥pt
-                  in Lt-Nat.leq-and-neq-then-lt pointToEliminate (backward (left a)) bla≥pt (blackward-left-is-not-pointToEliminate a)
+                  in Lt-Nat.leq-and-neq-then-lt pointToEliminate (backward (left a)) bla≥pt (backward-left-is-not-pointToEliminate a)
               ; (right bla>pt) → bla>pt
               }
 
@@ -1154,21 +1154,21 @@ module _ where
     open Homotopy
     open Homotopy.Symbolic
     open Homotopy.Reasoning
-    
+
     is-equiv-preserved-by-homotopy : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f → Is-equiv g
     is-equiv-preserved-by-homotopy {A} {B} {f} {g} FG ((s , S), (r , R)) =
       ((s , (lwhisker (FG ⁻¹ₕₜₚ) s ·ₕₜₚ S)),
         (r , (rwhisker r (FG ⁻¹ₕₜₚ) ·ₕₜₚ R)))
 
-    homotope-implies-is-equiv-biimpl : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f ↔ Is-equiv g
-    homotope-implies-is-equiv-biimpl {A} {B} {f} {g} FG =
+    homotope-then-is-equiv-iff : {A B : Set} → {f g : A → B} → f ~ g → Is-equiv f ↔ Is-equiv g
+    homotope-then-is-equiv-iff {A} {B} {f} {g} FG =
       (is-equiv-preserved-by-homotopy FG , is-equiv-preserved-by-homotopy (FG ⁻¹ₕₜₚ))
 
     sect-with-retr-is-retr : {A B : Set} → {f : A → B} → {g : B → A} → Is-sect-of f g → (Σ _ (Is-retraction-of f)) → Is-retraction-of f g
     sect-with-retr-is-retr {A} {B} {f} {g} gsect (r , R) = Σ.snd (Σ.snd (equiv-has-inverse ((g , gsect), (r , R))))
 
     homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →
-                                              ≃-inverse-map-for ee ~ ≃-inverse-map-for ee'
+                                             ≃-inverse-map-for ee ~ ≃-inverse-map-for ee'
     homotopic-equiv-has-homotopic-inverses {A} {B} {e} {e'} ((g , seq), retr) ((g' , seq'), _) H =
       begin-htpy
         g               ~⟨⟩
@@ -1210,8 +1210,8 @@ module _ where
       ))
 
     comp-of-maps-with-sections-has-section : {A B X : Set} →
-                                              {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
-                                              ((hs , hS) : Sect h) → ((gs , gS) : Sect g) → Sect f
+                                             {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                             ((hs , hS) : Sect h) → ((gs , gS) : Sect g) → Sect f
     comp-of-maps-with-sections-has-section {A} {B} {X} {h} {f} {g} H (hs , hS) (gs , gS) =
       (hs ∘ gs , (begin-htpy
         f ∘ (hs ∘ gs)        ~⟨ lwhisker H (hs ∘ gs) ⟩
@@ -1221,10 +1221,10 @@ module _ where
         id                   ∎-htpy
       ))
 
-    Sect-former-then-Sect-comp-iff-Sect-latter : {A B X : Set} →
-                                                 {h : A → B} → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
-                                                 Sect h → Sect f ↔ Sect g
-    Sect-former-then-Sect-comp-iff-Sect-latter {A} {B} {X} {h} {f} g H h-Sect =
+    Sect-former-then-Sect-comp-biimpl-Sect-latter : {A B X : Set} →
+                                                    {h : A → B} → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                                    Sect h → Sect f ↔ Sect g
+    Sect-former-then-Sect-comp-biimpl-Sect-latter {A} {B} {X} {h} {f} g H h-Sect =
       (Sect-comp-then-Sect-latter h g H , comp-of-maps-with-sections-has-section {A} {B} {X} {h} {f} {g} H h-Sect)
 
     -- exercise 9.4.b ; this is dual to (a)
@@ -1238,10 +1238,10 @@ module _ where
         (gr ∘ g) ∘ h   ~⟨⟩
         gr ∘ g ∘ h     ~⟨ rwhisker gr (H ⁻¹ₕₜₚ) ⟩
         gr ∘ f         ∎-htpy
-    
+
     Retr-comp-then-Retr-former : {A B X : Set} →
-                                  (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
-                                  ((fr , fR) : Retr f) → Retr h
+                                 (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                 ((fr , fR) : Retr f) → Retr h
     Retr-comp-then-Retr-former {A} {B} {X} h {f} g H (fr , fR) =
       (fr ∘ g , (begin-htpy
         (fr ∘ g) ∘ h    ~⟨⟩
@@ -1249,7 +1249,7 @@ module _ where
         fr ∘ f          ~⟨ fR ⟩
         id              ∎-htpy
       ))
-    
+
     comp-of-maps-with-retr-has-retr : {A B X : Set} →
                                       {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
                                       ((hr , hR) : Retr h) → ((gr , gR) : Retr g) → Retr f
@@ -1293,7 +1293,7 @@ module _ where
             h               ∎-htpy
       in
         is-equiv-preserved-by-homotopy g⁻¹f~h (comp-equivs-is-equiv g⁻¹-eqv f-eqv)
-    
+
     sect-of-equiv-is-equiv : {A B : Set} → {f : A → B} → (((s , S) , _) : Is-equiv f) → Is-equiv s
     sect-of-equiv-is-equiv ((s , S) , (r , R)) = ≃-inverse-map-is-equiv ((s , S) , (r , R))
 
@@ -1335,7 +1335,7 @@ module _ where
                           Σ (Σ A B) (λ u → C (Σ.fst u)) → Σ (Σ A C) (λ v → B (Σ.fst v))
     swap-ΣΣ-families-fn ((a , b) , c) = ((a , c) , b)
     swap-ΣΣ-families : {A : Set} → {B C : A → Set} →
-                        Σ (Σ A B) (λ u → C (Σ.fst u)) ≃ Σ (Σ A C) (λ v → B (Σ.fst v))
+                       Σ (Σ A B) (λ u → C (Σ.fst u)) ≃ Σ (Σ A C) (λ v → B (Σ.fst v))
     swap-ΣΣ-families =
       (
         swap-ΣΣ-families-fn ,
@@ -1347,11 +1347,11 @@ module _ where
       )
 
   -- We cannot yet prove the equivalence of this function
-  flip-dependent-fn : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) → ((y : B) → (x : A) → C x y)
-  flip-dependent-fn f y x = f x y
+  flipDependentFn : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) → ((y : B) → (x : A) → C x y)
+  flipDependentFn f y x = f x y
 
-  flip-dependent-iff : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) ↔ ((y : B) → (x : A) → C x y)
-  flip-dependent-iff = (flip-dependent-fn , flip-dependent-fn)
+  flipDependentBiimpl : {A B : Set} → {C : (x : A) → (y : B) → Set} → ((x : A) → (y : B) → C x y) ↔ ((y : B) → (x : A) → C x y)
+  flipDependentBiimpl = (flipDependentFn , flipDependentFn)
 
   -- exercise 9.6
   module _ where
@@ -1361,8 +1361,8 @@ module _ where
     +₀-functorial-id = λ { (left a) → refl ; (right b) → refl }
 
     +₀-functorial-comp : {A A' A'' B B' B'' : Set} →
-                          (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
-                          <(f' ∘ f) +₀ (g' ∘ g)> ~ (< f' +₀ g' > ∘ < f +₀ g >)
+                         (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
+                         <(f' ∘ f) +₀ (g' ∘ g)> ~ (< f' +₀ g' > ∘ < f +₀ g >)
     +₀-functorial-comp f f' g g' = λ { (left a) → refl ; (right b) → refl }
 
     +₀-homotopy : {A A' B B' : Set} →
@@ -1371,8 +1371,8 @@ module _ where
     +₀-homotopy H K = λ { (left a) → ap left (H a) ; (right b) → ap right (K b) }
 
     +₀-equiv : {A A' B B' : Set} →
-                {f : A → A'} → {g : B → B'} → Is-equiv f → Is-equiv g →
-                Is-equiv < f +₀ g >
+               {f : A → A'} → {g : B → B'} → Is-equiv f → Is-equiv g →
+               Is-equiv < f +₀ g >
     +₀-equiv {A} {A'} {B} {B'} {f} {g} ((fs , fS) , (fr , fR)) ((gs , gS) , (gr , gR)) =
       (
         (< fs +₀ gs > , λ { (left a) → ap left (fS a) ; (right b) → ap right (gS b) }),
@@ -1388,15 +1388,15 @@ module _ where
     ×₀-functorial-id = λ { (a , b) → refl }
 
     ×₀-functorial-comp : {A A' A'' B B' B'' : Set} →
-                          (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
-                          <(f' ∘ f) ×₀ (g' ∘ g)> ~ (< f' ×₀ g' > ∘ < f ×₀ g >)
+                         (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
+                         <(f' ∘ f) ×₀ (g' ∘ g)> ~ (< f' ×₀ g' > ∘ < f ×₀ g >)
     ×₀-functorial-comp f f' g g' = λ { (a , b) → refl }
 
     ×₀-homotopy : {A A' B B' : Set} →
                   {f f' : A → A'} → {g g' : B → B'} → (H : f ~ f') → (K : g ~ g') →
                   < f ×₀ g > ~ < f' ×₀ g' >
     ×₀-homotopy {A} {A'} {B} {B'} {f} {f'} {g} {g'} H K =
-      λ { (a , b) → 
+      λ { (a , b) →
         begin
           < f ×₀ g > (a , b)   ≡⟨⟩
           (f a , g b)          ≡⟨ ap2 (λ x y → (x , y)) (H a) (K b) ⟩
@@ -1405,11 +1405,11 @@ module _ where
       }
 
     fst-×₀-eq-left-fst : {A A' B B' : Set} → {f : A → A'} → {g : B → B'} → (t : A × B) →
-                        Σ.fst (< f ×₀ g > t) ≡ f (Σ.fst t)
+                         Σ.fst (< f ×₀ g > t) ≡ f (Σ.fst t)
     fst-×₀-eq-left-fst (a , b) = refl
 
     snd-×₀-eq-right-snd : {A A' B B' : Set} → {f : A → A'} → {g : B → B'} → (t : A × B) →
-                         Σ.snd (< f ×₀ g > t) ≡ g (Σ.snd t)
+                          Σ.snd (< f ×₀ g > t) ≡ g (Σ.snd t)
     snd-×₀-eq-right-snd (a , b) = refl
 
     ×₀-equiv-then-conditionally-equivs : {A A' B B' : Set} →
@@ -1472,7 +1472,7 @@ module _ where
     conditionally-equivs-then-×₀-equiv {A} {A'} {B} {B'} {f} {g} f-cond-eqv g-cond-eqv =
       let
         f⁻¹×₀g⁻¹ =
-          (λ { (a' , b') → 
+          (λ { (a' , b') →
             let (f⁻¹ , _ , _) = equiv-has-inverse (f-cond-eqv b')
                 (g⁻¹ , _ , _) = equiv-has-inverse (g-cond-eqv a')
             in (f⁻¹ a' , g⁻¹ b')
@@ -1480,7 +1480,7 @@ module _ where
       in
         has-inverse-equiv (
           f⁻¹×₀g⁻¹ ,
-          (λ { (a' , b') → 
+          (λ { (a' , b') →
             let (f⁻¹ , f⁻¹-S , _) = equiv-has-inverse (f-cond-eqv b')
                 (g⁻¹ , g⁻¹-S , _) = equiv-has-inverse (g-cond-eqv a')
             in begin
@@ -1488,7 +1488,7 @@ module _ where
               (f (f⁻¹ a') , g (g⁻¹ b'))        ≡⟨ ap2 (λ x y → (x , y)) (f⁻¹-S a') (g⁻¹-S b') ⟩
               (a' , b')                        ∎
           }),
-          (λ { (a , b) → 
+          (λ { (a , b) →
             let (f⁻¹ , _ , f⁻¹-Retr) = equiv-has-inverse (f-cond-eqv (g b))
                 (g⁻¹ , _ , g⁻¹-Retr) = equiv-has-inverse (g-cond-eqv (f a))
             in begin

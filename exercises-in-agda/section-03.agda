@@ -1,15 +1,15 @@
 module _ where
   -- Hack: Writing a public open import here in a top-level anonymous module
-  --       allows all section modules (e.g. section-05, section-06, ...) following this module (section-03) to use 
-  --       all transitively past section modules (e.g. section-02) without needing to additionally import them. 
+  --       allows all section modules (e.g. section-05, section-06, ...) following this module (section-03) to use
+  --       all transitively past section modules (e.g. section-02) without needing to additionally import them.
   open import section-02 public
 
   data Nat : Set where
     zero : Nat
     succ : Nat -> Nat
 
-  Nat-ind : {P : Nat → Set} → P zero → ((n : Nat) → P n → P (succ n)) → (n : Nat) → P n
-  Nat-ind {P} p0 ps = go where
+  ind-Nat : {P : Nat → Set} → P zero → ((n : Nat) → P n → P (succ n)) → (n : Nat) → P n
+  ind-Nat {P} p0 ps = go where
     go : (n : Nat) → P n
     go zero = p0
     go (succ n) = ps n (go n)
@@ -111,9 +111,8 @@ module _ where
     -- exercise 3.6
     divBy2' : Nat → Nat
     divBy2' n =
-      Nat-ind zero (λ m _ →
-        Nat-ind zero (λ k prevprev →
+      ind-Nat zero (λ m _ →
+        ind-Nat zero (λ k prevprev →
           succ prevprev
         ) m
       ) n
- 

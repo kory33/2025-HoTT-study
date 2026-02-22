@@ -7,27 +7,27 @@ module _ where
   data Unit : Set where
     unit : Unit
 
-  Unit-ind : {P : Unit → Set} → P unit → (x : Unit) → P x 
-  Unit-ind pu unit = pu
+  ind-Unit : {P : Unit → Set} → P unit → (x : Unit) → P x
+  ind-Unit pu unit = pu
 
   -- definition 4.3.1
   data Empty : Set where
 
-  Enpty-ind : {P : Empty → Set} → (x : Empty) → P x
-  Enpty-ind ()
+  ind-Empty : {P : Empty → Set} → (x : Empty) → P x
+  ind-Empty ()
 
   module EmptyBasic where
     -- alias
     absurd : {A : Set} → Empty → A
-    absurd = Enpty-ind
+    absurd = ind-Empty
 
     -- alias
     ex-falso : {A : Set} → Empty → A
     ex-falso = absurd
 
     -- definition 4.3.2
-    is-empty : Set → Set
-    is-empty A = A → Empty
+    Is-empty : Set → Set
+    Is-empty A = A → Empty
 
     -- definition 4.3.2
     ¬_ : Set → Set
@@ -60,13 +60,13 @@ module _ where
     [_+₀_] f g = ind-+₀ _ (λ x → f x) (λ y → g y)
 
     -- proposition 4.4.3
-    +₀-emptyRight : {A B : Set} → is-empty B → A +₀ B → A
-    +₀-emptyRight ¬b (left x) = x
-    +₀-emptyRight ¬b (right y) = absurd (¬b y)
+    +₀-empty-right : {A B : Set} → Is-empty B → A +₀ B → A
+    +₀-empty-right ¬b (left x) = x
+    +₀-empty-right ¬b (right y) = absurd (¬b y)
 
-    +₀-emptyLeft : {A B : Set} → is-empty A → A +₀ B → B
-    +₀-emptyLeft ¬a (left x) = absurd (¬a x)
-    +₀-emptyLeft ¬a (right y) = y
+    +₀-empty-left : {A B : Set} → Is-empty A → A +₀ B → B
+    +₀-empty-left ¬a (left x) = absurd (¬a x)
+    +₀-empty-left ¬a (right y) = y
 
     swap-+₀ : {X Y : Set} → X +₀ Y → Y +₀ X
     swap-+₀ (left x)  = right x
@@ -95,7 +95,7 @@ module _ where
     field
       fst : A
       snd : B fst
-  
+
   Σ : (A : Set) → (B : A → Set) → Set
   Σ A B = Σ-poly A B
 
@@ -197,7 +197,7 @@ module _ where
     asNatDiff zeroInt = (zero , zero)
     asNatDiff (posSucc n) = ((succ n), zero)
     asNatDiff (negSucc n) = (zero , (succ n))
-     
+
     add : Int → Int → Int
     add n m = let (n₊ , n₋) = asNatDiff n
                   (m₊ , m₋) = asNatDiff m
@@ -251,7 +251,7 @@ module _ where
 
   data Bool : Set where
     true false : Bool
-  
+
   ind-Bool : {P : Bool → Set} →
              (pT : P true) → (pF : P false) →
              (b : Bool) → P b
@@ -267,9 +267,9 @@ module _ where
 
   module BoolBasic where
     -- exercise 4.2.a
-    neg-bool : Bool → Bool
-    neg-bool true = false
-    neg-bool false = true
+    negBool : Bool → Bool
+    negBool true = false
+    negBool false = true
 
     _∧_ : Bool → Bool → Bool
     true ∧ true = true
@@ -290,31 +290,31 @@ module _ where
   A ↔ B = A ↔-poly B
 
   module ↔-Basic where
-    flip-iff : {i j : Level} → {A : Set i} → {B : Set j} → (A ↔-poly B) → (B ↔-poly A)
-    flip-iff (a→b , b→a) = (b→a , a→b)
+    flipBiimpl : {i j : Level} → {A : Set i} → {B : Set j} → (A ↔-poly B) → (B ↔-poly A)
+    flipBiimpl (a→b , b→a) = (b→a , a→b)
 
-    trans-iff : {i j k : Level} → {A : Set i} → {B : Set j} → {C : Set k} → (A ↔-poly B) → (B ↔-poly C) → (A ↔-poly C)
-    trans-iff (a→b , b→a) (b→c , c→b) = ((λ a → b→c (a→b a)), (λ c → b→a (c→b c)))
+    trans-biimpl : {i j k : Level} → {A : Set i} → {B : Set j} → {C : Set k} → (A ↔-poly B) → (B ↔-poly C) → (A ↔-poly C)
+    trans-biimpl (a→b , b→a) (b→c , c→b) = ((λ a → b→c (a→b a)), (λ c → b→a (c→b c)))
 
-    prod-iff : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
-    prod-iff (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
+    prod-biimpl : {A B C D : Set} → (A ↔ B) → (C ↔ D) → ((A × C) ↔ (B × D))
+    prod-biimpl (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
 
-    depfn-iff : {i j : Level} → {A : Set i} → {B C : A → Set j} → (foralla : (x : A) → (B x ↔-poly C x)) →
-                ((x : A) → B x) ↔-poly ((x : A) → C x)
-    depfn-iff foralla = ((λ f x → Σ-poly.fst (foralla x) (f x)) , λ f x → Σ-poly.snd (foralla x) (f x))
+    depfn-biimpl : {i j : Level} → {A : Set i} → {B C : A → Set j} → (foralla : (x : A) → (B x ↔-poly C x)) →
+                   ((x : A) → B x) ↔-poly ((x : A) → C x)
+    depfn-biimpl foralla = ((λ f x → Σ-poly.fst (foralla x) (f x)) , λ f x → Σ-poly.snd (foralla x) (f x))
 
-    depfn-iff-2 : {i j : Level} → {A0 : Set i} → {A1 : A0 → Set j} → {B C : (a0 : A0) → (a1 : A1 a0) → Set} →
-                  (foralla0a1 : (x : A0) → (y : A1 x) → (B x y ↔-poly C x y)) →
-                  ((x : A0) → (y : A1 x) → B x y) ↔-poly ((x : A0) → (y : A1 x) → C x y)
-    depfn-iff-2 foralla0a1 = ((λ f x y → Σ-poly.fst (foralla0a1 x y) (f x y)) , λ f x y → Σ-poly.snd (foralla0a1 x y) (f x y))
+    depfn-biimpl-2 : {i j : Level} → {A0 : Set i} → {A1 : A0 → Set j} → {B C : (a0 : A0) → (a1 : A1 a0) → Set} →
+                     (foralla0a1 : (x : A0) → (y : A1 x) → (B x y ↔-poly C x y)) →
+                     ((x : A0) → (y : A1 x) → B x y) ↔-poly ((x : A0) → (y : A1 x) → C x y)
+    depfn-biimpl-2 foralla0a1 = ((λ f x y → Σ-poly.fst (foralla0a1 x y) (f x y)) , λ f x y → Σ-poly.snd (foralla0a1 x y) (f x y))
 
-    uncurry-iff : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
-                  (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
-    uncurry-iff = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
+    uncurry-biimpl : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
+                     (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
+    uncurry-biimpl = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
 
     open EmptyBasic
-    neg-iff : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
-    neg-iff (a→b , b→a) = ((contrapose b→a), (contrapose a→b))
+    neg-biimpl : {A B : Set} → (A ↔ B) → (¬ A ↔ ¬ B)
+    neg-biimpl (a→b , b→a) = ((contrapose b→a), (contrapose a→b))
 
   module ↔-Reasoning where
     open ↔-Basic public
@@ -330,10 +330,10 @@ module _ where
     step-↔-∣ x x↔y = x↔y
 
     step-↔-⟩ : (x : Set) → {y z : Set} → (y ↔ z) → (x ↔ y) → (x ↔ z)
-    step-↔-⟩ x y↔z x↔y = trans-iff x↔y y↔z
+    step-↔-⟩ x y↔z x↔y = trans-biimpl x↔y y↔z
 
     step-↔-⟩⁻¹ : (x : Set) → {y z : Set} → (y ↔ z) → (y ↔ x) → (x ↔ z)
-    step-↔-⟩⁻¹ x y↔z y↔x = trans-iff (flip-iff y↔x) y↔z
+    step-↔-⟩⁻¹ x y↔z y↔x = trans-biimpl (flipBiimpl y↔x) y↔z
 
     syntax step-↔-∣ x x↔y       =  x ↔⟨⟩ x↔y
     syntax step-↔-⟩ x y↔z x↔y   =  x ↔⟨ x↔y ⟩ y↔z
@@ -356,10 +356,10 @@ module _ where
     step-↔-poly-∣ x x↔y = x↔y
 
     step-↔-poly-⟩ : {i j k : Level} → (x : Set i) → {y : Set j} → {z : Set k} → (y ↔-poly z) → (x ↔-poly y) → (x ↔-poly z)
-    step-↔-poly-⟩ x y↔z x↔y = trans-iff x↔y y↔z
+    step-↔-poly-⟩ x y↔z x↔y = trans-biimpl x↔y y↔z
 
     step-↔-poly-⟩⁻¹ : {i j k : Level} → (x : Set i) → {y : Set j} → {z : Set k} → (y ↔-poly z) → (y ↔-poly x) → (x ↔-poly z)
-    step-↔-poly-⟩⁻¹ x y↔z y↔x = trans-iff (flip-iff y↔x) y↔z
+    step-↔-poly-⟩⁻¹ x y↔z y↔x = trans-biimpl (flipBiimpl y↔x) y↔z
 
     syntax step-↔-poly-∣ x x↔y       =  x ↔-poly⟨⟩ x↔y
     syntax step-↔-poly-⟩ x y↔z x↔y   =  x ↔-poly⟨ x↔y ⟩ y↔z
@@ -425,7 +425,7 @@ module _ where
     -- some intuitive lemmas
     not-bot : ¬ ⊥
     not-bot = id
-    
+
     not-not-not-bot : ¬ ¬ ¬ ⊥
     not-not-not-bot = ex-b-i not-bot
 
@@ -534,7 +534,7 @@ module _ where
   data List (A : Set) : Set where
     nil : List A
     cons : A → List A → List A
-  
+
   -- exercise 4.4.a
   ind-List : {A : Set} → {P : List A → Set} →
              (pNil : P nil) →
@@ -563,7 +563,7 @@ module _ where
     sum : List Nat → Nat
     sum nil = zero
     sum (cons x xs) = NatBasic.add x (sum xs)
-    
+
     product : List Nat → Nat
     product nil = NatBasic.one
     product (cons x xs) = NatBasic.mul x (product xs)

@@ -14,8 +14,8 @@ const b a = b
 
 -- exercise 2.4
 swap : {A B : Set} → {C : (a : A) → (b : B) → Set} →
-        ((a : A) → (b : B) → C a b) →
-        ((b : B) → (a : A) → C a b)
+       ((a : A) → (b : B) → C a b) →
+       ((b : B) → (a : A) → C a b)
 swap f b a = f a b
 
 -- definition 2.2.5
