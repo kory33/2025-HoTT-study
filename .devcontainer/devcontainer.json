@@ -16,7 +16,8 @@
                 "GitHub.copilot",
                 "Anthropic.claude-code",
                 "banacorn.agda-mode",
-                "qbane.als-wasm-loader"
+                "qbane.als-wasm-loader",
+                "pucelle.run-on-save"
             ],
             "settings": {
                 "files.eol": "\n",
@@ -26,6 +27,20 @@
                 "editor.formatOnSave": true,
                 "agdaMode.connection.paths": [
                     "/usr/local/bin/agda"
+                ],
+                "runOnSave.commands": [
+                    {
+                        "match": "\\.agda$",
+                        "command": "perl ${workspaceFolder}/scripts/agda-hanging-indent.pl --fix \"${file}\"",
+                        "runIn": "backend",
+                        "async": false
+                    },
+                    {
+                        "match": "\\.agda$",
+                        "command": "workbench.action.files.revert",
+                        "runIn": "vscode",
+                        "async": false
+                    }
                 ]
             }
         }
