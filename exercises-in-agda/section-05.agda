@@ -138,6 +138,10 @@ module _ where
                 ap f (p · q) ≡ ap f p · ap f q
     ap-concat f refl q = refl
 
+    ap-inv-concat-ap-refl : {A B : Set} → {x y : A} → (f : A → B) → (p : x ≡ y) →
+                            ap f (p ⁻¹) · ap f p ≡ refl
+    ap-inv-concat-ap-refl f refl = refl
+
     -- definition 5.4.1
     tr : {A : Set} → (B : A → Set) →
          {x y : A} → (p : x ≡ y) →
@@ -175,6 +179,12 @@ module _ where
 
     eq-×-then-pr₂-eq : {A : Set} → {B : Set} → {p1 p2 : A × B} → (p1 ≡ p2) → (Σ-Basic.pr₂ p1 ≡ Σ-Basic.pr₂ p2)
     eq-×-then-pr₂-eq refl = refl
+
+    Σ-pr-eta : {A : Set} → {B : A → Set} → (p : Σ A B) → (Σ-Basic.pr₁ p , Σ-Basic.pr₂ p) ≡ p
+    Σ-pr-eta (x , b) = refl
+
+    Σ-eta : {A : Set} → {B : A → Set} → (p : Σ A B) → (Σ.fst p , Σ.snd p) ≡ p
+    Σ-eta (x , b) = refl
 
   -- adapted from https://plfa.github.io/Equality/
   module ≡-Reasoning {A : Set} where

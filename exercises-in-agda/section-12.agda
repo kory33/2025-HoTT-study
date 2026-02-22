@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 open import Function.Base using (case_of_)
 
 module _ where
@@ -363,7 +361,7 @@ module _ where
         (((x , bx) (y , by) : Σ A B) → (α : x ≡ y) → Is-trunc k (tr B α bx ≡ by))                  ↔⟨ depfn-biimpl-2 (λ { (x , bx) (y , by) → family-is-k-trunc-iff-tot-is-k-trunc (a-is-sk-trunc x y)}) ⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k (Σ (x ≡ y) (λ α → tr B α bx ≡ by)))              ↔⟨⟩
         (((x , bx) (y , by) : Σ A B) → Is-trunc k (Eq-Σ (x , bx) (y , by)))                        ↔⟨ depfn-biimpl-2 (λ s t → equiv-then-k-type-iff-k-type (≃-comm pair-eq-≃-Eq-Σ)) ⟩
-        (((x , bx) (y , by) : Σ A B) → Is-trunc k ((x , bx) ≡ (y , by)))                           ↔⟨ {!   !} ⟩
+        (((x , bx) (y , by) : Σ A B) → Is-trunc k ((x , bx) ≡ (y , by)))                           ↔⟨ depfn-biimpl-2 (λ { (x , bx) (y , by) → (id , id) }) ⟩
         ((s t : Σ A B) → Is-trunc k (s ≡ t))                                                       ↔⟨⟩
         Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
       where
@@ -508,16 +506,16 @@ module _ where
                 (x , (ap (λ t → (x , t)) (ap Σ.fst q) ⁻¹ · ap (λ t → (x , Σ.snd t)) q))          ≡⟨← ap (λ t → (x , t ⁻¹ · ap (λ t → (x , Σ.snd t)) q)) (ap-comp (λ t → (x , t)) Σ.fst q) ⟩
                 (x , (ap (λ t → (x , Σ.fst t)) q ⁻¹ · ap (λ t → (x , Σ.snd t)) q))               ≡⟨
                   identity-from-Eq-fib (δ {A}) _ (a , q) ((ap Σ.fst q) ⁻¹ , (begin
-                    ap (λ t → (x , Σ.fst t)) q ⁻¹ · ap (λ t → (x , Σ.snd t)) q                                                                       ≡⟨ {!   !} ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (x , Σ.snd t)) q                                                                     ≡⟨ {!   !} ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · refl · ap (λ t → (x , Σ.snd t)) q                                                              ≡⟨ {!   !} ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · (ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q) · ap (λ t → (x , Σ.snd t)) q    ≡⟨ {!   !} ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q      ≡⟨ {!   !} ⟩
-                    (ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹)) · (ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q)  ≡⟨ {!   !} ⟩
-                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , Σ.snd t)) q                                                         ≡⟨ {!   !} ⟩
-                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap id q                                                                                  ≡⟨ {!   !} ⟩
-                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · q                                                                                        ≡⟨ {!   !} ⟩
-                    ap δ (ap Σ.fst (q ⁻¹)) · q                                                                                                       ≡⟨ {!   !} ⟩
+                    ap (λ t → (x , Σ.fst t)) q ⁻¹ · ap (λ t → (x , Σ.snd t)) q                                                                       ≡⟨← ap (λ t → t · ap (λ t → (x , Σ.snd t)) q) (ap-inv _ _) ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (x , Σ.snd t)) q                                                                     ≡⟨← ap (λ t → t · ap (λ t → (x , Σ.snd t)) q) (·-runit _) ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · refl · ap (λ t → (x , Σ.snd t)) q                                                              ≡⟨← ap (λ t → ap (λ t → (x , Σ.fst t)) (q ⁻¹) · t · ap (λ t → (x , Σ.snd t)) q) (ap-inv-concat-ap-refl _ q) ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · (ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q) · ap (λ t → (x , Σ.snd t)) q    ≡⟨ ap (λ t → t · ap (λ t → (x , Σ.snd t)) q) (·-unassoc (ap (λ t → (x , Σ.fst t)) (q ⁻¹)) _ _) ⟩
+                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q      ≡⟨ ·-assoc (ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹)) _ _ ⟩
+                    (ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹)) · (ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q)  ≡⟨ ap2 _·_ (ap-fstfst-left (q ⁻¹)) (ap-fstsnd-right q) ⟩
+                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , Σ.snd t)) q                                                         ≡⟨ ap (λ t → ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · t) (ap-pair-eta q) ⟩
+                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap id q                                                                                  ≡⟨ ap (λ t → ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · t) (ap-id q) ⟩
+                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · q                                                                                        ≡⟨ ap (λ t → t · q) (ap-comp δ Σ.fst (q ⁻¹)) ⟩
+                    ap δ (ap Σ.fst (q ⁻¹)) · q                                                                                                       ≡⟨ ap (λ t → ap δ t · q) (ap-inv Σ.fst q) ⟩
                     ap δ (ap Σ.fst q ⁻¹) · q                                                                                                         ∎
                   ))
                 ⟩
@@ -530,6 +528,27 @@ module _ where
         forward (a , p) = (ap Σ.fst p) ⁻¹ · (ap Σ.snd p)
         backward : (x ≡ y) → fib (δ {A}) (x , y)
         backward p = (x , ap (λ t → (x , t)) p)
+
+        ap-pair-eta : {A B : Set} → {a x : A} → {b y : B} → (p : (a , b) ≡ (x , y)) →
+                      ap (λ t → (Σ.fst t , Σ.snd t)) p ≡ ap id p
+        ap-pair-eta {A} {B} {a} {x} {b} {y} p =
+          begin
+            ap (λ t → (Σ.fst t , Σ.snd t)) p                     ≡⟨← ·-runit _ ⟩
+            ap (λ t → (Σ.fst t , Σ.snd t)) p · refl              ≡⟨⟩
+            ap (λ t → (Σ.fst t , Σ.snd t)) p · Σ-eta (x , y)     ≡⟨ nat-htpy Σ-eta p ⟩
+            Σ-eta (a , b) · ap id p                              ≡⟨⟩
+            refl · ap id p                                       ≡⟨ ·-lunit _ ⟩
+            ap id p                                              ∎
+
+        ap-fstfst-left : {A B : Set} → {t t' : A × B} → (p : t ≡ t') →
+                         ap (λ s → (Σ.fst t , Σ.fst s)) p · ap (λ s → (Σ.fst s , Σ.fst t')) p ≡
+                         ap (λ s → (Σ.fst s , Σ.fst s)) p
+        ap-fstfst-left refl = refl
+
+        ap-fstsnd-right : {A B : Set} → {t t' : A × B} → (p : t ≡ t') →
+                          ap (λ s → (Σ.fst s , Σ.snd t)) p · ap (λ s → (Σ.fst t' , Σ.snd s)) p ≡
+                          ap (λ s → (Σ.fst s , Σ.snd s)) p
+        ap-fstsnd-right refl = refl
 
   -- TODO: exercise 12.7
   -- TODO: exercise 12.8
