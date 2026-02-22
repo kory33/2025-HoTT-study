@@ -493,62 +493,23 @@ module _ where
     -- exercise 12.5.b
     fib-δ-equiv-≡ : {A : Set} → (x y : A) → fib (δ {A}) (x , y) ≃ (x ≡ y)
     fib-δ-equiv-≡ {A} x y =
-      build-tpe-equiv (
-        has-inverse-equiv {_} {_} {forward}
-          ( backward
-          , (λ { refl → refl })
-          ,
-            (λ { (a , q) →
-              begin
-                (backward ∘ forward) (a , q)                                                     ≡⟨⟩
-                (x , ap (λ t → (x , t)) ((ap Σ.fst q) ⁻¹ · (ap Σ.snd q)))                        ≡⟨ ap (λ t → (x , t)) (ap-concat (λ t → (x , t)) ((ap Σ.fst q) ⁻¹) _) ⟩
-                (x , (ap (λ t → (x , t)) ((ap Σ.fst q) ⁻¹) · ap (λ t → (x , t)) (ap Σ.snd q)))   ≡⟨ ap2 (λ t1 t2 → (x , t1 · t2)) (ap-inv (λ t → (x , t)) (ap Σ.fst q)) (ap-comp (λ t → (x , t)) Σ.snd q ⁻¹) ⟩
-                (x , (ap (λ t → (x , t)) (ap Σ.fst q) ⁻¹ · ap (λ t → (x , Σ.snd t)) q))          ≡⟨← ap (λ t → (x , t ⁻¹ · ap (λ t → (x , Σ.snd t)) q)) (ap-comp (λ t → (x , t)) Σ.fst q) ⟩
-                (x , (ap (λ t → (x , Σ.fst t)) q ⁻¹ · ap (λ t → (x , Σ.snd t)) q))               ≡⟨
-                  identity-from-Eq-fib (δ {A}) _ (a , q) ((ap Σ.fst q) ⁻¹ , (begin
-                    ap (λ t → (x , Σ.fst t)) q ⁻¹ · ap (λ t → (x , Σ.snd t)) q                                                                       ≡⟨← ap (λ t → t · ap (λ t → (x , Σ.snd t)) q) (ap-inv _ _) ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (x , Σ.snd t)) q                                                                     ≡⟨← ap (λ t → t · ap (λ t → (x , Σ.snd t)) q) (·-runit _) ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · refl · ap (λ t → (x , Σ.snd t)) q                                                              ≡⟨← ap (λ t → ap (λ t → (x , Σ.fst t)) (q ⁻¹) · t · ap (λ t → (x , Σ.snd t)) q) (ap-inv-concat-ap-refl _ q) ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · (ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q) · ap (λ t → (x , Σ.snd t)) q    ≡⟨ ap (λ t → t · ap (λ t → (x , Σ.snd t)) q) (·-unassoc (ap (λ t → (x , Σ.fst t)) (q ⁻¹)) _ _) ⟩
-                    ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q      ≡⟨ ·-assoc (ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹)) _ _ ⟩
-                    (ap (λ t → (x , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , a)) (q ⁻¹)) · (ap (λ t → (Σ.fst t , a)) q · ap (λ t → (x , Σ.snd t)) q)  ≡⟨ ap2 _·_ (ap-fstfst-left (q ⁻¹)) (ap-fstsnd-right q) ⟩
-                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap (λ t → (Σ.fst t , Σ.snd t)) q                                                         ≡⟨ ap (λ t → ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · t) (ap-pair-eta q) ⟩
-                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · ap id q                                                                                  ≡⟨ ap (λ t → ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · t) (ap-id q) ⟩
-                    ap (λ t → (Σ.fst t , Σ.fst t)) (q ⁻¹) · q                                                                                        ≡⟨ ap (λ t → t · q) (ap-comp δ Σ.fst (q ⁻¹)) ⟩
-                    ap δ (ap Σ.fst (q ⁻¹)) · q                                                                                                       ≡⟨ ap (λ t → ap δ t · q) (ap-inv Σ.fst q) ⟩
-                    ap δ (ap Σ.fst q ⁻¹) · q                                                                                                         ∎
-                  ))
-                ⟩
-                (a , q)                                                                          ∎
-            })
-          )
-      )
+      build-tpe-equiv (has-inverse-equiv (backward , (λ { refl → refl }) , backward∘forward~id))
       where
-        forward : fib (δ {A}) (x , y) → (x ≡ y)
-        forward (a , p) = (ap Σ.fst p) ⁻¹ · (ap Σ.snd p)
-        backward : (x ≡ y) → fib (δ {A}) (x , y)
-        backward p = (x , ap (λ t → (x , t)) p)
+        forward-on-fib-snd : {a : A} → {t : A × A} → (δ a ≡ t) → (Σ.fst t ≡ Σ.snd t)
+        forward-on-fib-snd p = (ap Σ.fst p) ⁻¹ · (ap Σ.snd p)
 
-        ap-pair-eta : {A B : Set} → {a x : A} → {b y : B} → (p : (a , b) ≡ (x , y)) →
-                      ap (λ t → (Σ.fst t , Σ.snd t)) p ≡ ap id p
-        ap-pair-eta {A} {B} {a} {x} {b} {y} p =
-          begin
-            ap (λ t → (Σ.fst t , Σ.snd t)) p                     ≡⟨← ·-runit _ ⟩
-            ap (λ t → (Σ.fst t , Σ.snd t)) p · refl              ≡⟨⟩
-            ap (λ t → (Σ.fst t , Σ.snd t)) p · Σ-eta (x , y)     ≡⟨ nat-htpy Σ-eta p ⟩
-            Σ-eta (a , b) · ap id p                              ≡⟨⟩
-            refl · ap id p                                       ≡⟨ ·-lunit _ ⟩
-            ap id p                                              ∎
+        backward-at : (t : A × A) → (Σ.fst t ≡ Σ.snd t) → fib (δ {A}) t
+        backward-at (u , v) p = (u , ap (λ r → (u , r)) p)
 
-        ap-fstfst-left : {A B : Set} → {t t' : A × B} → (p : t ≡ t') →
-                         ap (λ s → (Σ.fst t , Σ.fst s)) p · ap (λ s → (Σ.fst s , Σ.fst t')) p ≡
-                         ap (λ s → (Σ.fst s , Σ.fst s)) p
-        ap-fstfst-left refl = refl
+        backward : {x y : A} → (x ≡ y) → fib (δ {A}) (x , y)
+        backward {x} {y} p = backward-at (x , y) p
 
-        ap-fstsnd-right : {A B : Set} → {t t' : A × B} → (p : t ≡ t') →
-                          ap (λ s → (Σ.fst s , Σ.snd t)) p · ap (λ s → (Σ.fst t' , Σ.snd s)) p ≡
-                          ap (λ s → (Σ.fst s , Σ.snd s)) p
-        ap-fstsnd-right refl = refl
+        right-inverse' : (a : A) → {t : A × A} → (q : δ a ≡ t) →
+              backward-at t (forward-on-fib-snd q) ≡ (a , q)
+        right-inverse' a refl = refl
+
+        backward∘forward~id : (z@(a , q) : fib (δ {A}) (x , y)) → backward (forward-on-fib-snd q) ≡ z
+        backward∘forward~id (a , q) = right-inverse' a q
 
   -- TODO: exercise 12.7
   -- TODO: exercise 12.8
