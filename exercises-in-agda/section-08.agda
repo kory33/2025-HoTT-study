@@ -359,11 +359,11 @@ module _ where
   open Lt-Nat.Symbolic
 
   searchDescendingFromNat : {P : Nat → Set} → {decide-p : Is-decidable-family P} → (N : Nat) →
-                                Σ Nat (λ n → -- found a value n
-                                  P n ×     -- that satisfies P
-                                  (n ≤ N) × -- and is less than or equal to N
-                                  ((x : Nat) → P x → (x ≤ n) +₀ (N < x))  -- such that for any x with (P x), x does not lie in (succ n)..N
-                                ) +₀ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
+                            Σ Nat (λ n → -- found a value n
+                              P n ×     -- that satisfies P
+                              (n ≤ N) × -- and is less than or equal to N
+                              ((x : Nat) → P x → (x ≤ n) +₀ (N < x))  -- such that for any x with (P x), x does not lie in (succ n)..N
+                            ) +₀ ((x : Nat) → (x ≤ N) → ¬ P x) -- Or, not found in 0..N
   searchDescendingFromNat {P} {decide-p} zero =
     case decide-p zero of λ {
       (left pz) → left (zero , (pz , Leq-Nat.Leq-Nat-refl zero , λ x _ → Lt-Nat.leq-or-gt x zero))

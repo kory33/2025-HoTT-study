@@ -327,7 +327,7 @@ module _ where
       --   │   │         │      │
       --   f   k         f      k
       lwhisker-concat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) → (k : A → B) →
-                      lwhisker (G ·ₕₜₚ H) k ~ (lwhisker G k) ·ₕₜₚ (lwhisker H k)
+                        lwhisker (G ·ₕₜₚ H) k ~ (lwhisker G k) ·ₕₜₚ (lwhisker H k)
       lwhisker-concat {A} {B} {C} {f} {g} {h} G H k x = refl
 
       -- If p : G1 ~ G2, then:
@@ -380,8 +380,8 @@ module _ where
       --  │    │       │    │
       --  h    f       h    f
       hcomp-lr-rl : {A B C : Set} →
-                              {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) →
-                              hcomp-lr K G ~ hcomp-rl K G
+                    {h k : B → C} → (K : h ~ k) → {f g : A → B} → (G : f ~ g) →
+                    hcomp-lr K G ~ hcomp-rl K G
       hcomp-lr-rl {A} {B} {C} {h} {k} K {f} {g} G x =
         begin
           hcomp-lr K G x                 ≡⟨⟩
@@ -399,7 +399,7 @@ module _ where
       --  │    │       │        │
       --  g    f       g        f
       lwhisker-to-hcomp : {A B C : Set} → {g h : B → C} → (H : g ~ h) → (f : A → B) →
-                                    lwhisker H f ~ hcomp H (htpy-refl f)
+                          lwhisker H f ~ hcomp H (htpy-refl f)
       lwhisker-to-hcomp {A} {B} {C} {g} {h} H f =
         begin-htpy
           lwhisker H f                                         ~⟨ (·ₕₜₚ-runit (lwhisker H f)) ⁻¹ₕₜₚ ⟩
@@ -414,7 +414,7 @@ module _ where
       --  │    │           │        │
       --  h    f           h        f
       rwhisker-to-hcomp : {A B C : Set} → (h : B → C) → {f g : A → B} → (G : f ~ g) →
-                                    rwhisker h G ~ hcomp (htpy-refl h) G
+                          rwhisker h G ~ hcomp (htpy-refl h) G
       rwhisker-to-hcomp {A} {B} {C} h {f} {g} G =
         begin-htpy
           rwhisker h G                                       ~⟨ (·ₕₜₚ-lunit (rwhisker h G)) ⁻¹ₕₜₚ ⟩
@@ -428,7 +428,7 @@ module _ where
       --       ┊         │       │
       --                 f       f
       hcomp-lunit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
-                              hcomp (htpy-refl id) G ~ G
+                    hcomp (htpy-refl id) G ~ G
       hcomp-lunit {A} {B} {f} {g} G =
         begin-htpy
           hcomp (htpy-refl id) G                     ~⟨⟩
@@ -443,7 +443,7 @@ module _ where
       --  │        ┊             │
       --  f                      f
       hcomp-runit : {A B : Set} → {f g : A → B} → (G : f ~ g) →
-                              hcomp G (htpy-refl id) ~ G
+                    hcomp G (htpy-refl id) ~ G
       hcomp-runit {A} {B} {f} {g} G =
         begin-htpy
           hcomp G (htpy-refl id)                     ~⟨⟩
@@ -460,8 +460,8 @@ module _ where
       --      │       │      │    │
       --      f       k      f    k
       hcomp-lconcat : {A B C : Set} → {f g h : B → C} → (G : f ~ g) → (H : g ~ h) →
-                                {k i : A → B} → (K : k ~ i) →
-                                hcomp (G ·ₕₜₚ H) K ~ (lwhisker G k) ·ₕₜₚ (hcomp H K)
+                      {k i : A → B} → (K : k ~ i) →
+                      hcomp (G ·ₕₜₚ H) K ~ (lwhisker G k) ·ₕₜₚ (hcomp H K)
       hcomp-lconcat {A} {B} {C} {f} {g} {h} G H {k} {i} K =
         begin-htpy
           hcomp (G ·ₕₜₚ H) K                                ~⟨⟩
@@ -478,8 +478,8 @@ module _ where
       --  │    │       │    │
       --  h    f       h    f
       hcomp-lhtpe : {A B C : Set} → {h k : B → C} → {K1 K2 : h ~ k} →
-                              (p : K1 ~ K2) → {f g : A → B} → (G : f ~ g) →
-                              hcomp K1 G ~ hcomp K2 G
+                    (p : K1 ~ K2) → {f g : A → B} → (G : f ~ g) →
+                    hcomp K1 G ~ hcomp K2 G
       hcomp-lhtpe {A} {B} {C} {h} {k} {K1} {K2} p {f} {g} G =
         begin-htpy
           hcomp K1 G                                 ~⟨⟩
@@ -495,7 +495,7 @@ module _ where
       --  │    │       │    │
       --  h    f       h    f
       hcomp-rhtpe : {A B C : Set} → {h k : B → C} → (K : h ~ k) → {f g : A → B} →
-                              {G1 G2 : f ~ g} → (p : G1 ~ G2) → hcomp K G1 ~ hcomp K G2
+                    {G1 G2 : f ~ g} → (p : G1 ~ G2) → hcomp K G1 ~ hcomp K G2
       hcomp-rhtpe {A} {B} {C} {h} {k} K {f} {g} {G1} {G2} p =
         begin-htpy
           hcomp K G1                                 ~⟨⟩
@@ -556,7 +556,7 @@ module _ where
     id-is-equiv {A} = ((id , λ x → refl), (id , λ x → refl))
 
     comp-equivs-is-equiv : {A B C : Set} → {g : B → C} → {f : A → B} →
-      Is-equiv g → Is-equiv f → Is-equiv (g ∘ f)
+          Is-equiv g → Is-equiv f → Is-equiv (g ∘ f)
     comp-equivs-is-equiv {A} {B} {C} {g} {f} ((sg , Sg), (rg , Rg)) ((sf , Sf), (rf , Rf)) =
       (
         (sf ∘ sg , λ c → (ap g (Sf (sg c)) · (Sg c))) ,
@@ -1168,7 +1168,7 @@ module _ where
     sect-with-retr-is-retr {A} {B} {f} {g} gsect (r , R) = Σ.snd (Σ.snd (equiv-has-inverse ((g , gsect), (r , R))))
 
     homotopic-equiv-has-homotopic-inverses : {A B : Set} → {e e' : A → B} → (ee : Is-equiv e) → (ee' : Is-equiv e') → e ~ e' →
-                                              ≃-inverse-map-for ee ~ ≃-inverse-map-for ee'
+                                             ≃-inverse-map-for ee ~ ≃-inverse-map-for ee'
     homotopic-equiv-has-homotopic-inverses {A} {B} {e} {e'} ((g , seq), retr) ((g' , seq'), _) H =
       begin-htpy
         g               ~⟨⟩
@@ -1210,8 +1210,8 @@ module _ where
       ))
 
     comp-of-maps-with-sections-has-section : {A B X : Set} →
-                                              {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
-                                              ((hs , hS) : Sect h) → ((gs , gS) : Sect g) → Sect f
+                                             {h : A → B} → {f : A → X} → {g : B → X} → (H : f ~ g ∘ h) →
+                                             ((hs , hS) : Sect h) → ((gs , gS) : Sect g) → Sect f
     comp-of-maps-with-sections-has-section {A} {B} {X} {h} {f} {g} H (hs , hS) (gs , gS) =
       (hs ∘ gs , (begin-htpy
         f ∘ (hs ∘ gs)        ~⟨ lwhisker H (hs ∘ gs) ⟩
@@ -1222,8 +1222,8 @@ module _ where
       ))
 
     Sect-former-then-Sect-comp-biimpl-Sect-latter : {A B X : Set} →
-                                                 {h : A → B} → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
-                                                 Sect h → Sect f ↔ Sect g
+                                                    {h : A → B} → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                                    Sect h → Sect f ↔ Sect g
     Sect-former-then-Sect-comp-biimpl-Sect-latter {A} {B} {X} {h} {f} g H h-Sect =
       (Sect-comp-then-Sect-latter h g H , comp-of-maps-with-sections-has-section {A} {B} {X} {h} {f} {g} H h-Sect)
 
@@ -1240,8 +1240,8 @@ module _ where
         gr ∘ f         ∎-htpy
 
     Retr-comp-then-Retr-former : {A B X : Set} →
-                                  (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
-                                  ((fr , fR) : Retr f) → Retr h
+                                 (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
+                                 ((fr , fR) : Retr f) → Retr h
     Retr-comp-then-Retr-former {A} {B} {X} h {f} g H (fr , fR) =
       (fr ∘ g , (begin-htpy
         (fr ∘ g) ∘ h    ~⟨⟩
@@ -1335,7 +1335,7 @@ module _ where
                           Σ (Σ A B) (λ u → C (Σ.fst u)) → Σ (Σ A C) (λ v → B (Σ.fst v))
     swap-ΣΣ-families-fn ((a , b) , c) = ((a , c) , b)
     swap-ΣΣ-families : {A : Set} → {B C : A → Set} →
-                        Σ (Σ A B) (λ u → C (Σ.fst u)) ≃ Σ (Σ A C) (λ v → B (Σ.fst v))
+                       Σ (Σ A B) (λ u → C (Σ.fst u)) ≃ Σ (Σ A C) (λ v → B (Σ.fst v))
     swap-ΣΣ-families =
       (
         swap-ΣΣ-families-fn ,
@@ -1361,8 +1361,8 @@ module _ where
     +₀-functorial-id = λ { (left a) → refl ; (right b) → refl }
 
     +₀-functorial-comp : {A A' A'' B B' B'' : Set} →
-                          (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
-                          <(f' ∘ f) +₀ (g' ∘ g)> ~ (< f' +₀ g' > ∘ < f +₀ g >)
+                         (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
+                         <(f' ∘ f) +₀ (g' ∘ g)> ~ (< f' +₀ g' > ∘ < f +₀ g >)
     +₀-functorial-comp f f' g g' = λ { (left a) → refl ; (right b) → refl }
 
     +₀-homotopy : {A A' B B' : Set} →
@@ -1371,8 +1371,8 @@ module _ where
     +₀-homotopy H K = λ { (left a) → ap left (H a) ; (right b) → ap right (K b) }
 
     +₀-equiv : {A A' B B' : Set} →
-                {f : A → A'} → {g : B → B'} → Is-equiv f → Is-equiv g →
-                Is-equiv < f +₀ g >
+               {f : A → A'} → {g : B → B'} → Is-equiv f → Is-equiv g →
+               Is-equiv < f +₀ g >
     +₀-equiv {A} {A'} {B} {B'} {f} {g} ((fs , fS) , (fr , fR)) ((gs , gS) , (gr , gR)) =
       (
         (< fs +₀ gs > , λ { (left a) → ap left (fS a) ; (right b) → ap right (gS b) }),
@@ -1388,8 +1388,8 @@ module _ where
     ×₀-functorial-id = λ { (a , b) → refl }
 
     ×₀-functorial-comp : {A A' A'' B B' B'' : Set} →
-                          (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
-                          <(f' ∘ f) ×₀ (g' ∘ g)> ~ (< f' ×₀ g' > ∘ < f ×₀ g >)
+                         (f : A → A') → (f' : A' → A'') → (g : B → B') → (g' : B' → B'') →
+                         <(f' ∘ f) ×₀ (g' ∘ g)> ~ (< f' ×₀ g' > ∘ < f ×₀ g >)
     ×₀-functorial-comp f f' g g' = λ { (a , b) → refl }
 
     ×₀-homotopy : {A A' B B' : Set} →
@@ -1405,11 +1405,11 @@ module _ where
       }
 
     fst-×₀-eq-left-fst : {A A' B B' : Set} → {f : A → A'} → {g : B → B'} → (t : A × B) →
-                        Σ.fst (< f ×₀ g > t) ≡ f (Σ.fst t)
+                         Σ.fst (< f ×₀ g > t) ≡ f (Σ.fst t)
     fst-×₀-eq-left-fst (a , b) = refl
 
     snd-×₀-eq-right-snd : {A A' B B' : Set} → {f : A → A'} → {g : B → B'} → (t : A × B) →
-                         Σ.snd (< f ×₀ g > t) ≡ g (Σ.snd t)
+                          Σ.snd (< f ×₀ g > t) ≡ g (Σ.snd t)
     snd-×₀-eq-right-snd (a , b) = refl
 
     ×₀-equiv-then-conditionally-equivs : {A A' B B' : Set} →

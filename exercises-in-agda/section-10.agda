@@ -92,7 +92,7 @@ module _ where
   open Equivalence
 
   identity-from-Eq-fib : {A B : Set} → (f : A → B) → {y : B} → (x x' : fib f y) →
-    Eq-fib f x x' → x ≡ x'
+        Eq-fib f x x' → x ≡ x'
   identity-from-Eq-fib f {y} (x , α) (x' , α') (refl , refl) = refl
 
   -- proposition 10.3.3
@@ -566,7 +566,7 @@ module _ where
 
     -- exercise 10.7.c, (i) → (ii)
     dep-pairing-is-equiv-then-is-contr-fn-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
-                                              Is-equiv (λ (x : A) → (x , b x)) → Is-contr-fam B
+                                                Is-equiv (λ (x : A) → (x , b x)) → Is-contr-fam B
     dep-pairing-is-equiv-then-is-contr-fn-fam {A} {B} b dep-pairing-is-eqv =
       let
         dep-pairing : A → Σ A B
@@ -594,7 +594,7 @@ module _ where
 
     -- exercise 10.7.c, (ii) → (i)
     is-contr-fam-then-dep-pairing-is-equiv : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
-                                              Is-contr-fam B → Is-equiv (λ (x : A) → (x , b x))
+                                             Is-contr-fam B → Is-equiv (λ (x : A) → (x , b x))
     is-contr-fam-then-dep-pairing-is-equiv {A} {B} b is-contr-b =
       has-inverse-equiv (
         pr₁-of B ,

@@ -390,10 +390,10 @@ module _ where
 
   -- exercise 12.2
   underlying-type-of-reflexive-antisymmetric-rel-is-set : {A : Set} → (R : A → A → Set) →
-                                    (R-is-prop : (x y : A) → Is-prop (R x y)) →
-                                    (reflexive : (x : A) → R x x) →
-                                    (antisymmetric : (x y : A) → R x y → R y x → x ≡ y) →
-                                    Is-set A
+        (R-is-prop : (x y : A) → Is-prop (R x y)) →
+        (reflexive : (x : A) → R x x) →
+        (antisymmetric : (x y : A) → R x y → R y x → x ≡ y) →
+        Is-set A
   underlying-type-of-reflexive-antisymmetric-rel-is-set {A} R R-is-prop reflexive antisymmetric =
     underlying-type-of-reflexive-propositional-relation-is-set
       R'

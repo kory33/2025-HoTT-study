@@ -20,7 +20,7 @@ module _ where
 
   -- lemma 11.1.2
   fib-tot-pt-equiv-fib-pr₁-pr₂ : {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x) →
-                               (t : Σ A C) → fib (totalization f) t ≃ fib (f (Σ.fst t)) (Σ.snd t)
+                                 (t : Σ A C) → fib (totalization f) t ≃ fib (f (Σ.fst t)) (Σ.snd t)
   fib-tot-pt-equiv-fib-pr₁-pr₂ {A} {B} {C} f t =
     (φ t , has-inverse-equiv (ψ t , φψ~id t , ψφ~id t))
     where
@@ -86,12 +86,12 @@ module _ where
 
   -- definition 11.1.5
   totalizationOver : {A B : Set} → (f : A → B) → {C : A → Set} → (D : B → Set) →
-                      family-of-maps-over f C D → Σ A C → Σ B D
+                     family-of-maps-over f C D → Σ A C → Σ B D
   totalizationOver f D g (x , z) = (f x , g x z)
 
   -- theorem 11.1.6
   totalization-over-equiv-is-equiv-iff-equivs : {A B : Set} → {f : A → B} → Is-equiv f → {C : A → Set} → {D : B → Set} →
-                                               (g : family-of-maps-over f C D) → (Is-family-of-equivs g) ↔ Is-equiv (totalizationOver f D g)
+                                                (g : family-of-maps-over f C D) → (Is-family-of-equivs g) ↔ Is-equiv (totalizationOver f D g)
   totalization-over-equiv-is-equiv-iff-equivs {A} {B} {f} f-eqv {C} {D} g =
     begin-↔
       Is-family-of-equivs g                                 ↔⟨ is-family-of-equivs-iff-tot-is-equiv g ⟩
@@ -285,7 +285,7 @@ module _ where
     right-left-eq-equiv-empty {A} {B} x y = copr-eq-equiv-eq-copr (right y) (left x)
 
     right-right-eq-equiv-eq : (A : Set) → {B : Set} → (y y' : B) →
-                             (right {A} {B} y ≡ right y') ≃ (y ≡ y')
+                              (right {A} {B} y ≡ right y') ≃ (y ≡ y')
     right-right-eq-equiv-eq A {B} y y' = copr-eq-equiv-eq-copr (right y) (right y')
 
   -- subsection 11.6
@@ -618,8 +618,8 @@ module _ where
 
     open Homotopy.HomotopyGroupoidSymbolic
     homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv : {A B : Set} → {f g : A → B} → (H : f ~ g) → {x y : A} →
-                                                        Is-equiv (homotope-ap f g H {x} {y}) →
-                                                        Is-equiv (homotope-ap g f (H ⁻¹ₕₜₚ) {x} {y})
+                                                         Is-equiv (homotope-ap f g H {x} {y}) →
+                                                         Is-equiv (homotope-ap g f (H ⁻¹ₕₜₚ) {x} {y})
     homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv {A} {B} {f} {g} H {x} {y} is-equiv-homotope-ap =
       let
         ap-g-is-eqv : Is-equiv (ap g {x} {y})
@@ -639,7 +639,7 @@ module _ where
 
     -- exercise 11.4.a
     latter-is-emb-then-comp-is-emb-iff-former-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
-                                                        (H : f ~ g ∘ h) → (Is-emb g) → (Is-emb f ↔ Is-emb h)
+                                                       (H : f ~ g ∘ h) → (Is-emb g) → (Is-emb f ↔ Is-emb h)
     latter-is-emb-then-comp-is-emb-iff-former-is-emb {A} {B} {X} h {g} {f} H g-emb =
       (
         (λ f-emb x y →
@@ -674,7 +674,7 @@ module _ where
 
     -- exercise 11.4.b
     former-is-equiv-then-comp-is-emb-iff-latter-is-emb : {A B X : Set} → (h : A → B) → {g : B → X} → {f : A → X} →
-                                                       (H : f ~ g ∘ h) → Is-equiv h → (Is-emb g ↔ Is-emb f)
+                                                         (H : f ~ g ∘ h) → Is-equiv h → (Is-emb g ↔ Is-emb f)
     former-is-equiv-then-comp-is-emb-iff-latter-is-emb {A} {B} {X} h {g} {f} H h-eqv =
       let
         h⁻¹ = ≃-inverse-map-for h-eqv
@@ -785,10 +785,10 @@ module _ where
   --
   -- then Is-equiv top ↔ Is-equiv bottom.
   maps-joined-with-equivs-are-equivs-iff : {A B C D : Set} →
-                                          (top : A → B) → (bottom : C → D) →
-                                          {left : A → C} → {right : B → D} → Is-equiv left → Is-equiv right →
-                                          (square : right ∘ top ~ bottom ∘ left) →
-                                          Is-equiv top ↔ Is-equiv bottom
+                                           (top : A → B) → (bottom : C → D) →
+                                           {left : A → C} → {right : B → D} → Is-equiv left → Is-equiv right →
+                                           (square : right ∘ top ~ bottom ∘ left) →
+                                           Is-equiv top ↔ Is-equiv bottom
   maps-joined-with-equivs-are-equivs-iff {A} {B} {C} {D} t b {l} {r} leqv reqv square =
     (
       --              top
@@ -1048,7 +1048,7 @@ module _ where
 
     -- exercise 11.11.a
     tot-fib-triangle-fiber-gluing : {A B X : Set} → (h : A → B) → {f : A → X} → (g : B → X) → (H : f ~ g ∘ h) →
-                                     glueFibers g ∘ (totalization (fib-triangle h H)) ~ h ∘ glueFibers f
+                                    glueFibers g ∘ (totalization (fib-triangle h H)) ~ h ∘ glueFibers f
     tot-fib-triangle-fiber-gluing {A} {B} {X} h {f} g H (x , (a , p)) =
       -- a `refl` works as well
       begin

@@ -300,16 +300,16 @@ module _ where
     prod-biimpl (a→b , b→a) (c→d , d→c) = ((λ { (a , c) → ((a→b a), (c→d c)) }), (λ { (b , d) → ((b→a b), (d→c d)) }))
 
     depfn-biimpl : {i j : Level} → {A : Set i} → {B C : A → Set j} → (foralla : (x : A) → (B x ↔-poly C x)) →
-                ((x : A) → B x) ↔-poly ((x : A) → C x)
+                   ((x : A) → B x) ↔-poly ((x : A) → C x)
     depfn-biimpl foralla = ((λ f x → Σ-poly.fst (foralla x) (f x)) , λ f x → Σ-poly.snd (foralla x) (f x))
 
     depfn-biimpl-2 : {i j : Level} → {A0 : Set i} → {A1 : A0 → Set j} → {B C : (a0 : A0) → (a1 : A1 a0) → Set} →
-                  (foralla0a1 : (x : A0) → (y : A1 x) → (B x y ↔-poly C x y)) →
-                  ((x : A0) → (y : A1 x) → B x y) ↔-poly ((x : A0) → (y : A1 x) → C x y)
+                     (foralla0a1 : (x : A0) → (y : A1 x) → (B x y ↔-poly C x y)) →
+                     ((x : A0) → (y : A1 x) → B x y) ↔-poly ((x : A0) → (y : A1 x) → C x y)
     depfn-biimpl-2 foralla0a1 = ((λ f x y → Σ-poly.fst (foralla0a1 x y) (f x y)) , λ f x y → Σ-poly.snd (foralla0a1 x y) (f x y))
 
     uncurry-biimpl : {A : Set} → {B : A → Set} → {C : Σ A B → Set} →
-                  (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
+                     (((x : A) → (y : B x) → C (x , y)) ↔ ((z : Σ A B) → C z))
     uncurry-biimpl = ((λ { f (a , b) → f a b }) , (λ f a b → f (a , b)))
 
     open EmptyBasic

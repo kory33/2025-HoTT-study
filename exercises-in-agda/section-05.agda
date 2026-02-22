@@ -31,7 +31,7 @@ module _ where
 
     -- definition 5.2.2
     inverse : {A : Set} → {x y : A} →
-             (x ≡ y) → (y ≡ x)
+              (x ≡ y) → (y ≡ x)
     inverse refl = refl
 
     _⁻¹ : {A : Set} → {x y : A} →
@@ -83,37 +83,37 @@ module _ where
     ap f refl = refl
 
     ap2 : {A B C : Set} →
-         (f : A → B → C) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
-         {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
-         f x₁ y₁ ≡ f x₂ y₂
+          (f : A → B → C) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
+          {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+          f x₁ y₁ ≡ f x₂ y₂
     ap2 f refl refl = refl
 
     ap3 : {A B C D : Set} →
-         (f : A → B → C → D) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
-         {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
-         {z₁ z₂ : C} → (r : z₁ ≡ z₂) →
-         f x₁ y₁ z₁ ≡ f x₂ y₂ z₂
+          (f : A → B → C → D) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
+          {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+          {z₁ z₂ : C} → (r : z₁ ≡ z₂) →
+          f x₁ y₁ z₁ ≡ f x₂ y₂ z₂
     ap3 f refl refl refl = refl
 
     ap4 : {A B C D E : Set} →
-         (f : A → B → C → D → E) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
-         {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
-         {z₁ z₂ : C} → (r : z₁ ≡ z₂) →
-         {w₁ w₂ : D} → (s : w₁ ≡ w₂) →
-         f x₁ y₁ z₁ w₁ ≡ f x₂ y₂ z₂ w₂
+          (f : A → B → C → D → E) → {x₁ x₂ : A} → (p : x₁ ≡ x₂) →
+          {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+          {z₁ z₂ : C} → (r : z₁ ≡ z₂) →
+          {w₁ w₂ : D} → (s : w₁ ≡ w₂) →
+          f x₁ y₁ z₁ w₁ ≡ f x₂ y₂ z₂ w₂
     ap4 f refl refl refl refl = refl
 
     ap8 : {A1 A2 A3 A4 A5 A6 A7 A8 B : Set} →
-         (f : A1 → A2 → A3 → A4 → A5 → A6 → A7 → A8 → B) →
-         {x₁ x₂ : A1} → (p : x₁ ≡ x₂) →
-         {y₁ y₂ : A2} → (q : y₁ ≡ y₂) →
-         {z₁ z₂ : A3} → (r : z₁ ≡ z₂) →
-         {w₁ w₂ : A4} → (s : w₁ ≡ w₂) →
-         {v₁ v₂ : A5} → (t : v₁ ≡ v₂) →
-         {u₁ u₂ : A6} → (u : u₁ ≡ u₂) →
-         {a₁ a₂ : A7} → (v : a₁ ≡ a₂) →
-         {b₁ b₂ : A8} → (w : b₁ ≡ b₂) →
-         f x₁ y₁ z₁ w₁ v₁ u₁ a₁ b₁ ≡ f x₂ y₂ z₂ w₂ v₂ u₂ a₂ b₂
+          (f : A1 → A2 → A3 → A4 → A5 → A6 → A7 → A8 → B) →
+          {x₁ x₂ : A1} → (p : x₁ ≡ x₂) →
+          {y₁ y₂ : A2} → (q : y₁ ≡ y₂) →
+          {z₁ z₂ : A3} → (r : z₁ ≡ z₂) →
+          {w₁ w₂ : A4} → (s : w₁ ≡ w₂) →
+          {v₁ v₂ : A5} → (t : v₁ ≡ v₂) →
+          {u₁ u₂ : A6} → (u : u₁ ≡ u₂) →
+          {a₁ a₂ : A7} → (v : a₁ ≡ a₂) →
+          {b₁ b₂ : A8} → (w : b₁ ≡ b₂) →
+          f x₁ y₁ z₁ w₁ v₁ u₁ a₁ b₁ ≡ f x₂ y₂ z₂ w₂ v₂ u₂ a₂ b₂
     ap8 f refl refl refl refl refl refl refl refl = refl
 
     ap-id : {A : Set} → {x y : A} →
@@ -121,8 +121,8 @@ module _ where
     ap-id refl = refl
 
     ap-comp : {A B C : Set} → (g : B → C) → (f : A → B) →
-             {x y : A} → (p : x ≡ y) →
-             ap (g ∘ f) p ≡ ap g (ap f p)
+              {x y : A} → (p : x ≡ y) →
+              ap (g ∘ f) p ≡ ap g (ap f p)
     ap-comp g f refl = refl
 
     -- definition 5.3.2
@@ -216,8 +216,8 @@ module _ where
 
     -- exercise 5.1
     distr-inv-concat : {A : Set} → {x y z : A} →
-      (p : x ≡ y) → (q : y ≡ z) →
-      (p · q) ⁻¹ ≡ q ⁻¹ · p ⁻¹
+          (p : x ≡ y) → (q : y ≡ z) →
+          (p · q) ⁻¹ ≡ q ⁻¹ · p ⁻¹
     distr-inv-concat refl q =
       begin
         (refl · q) ⁻¹
@@ -327,7 +327,7 @@ module _ where
 
     -- proposition 5.6.2
     add-succ-left : (m n : Nat) →
-      (succ m) + n ≡ succ (m + n)
+          (succ m) + n ≡ succ (m + n)
     add-succ-left m zero = refl
     add-succ-left m (succ n) =
       begin
@@ -695,7 +695,7 @@ module _ where
         ∎
 
       Nat-minus-add : (x₊ x₋ y₊ y₋ : Nat) →
-        (x₊ -ℕ x₋) + (y₊ -ℕ y₋) ≡ (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
+            (x₊ -ℕ x₋) + (y₊ -ℕ y₋) ≡ (x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)
       Nat-minus-add x₊ x₋ y₊ y₋ =
         let (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
             (y₊' , y₋') = asNatDiff (y₊ -ℕ y₋)
@@ -715,8 +715,8 @@ module _ where
           ≡⟨ (
             let
               rearrange : (a b c d : Nat) →
-                (((a +ℕ b) +ℕ c) +ℕ d) ≡
-                (a +ℕ c) +ℕ (b +ℕ d)
+                    (((a +ℕ b) +ℕ c) +ℕ d) ≡
+                    (a +ℕ c) +ℕ (b +ℕ d)
               rearrange a b c d =
                 begin
                   ((a +ℕ b) +ℕ c) +ℕ d
@@ -1007,9 +1007,10 @@ module _ where
           ∎
 
       Nat-minus-mul : (x₊ x₋ y₊ y₋ : Nat) →
-        (x₊ -ℕ x₋) * (y₊ -ℕ y₋) ≡
-          ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ
-          ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
+            (x₊ -ℕ x₋) * (y₊ -ℕ y₋) ≡ (
+              ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ
+              ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
+            )
       Nat-minus-mul x₊ x₋ y₊ y₋ =
         let (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
             (y₊' , y₋') = asNatDiff (y₊ -ℕ y₋)
@@ -1017,8 +1018,8 @@ module _ where
             (ky , ny₊ , ny₋) = asNatDiff-Nat-minus-normalization y₊ y₋
 
             expandCrossTerm : (a b c d : Nat) →
-              (a +ℕ b) *ℕ (c +ℕ d) ≡
-              (a *ℕ c) +ℕ (a *ℕ d) +ℕ (b *ℕ c) +ℕ (b *ℕ d)
+                  (a +ℕ b) *ℕ (c +ℕ d) ≡
+                  (a *ℕ c) +ℕ (a *ℕ d) +ℕ (b *ℕ c) +ℕ (b *ℕ d)
             expandCrossTerm a b c d =
               begin
                 (a +ℕ b) *ℕ (c +ℕ d)
@@ -1038,8 +1039,8 @@ module _ where
               ∎
 
             rearrangeFirst : (t1 t2 t3 t4 t5 t6 t7 : Nat) →
-              t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡
-              (t1 +ℕ t3 +ℕ t4 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t7 +ℕ t5)
+                  t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡
+                  (t1 +ℕ t3 +ℕ t4 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t7 +ℕ t5)
             rearrangeFirst t1 t2 t3 t4 t5 t6 t7 =
               let
                 unassoc-lhs : t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡ t1 +ℕ t2 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5
@@ -1066,8 +1067,8 @@ module _ where
               in unassoc-lhs · permute · (inverse unassoc-rhs)
 
             rearrangeSecond : (t1 t2 t3 t4 t5 t6 t7 : Nat) →
-              t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡
-              (t1 +ℕ t3 +ℕ t7 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t4 +ℕ t5)
+                  t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡
+                  (t1 +ℕ t3 +ℕ t7 +ℕ t5) +ℕ (t2 +ℕ t6 +ℕ t4 +ℕ t5)
             rearrangeSecond t1 t2 t3 t4 t5 t6 t7 =
               let
                 unassoc-lhs : t1 +ℕ t2 +ℕ (t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5) ≡ t1 +ℕ t2 +ℕ t3 +ℕ t4 +ℕ t5 +ℕ t6 +ℕ t7 +ℕ t5
