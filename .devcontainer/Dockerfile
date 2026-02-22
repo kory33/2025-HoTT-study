@@ -13,9 +13,16 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
          dos2unix \
          ripgrep \
          gh \
-         agda-bin \
-         agda-stdlib \
+         jq \
+         xz-utils \
     && rm -rf /var/lib/apt/lists/*
+
+COPY agda-toolchain.env /tmp/agda-toolchain.env
+COPY .devcontainer/install-agda-toolchain.sh /tmp/install-agda-toolchain.sh
+RUN chmod +x /tmp/install-agda-toolchain.sh \
+    && /tmp/install-agda-toolchain.sh /tmp/agda-toolchain.env \
+    && chown -R $USERNAME:$USERNAME /opt/agda-stdlib \
+    && rm -f /tmp/install-agda-toolchain.sh /tmp/agda-toolchain.env
 
 # Install Codex
 RUN wget https://github.com/openai/codex/releases/download/rust-v0.104.0/codex-x86_64-unknown-linux-musl.tar.gz -O /tmp/codex.tar.gz && \

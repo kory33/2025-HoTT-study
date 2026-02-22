@@ -12,11 +12,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Agda
-        uses: wenkokke/setup-agda@v2
-        with:
-          agda-version: "2.6.4.3"
-          agda-stdlib-version: "2.1"
+      - name: Load pinned Agda toolchain versions
+        run: |
+          set -euo pipefail
+          source agda-toolchain.env
+          echo "AGDA_VERSION=${AGDA_VERSION}" >> "${GITHUB_ENV}"
+          echo "AGDA_STDLIB_VERSION=${AGDA_STDLIB_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Install Agda toolchain
+        run: |
+          set -euo pipefail
+          sudo bash ./.devcontainer/install-agda-toolchain.sh ./agda-toolchain.env
+
+      - name: Register Agda standard library
+        run: |
+          set -euo pipefail
+          AGDA_CONFIG_DIR="${HOME}/.agda"
+          bash ./.devcontainer/register-agda-stdlib.sh ./agda-toolchain.env "${AGDA_CONFIG_DIR}"
+          echo "AGDA_DIR=${AGDA_CONFIG_DIR}" >> "${GITHUB_ENV}"
 
       - name: Typecheck all Agda files
         working-directory: exercises-in-agda
