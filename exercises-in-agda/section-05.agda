@@ -669,9 +669,9 @@ module _ where
         ∎
 
       asNatDiff-Nat-minus-normalization :
-        (x₊ x₋ : Nat) →
-        (let (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
-         in Σ Nat (λ k → (x₊ ≡ x₊' +ℕ k) × (x₋ ≡ x₋' +ℕ k)))
+            (x₊ x₋ : Nat) → (
+              let (x₊' , x₋') = asNatDiff (x₊ -ℕ x₋)
+              in Σ Nat (λ k → (x₊ ≡ x₊' +ℕ k) × (x₋ ≡ x₋' +ℕ k)))
       asNatDiff-Nat-minus-normalization zero zero = (zero , refl , refl)
       asNatDiff-Nat-minus-normalization (succ x₊) zero = (zero , refl , refl)
       asNatDiff-Nat-minus-normalization zero (succ x₋) = (zero , refl , refl)
@@ -680,8 +680,8 @@ module _ where
         in (succ k , ap succ nx₊ , ap succ nx₋)
 
       Nat-minus-add-same :
-        (x y k : Nat) →
-        (x +ℕ k) -ℕ (y +ℕ k) ≡ x -ℕ y
+            (x y k : Nat) →
+            (x +ℕ k) -ℕ (y +ℕ k) ≡ x -ℕ y
       Nat-minus-add-same x y zero = refl
       Nat-minus-add-same x y (succ k) =
         begin

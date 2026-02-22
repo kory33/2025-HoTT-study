@@ -99,8 +99,6 @@ for my $file (@files) {
     next if $colon < 0;
 
     my $after = substr($start, $colon + 1);
-    next unless $after =~ /\S/;
-
     my ($lead) = $after =~ /^(\s*)/;
     my $hanging = $colon + 1 + length($lead // q{});
 

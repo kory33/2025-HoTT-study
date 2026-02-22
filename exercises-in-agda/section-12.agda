@@ -177,11 +177,11 @@ module _ where
   -- theorem 12.3.4
   -- NOTE: this theorem would not require the ((x : A) → R x x) parameter
   reflexive-propositional-relation-makes-fam-of-maps-from-identity-types-equivs :
-    {A : Set} → (R : A → A → Set) →
-    (propositional : (x y : A) → Is-prop (R x y)) →
-    (maps-into-identity-types : (x y : A) → R x y → x ≡ y) →
-    (fam-of-maps : (x y : A) → (x ≡ y) → R x y) →
-    (x y : A) → Is-equiv (fam-of-maps x y)
+        {A : Set} → (R : A → A → Set) →
+        (propositional : (x y : A) → Is-prop (R x y)) →
+        (maps-into-identity-types : (x y : A) → R x y → x ≡ y) →
+        (fam-of-maps : (x y : A) → (x ≡ y) → R x y) →
+        (x y : A) → Is-equiv (fam-of-maps x y)
   reflexive-propositional-relation-makes-fam-of-maps-from-identity-types-equivs
       {A} R propositional maps-into-identity-types fam-of-maps x =
     fundamental-thm-of-identity-types.ii→i-at-fn ΣARx-is-contr (fam-of-maps x)
@@ -201,11 +201,11 @@ module _ where
           (identity-with-an-endpoint-fixed-is-contr x)
 
   underlying-type-of-reflexive-propositional-relation-is-set :
-    {A : Set} → (R : A → A → Set) →
-    (reflexive : (x : A) → R x x) →
-    (propositional : (x y : A) → Is-prop (R x y)) →
-    (maps-into-identity-types : (x y : A) → R x y → x ≡ y) →
-    Is-set A
+        {A : Set} → (R : A → A → Set) →
+        (reflexive : (x : A) → R x x) →
+        (propositional : (x y : A) → Is-prop (R x y)) →
+        (maps-into-identity-types : (x y : A) → R x y → x ≡ y) →
+        Is-set A
   underlying-type-of-reflexive-propositional-relation-is-set
       {A} R reflexive propositional maps-into-identity-types x y =
     is-prop-pulled-back-by-equiv
@@ -368,15 +368,15 @@ module _ where
         Is-trunc (succ-Trunc k) (Σ A B)                                                            ∎-↔
       where
         rel-on-fiber-biimpl-rel-on-a-transported-fiber :
-          {A : Set} → {B : A → Set} → {C : (x : A) → B x → B x → Set} →
-          ((x : A) → (bx bx' : B x) → C x bx bx') ↔ ((x : A) → (bx : B x) → (y : A) → (by : B y) → (p : x ≡ y) → C y (tr B p bx) by)
+              {A : Set} → {B : A → Set} → {C : (x : A) → B x → B x → Set} →
+              ((x : A) → (bx bx' : B x) → C x bx bx') ↔ ((x : A) → (bx : B x) → (y : A) → (by : B y) → (p : x ≡ y) → C y (tr B p bx) by)
         rel-on-fiber-biimpl-rel-on-a-transported-fiber {A} {B} {C} =
           ((λ { lhs x bx .x bx' refl → lhs x bx bx' }) , (λ { rhs x bx bx' → rhs x bx x bx' refl }))
 
     -- exercise 12.6.b
     map-to-k-type-is-k-trunc-iff-dom-is-k-trunc :
-      {A B : Set} → {k : TruncLevel} → Is-trunc k B →
-      {f : A → B} → Is-trunc-map k f ↔ Is-trunc k A
+          {A B : Set} → {k : TruncLevel} → Is-trunc k B →
+          {f : A → B} → Is-trunc-map k f ↔ Is-trunc k A
     map-to-k-type-is-k-trunc-iff-dom-is-k-trunc {A} {B} {k} B-is-k-trunc {f} =
       begin-↔
         Is-trunc-map k f                   ↔⟨⟩
