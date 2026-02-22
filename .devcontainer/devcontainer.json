@@ -4,7 +4,7 @@
     "name": "Exercises in \"Introduction to Homotopy Type Theory\"",
     "build": {
         "dockerfile": "Dockerfile",
-        "context": "."
+        "context": ".."
     },
     "remoteUser": "vscode",
     "features": {
@@ -25,7 +25,7 @@
                 "files.trimTrailingWhitespace": true,
                 "editor.formatOnSave": true,
                 "agdaMode.connection.paths": [
-                    "agda"
+                    "/usr/local/bin/agda"
                 ]
             }
         }
