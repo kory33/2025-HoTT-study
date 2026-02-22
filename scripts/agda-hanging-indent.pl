@@ -41,32 +41,31 @@ sub leading_spaces {
 
 sub top_level_decl_colon_index {
   my ($line) = @_;
-  my ($paren, $brace, $bracket) = (0, 0, 0);
-  my @ch = split(//, $line);
-
-  for (my $i = 0; $i < @ch; $i++) {
-    my $x = $ch[$i];
-    if    ($x eq '(') { $paren++; next; }
-    elsif ($x eq ')') { $paren-- if $paren > 0; next; }
-    elsif ($x eq '{') { $brace++; next; }
-    elsif ($x eq '}') { $brace-- if $brace > 0; next; }
-    elsif ($x eq '[') { $bracket++; next; }
-    elsif ($x eq ']') { $bracket-- if $bracket > 0; next; }
-    elsif ($x eq ':' && $paren == 0 && $brace == 0 && $bracket == 0) {
-      my $lhs = substr($line, 0, $i);
-      $lhs =~ s/^\s+//;
-      $lhs =~ s/\s+$//;
-      return -1 if $lhs eq q{};
-      # Treat declaration heads as a single token; this avoids binder ':' in terms.
-      return -1 if $lhs =~ /\s/;
-      return $i;
-    }
-  }
-
-  return -1;
+  # We want to find the colon in function definition but not anywhere else.
+  #
+  # For instance, we sometimes have colons in the middle of the reasoning block, such as
+  #
+  #     ((x : A) → Is-contr (B x))     ↔⟨ depfn-biimpl (λ x →
+  #                                         equiv-then-contr-iff-contr (
+  #                                           ≃-comm (Σ-≃-sections-at-base-center
+  #                                             (x , recenter-contraction-at x a-is-contr)))) ⟩
+  #     ((x : A) → Is-contr (Σ A B))   ↔⟨ (ev-pt ca , const) ⟩
+  #
+  # and in such cases we don't want to treat the first line as
+  # a function declaration start line (it isn't!). So we consider lines that
+  #
+  #  - start with optional whitespace,
+  #  - followed by a non-empty sequence of non-whitespace characters that
+  #    does not contain (), [], {}, or =
+  #  - followed by optional whitespaces
+  #  - and finally a colon
+  #
+  # to be function declaration start lines, and then return the index of the colon in such lines.
+  return -1 unless $line =~ /^(\s*[^()\[\]{}:=\s]+)(\s*):/;
+  return length($1 . $2);
 }
 
-sub is_ignored_start_line {
+sub is_not_fn_declaration_start_line {
   my ($line) = @_;
   return 1 if $line =~ /^\s*$/;
   return 1 if $line =~ /^\s*--/;
@@ -94,7 +93,7 @@ for my $file (@files) {
 
   for (my $i = 0; $i < @lines; $i++) {
     my $start = $lines[$i];
-    next if is_ignored_start_line($start);
+    next if is_not_fn_declaration_start_line($start);
 
     my $colon = top_level_decl_colon_index($start);
     next if $colon < 0;
@@ -107,26 +106,28 @@ for my $file (@files) {
 
     my $base = leading_spaces($start);
 
-    my @cont_idxs = ();
-    # advance until we hit a non-declaration line
-    for (my $j = $i + 1; $j < @lines; $j++) {
-      my $ln = $lines[$j];
+    # Determine the range ([cont_start, cont_end_exclusive))
+    #   to which the type declaration continues.
+    my $cont_start = $i + 1;
+    my $cont_end_exclusive = $cont_start;
+    # advance until we hit a non-continuation line
+    for (; $cont_end_exclusive < @lines; $cont_end_exclusive++) {
+      my $ln = $lines[$cont_end_exclusive];
       last if leading_spaces($ln) <= $base || $ln =~ /=/;
-      push @cont_idxs, $j;
     }
-    next unless @cont_idxs;
+    next if $cont_end_exclusive == $cont_start;
 
     # Determine the base indent for the continuation block.
     # We'll keep the relative indent of continuation lines,
     #   so $delta is the only quantity we care in checking/applying fixes.
-    my $start_ind = leading_spaces($lines[$cont_idxs[0]]);
+    my $start_ind = leading_spaces($lines[$cont_start]);
     my $start_rel = $start_ind - $base;
     my $target = ($start_rel <= $hanging_threshold_rel && $start_ind < $hanging)
       ? ($base + $small_rel_indent)
       : $hanging;
     my $delta = $target - $start_ind;
 
-    for my $j (@cont_idxs) {
+    for (my $j = $cont_start; $j < $cont_end_exclusive; $j++) {
       my $ln = $lines[$j];
       my $ind = leading_spaces($ln);
       my $expected = max($ind + $delta, 0);
@@ -143,6 +144,9 @@ for my $file (@files) {
         }
       }
     }
+
+    # Skip continuation lines we just processed.
+    $i = $cont_end_exclusive - 1;
   }
 
   if ($mode eq 'fix' && $changed_in_current_file > 0) {
