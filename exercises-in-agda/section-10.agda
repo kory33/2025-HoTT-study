@@ -405,13 +405,7 @@ module _ where
   const-unit-is-equiv-then-contr {A} (_ , retr) = retraction-preserves-contr retr Unit-is-contr
 
   map-to-unit-is-equiv-then-contr : {A : Set} → {f : A → Unit} → Is-equiv f → Is-contr A
-  map-to-unit-is-equiv-then-contr {A} {f} eqv =
-    const-unit-is-equiv-then-contr (
-      is-equiv-preserved-by-homotopy (λ a →
-        let (_ , C) = Unit-is-contr
-        in inverse (C (f a))
-      ) eqv
-    )
+  map-to-unit-is-equiv-then-contr {A} {f} (_ , retr) = retraction-preserves-contr retr Unit-is-contr
 
   contr-then-const-unit-is-equiv : {A : Set} → Is-contr A → Is-equiv (λ (a : A) → const unit a)
   contr-then-const-unit-is-equiv {A} (ac , C) =
@@ -422,13 +416,13 @@ module _ where
 
   -- exercise 10.3.b
   cod-of-equiv-is-contr-then-dom-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr B → Is-contr A
-  cod-of-equiv-is-contr-then-dom-is-contr {A} {B} {f} f-eqv b-contr =
-    map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv b-contr) f-eqv)
+  cod-of-equiv-is-contr-then-dom-is-contr {A} {B} {f} (_ , retr) b-contr =
+    retraction-preserves-contr retr b-contr
 
   -- exercise 10.3.b
   dom-of-equiv-is-contr-then-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr A → Is-contr B
   dom-of-equiv-is-contr-then-cod-is-contr {A} {B} {f} f-eqv a-contr =
-    map-to-unit-is-equiv-then-contr (comp-equivs-is-equiv (contr-then-const-unit-is-equiv a-contr) (≃-inverse-map-is-equiv f-eqv))
+    cod-of-equiv-is-contr-then-dom-is-contr (≃-inverse-map-is-equiv f-eqv) a-contr
 
   dom-of-equiv-is-contr-iff-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → (Is-contr A ↔ Is-contr B)
   dom-of-equiv-is-contr-iff-cod-is-contr f-eqv = (dom-of-equiv-is-contr-then-cod-is-contr f-eqv , cod-of-equiv-is-contr-then-dom-is-contr f-eqv)
@@ -556,57 +550,29 @@ module _ where
     -- exercise 10.7.b, (ii) → (i)
     contractible-family-then-pr₁-is-equiv : {A : Set} → {B : A → Set} → Is-contr-fam B → Is-equiv (pr₁-of B)
     contractible-family-then-pr₁-is-equiv {A} {B} is-contr-b =
-      let
-        fib-pr₁-is-contr : (a : A) → Is-contr (fib (pr₁-of B) a)
-        fib-pr₁-is-contr a =
-          let (y , C) = is-contr-b a
-          in  (((a , y) , refl) , λ { ((.a , y') , refl) → ap (λ y'' → ((a , y'') , refl)) (C y') })
-      in
-        contr-fn-then-equiv fib-pr₁-is-contr
+      contr-fn-then-equiv (λ a →
+        cod-of-equiv-is-contr-then-dom-is-contr (tr-from-fib-pr₁-is-equiv a) (is-contr-b a)
+      )
 
     -- exercise 10.7.c, (i) → (ii)
     dep-pairing-is-equiv-then-is-contr-fn-fam : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
                                                 Is-equiv (λ (x : A) → (x , b x)) → Is-contr-fam B
     dep-pairing-is-equiv-then-is-contr-fn-fam {A} {B} b dep-pairing-is-eqv =
-      let
-        dep-pairing : A → Σ A B
-        dep-pairing = λ (x : A) → (x , b x)
-
-        inv-pairing : Σ A B → A
-        inv-pairing = ≃-inverse-map-for dep-pairing-is-eqv
-
-        inv-pairing~pr₁ : inv-pairing ~ pr₁-of B
-        inv-pairing~pr₁ =
-          λ { (x , y) →
-            let pairing-inv-pairing-xy≡xy = ≃-inverse-map-is-sect-of-original dep-pairing-is-eqv (x , y)
-                inv-pairing-xy≡x = ap Σ.fst pairing-inv-pairing-xy≡xy
-            in
-              begin
-                inv-pairing (x , y) ≡⟨ inv-pairing-xy≡x ⟩
-                x                   ≡⟨⟩
-                pr₁-of B (x , y)    ∎
-          }
-      in
-        pr₁-equiv-then-contractible-family (
-          is-equiv-preserved-by-homotopy inv-pairing~pr₁
-            (≃-inverse-map-is-equiv dep-pairing-is-eqv)
-        )
+      pr₁-equiv-then-contractible-family (
+        former-and-comp-are-equivs-then-latter-is-equiv
+          (λ (a : A) → refl)
+          dep-pairing-is-eqv
+          id-is-equiv
+      )
 
     -- exercise 10.7.c, (ii) → (i)
     is-contr-fam-then-dep-pairing-is-equiv : {A : Set} → {B : A → Set} → (b : (x : A) → B x) →
                                              Is-contr-fam B → Is-equiv (λ (x : A) → (x , b x))
     is-contr-fam-then-dep-pairing-is-equiv {A} {B} b is-contr-b =
-      has-inverse-equiv (
-        pr₁-of B ,
-        (λ { (x , y) →
-          begin
-            ((λ (x : A) → (x , b x)) ∘ (pr₁-of B)) (x , y) ≡⟨⟩
-            (x , b x)                                      ≡⟨ ap (λ y' → (x , y')) (two-points-eq-in-contr-type (is-contr-b x) (b x) y) ⟩
-            (x , y)                                        ≡⟨⟩
-            id (x , y)                                     ∎
-        }) ,
-        (λ a → refl)
-      )
+      latter-and-comp-are-equivs-then-former-is-equiv _
+        (λ (a : A) → refl)
+        (contractible-family-then-pr₁-is-equiv is-contr-b)
+        id-is-equiv
 
   -- exercise 10.8
   module _ where
