@@ -228,16 +228,7 @@ module _ where
     distr-inv-concat : {A : Set} → {x y z : A} →
           (p : x ≡ y) → (q : y ≡ z) →
           (p · q) ⁻¹ ≡ q ⁻¹ · p ⁻¹
-    distr-inv-concat refl q =
-      begin
-        (refl · q) ⁻¹
-      ≡⟨⟩
-        q ⁻¹
-      ≡⟨← (·-runit (q ⁻¹)) ⟩
-        q ⁻¹ · refl
-      ≡⟨⟩
-        q ⁻¹ · refl ⁻¹
-      ∎
+    distr-inv-concat refl refl = refl
 
     -- exercise 5.2
     inv-con : {A : Set} → {x y z : A} → (p : x ≡ y) → (q : y ≡ z) → (r : x ≡ z) →
@@ -467,14 +458,7 @@ module _ where
 
     -- exercise 5.5.b
     mul-comm : (m n : Nat) → m * n ≡ n * m
-    mul-comm m zero =
-      begin
-        m * zero
-      ≡⟨⟩
-        zero
-      ≡⟨← (mul-lzero m) ⟩
-        zero * m
-      ∎
+    mul-comm m zero = inverse (mul-lzero m)
     mul-comm m (succ n) =
       begin
         m * (succ n)
@@ -490,16 +474,7 @@ module _ where
 
     -- exercise 5.5.c
     mul-ldistr : (m n k : Nat) → m * (n + k) ≡ (m * n) + (m * k)
-    mul-ldistr m n zero =
-      begin
-        m * (n + zero)
-      ≡⟨⟩
-        m * n
-      ≡⟨ add-runit _ ⟩
-        (m * n) + zero
-      ≡⟨⟩
-        (m * n) + (m * zero)
-      ∎
+    mul-ldistr m n zero = refl
     mul-ldistr m n (succ k) =
       begin
         m * (n + (succ k))
@@ -535,16 +510,7 @@ module _ where
 
     -- exercise 5.5.d
     mul-assoc : (m n k : Nat) → (m * n) * k ≡ m * (n * k)
-    mul-assoc m n zero =
-      begin
-        (m * n) * zero
-      ≡⟨⟩
-        zero
-      ≡⟨⟩
-        m * zero
-      ≡⟨⟩
-        m * (n * zero)
-      ∎
+    mul-assoc m n zero = refl
     mul-assoc m n (succ k) =
       begin
         (m * n) * (succ k)
@@ -923,25 +889,12 @@ module _ where
         ∎
 
       right-inverse : (x : Int) → x + (- x) ≡ zeroInt
-      right-inverse zeroInt = refl
-      right-inverse (posSucc n) =
+      right-inverse x =
         begin
-          (posSucc n) + (- (posSucc n))
-        ≡⟨⟩
-          n -ℕ (zero +ℕ n)
-        ≡⟨ ap (λ e → n -ℕ e) (NatEquality.add-lunit n) ⟩
-          n -ℕ n
-        ≡⟨ Nat-minus-eq-zero n ⟩
-          zeroInt
-        ∎
-      right-inverse (negSucc n) =
-        begin
-          (negSucc n) + (- (negSucc n))
-        ≡⟨⟩
-          (zero +ℕ n) -ℕ n
-        ≡⟨ ap (λ e → e -ℕ n) (NatEquality.add-lunit n) ⟩
-          n -ℕ n
-        ≡⟨ Nat-minus-eq-zero n ⟩
+          x + (- x)
+        ≡⟨ add-comm x (- x) ⟩
+          (- x) + x
+        ≡⟨ left-inverse x ⟩
           zeroInt
         ∎
 
@@ -1159,6 +1112,31 @@ module _ where
           (x₊ +ℕ y₋) -ℕ (x₋ +ℕ y₊)
         ∎
 
+      mul-comm : (x y : Int) → x * y ≡ y * x
+      mul-comm x y =
+        let
+          (x₊ , x₋) = asNatDiff x
+          (y₊ , y₋) = asNatDiff y
+        in
+          begin
+            x * y
+          ≡⟨← (ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
+            (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
+          ≡⟨ Nat-minus-mul x₊ x₋ y₊ y₋ ⟩
+            ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
+          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
+               (NatCommSemiring.mul-comm x₊ y₊) (NatCommSemiring.mul-comm x₋ y₋)
+               (NatCommSemiring.mul-comm x₊ y₋) (NatCommSemiring.mul-comm x₋ y₊)
+          ⟩
+            ((y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ (y₋ *ℕ x₊ +ℕ y₊ *ℕ x₋))
+          ≡⟨ ap (λ e → (y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ e) (NatCommSemiring.add-comm (y₋ *ℕ x₊) (y₊ *ℕ x₋)) ⟩
+            ((y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ (y₊ *ℕ x₋ +ℕ y₋ *ℕ x₊))
+          ≡⟨← (Nat-minus-mul y₊ y₋ x₊ x₋) ⟩
+            (y₊ -ℕ y₋) * (x₊ -ℕ x₋)
+          ≡⟨ ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
+            y * x
+          ∎
+
       -- exercise 5.8.b
       pred-mul : (x y : Int) → pred x * y ≡ x * y - y
       pred-mul x y =
@@ -1187,36 +1165,6 @@ module _ where
             x * y - y
           ∎
 
-      mul-pred : (x y : Int) → x * pred y ≡ x * y - x
-      mul-pred x y =
-        let
-          (x₊ , x₋) = asNatDiff x
-          (y₊ , y₋) = asNatDiff y
-        in
-          begin
-            x * pred y
-          ≡⟨← (ap2 (λ e1 e2 → e1 * pred e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
-            (x₊ -ℕ x₋) * pred (y₊ -ℕ y₋)
-          ≡⟨ ap (λ e → (x₊ -ℕ x₋) * e) (pred-Nat-minus y₊ y₋) ⟩
-            ((x₊ -ℕ x₋) * (y₊ -ℕ (succ y₋)))
-          ≡⟨ Nat-minus-mul x₊ x₋ y₊ (succ y₋) ⟩
-            ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ (succ y₋))) -ℕ
-            ((x₊ *ℕ (succ y₋)) +ℕ (x₋ *ℕ y₊))
-          ≡⟨ ap2 (λ e1 e2 → ((x₊ *ℕ y₊) +ℕ e1) -ℕ (e2 +ℕ (x₋ *ℕ y₊))) (NatCommSemiring.mul-succ-right x₋ y₋) (NatCommSemiring.mul-succ-right x₊ y₋) ⟩
-            (x₊ *ℕ y₊ +ℕ (x₋ +ℕ x₋ *ℕ y₋)) -ℕ (x₊ +ℕ x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)
-          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2)
-              (NatCommSemiring.add-unassoc (x₊ *ℕ y₊) x₋ (x₋ *ℕ y₋) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₊) x₋ (x₋ *ℕ y₋))
-              (ap (λ e → e +ℕ (x₋ *ℕ y₊)) (NatCommSemiring.add-comm x₊ (x₊ *ℕ y₋)) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) x₊ (x₋ *ℕ y₊))
-          ⟩
-            (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ x₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ x₊)
-          ≡⟨← (Nat-minus-minus (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
-            ((x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊)) - (x₊ -ℕ x₋)
-          ≡⟨← (ap (λ e → e - (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
-            (x₊ -ℕ x₋) * (y₊ -ℕ y₋) - (x₊ -ℕ x₋)
-          ≡⟨ ap2 (λ e1 e2 → e1 * e2 - e1) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) ⟩
-            x * y - x
-          ∎
-
       succ-mul : (x y : Int) → Int-succ x * y ≡ x * y + y
       succ-mul x y =
         let
@@ -1241,38 +1189,6 @@ module _ where
             (x₊ -ℕ x₋) * (y₊ -ℕ y₋) + (y₊ -ℕ y₋)
           ≡⟨ ap3 (λ e1 e2 e3 → e1 * e2 + e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff y) ⟩
             x * y + y
-          ∎
-
-      mul-succ : (x y : Int) → x * Int-succ y ≡ x * y + x
-      mul-succ x y =
-        let
-          (x₊ , x₋) = asNatDiff x
-          (y₊ , y₋) = asNatDiff y
-        in
-          begin
-            x * Int-succ y
-          ≡⟨← (ap2 (λ e1 e2 → e1 * Int-succ e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
-            (x₊ -ℕ x₋) * Int-succ (y₊ -ℕ y₋)
-          ≡⟨ ap (λ e → (x₊ -ℕ x₋) * e) (succ-Nat-minus y₊ y₋) ⟩
-            (x₊ -ℕ x₋) * (succ y₊ -ℕ y₋)
-          ≡⟨ Nat-minus-mul x₊ x₋ (succ y₊) y₋ ⟩
-            ((x₊ *ℕ (succ y₊)) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ (succ y₊)))
-          ≡⟨ ap2 (λ e1 e2 → (e1 +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ e2))
-              (NatCommSemiring.mul-succ-right x₊ y₊)
-              (NatCommSemiring.mul-succ-right x₋ y₊)
-          ⟩
-            (x₊ +ℕ x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ (x₋ +ℕ x₋ *ℕ y₊))
-          ≡⟨ ap2 (λ e1 e2 → e1 -ℕ e2)
-              (ap (λ e → e +ℕ (x₋ *ℕ y₋)) (NatCommSemiring.add-comm x₊ (x₊ *ℕ y₊)) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₊) x₊ (x₋ *ℕ y₋))
-              (NatCommSemiring.add-unassoc (x₊ *ℕ y₋) x₋ (x₋ *ℕ y₊) · NatCommSemiring.add-add-rcomm (x₊ *ℕ y₋) x₋ (x₋ *ℕ y₊))
-          ⟩
-            (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋ +ℕ x₊) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊ +ℕ x₋)
-          ≡⟨← (Nat-minus-add (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) x₊ x₋) ⟩
-            (x₊ *ℕ y₊ +ℕ x₋ *ℕ y₋) -ℕ (x₊ *ℕ y₋ +ℕ x₋ *ℕ y₊) + (x₊ -ℕ x₋)
-          ≡⟨← (ap (λ e → e + (x₊ -ℕ x₋)) (Nat-minus-mul x₊ x₋ y₊ y₋)) ⟩
-            (x₊ -ℕ x₋) * (y₊ -ℕ y₋) + (x₊ -ℕ x₋)
-          ≡⟨ ap3 (λ e1 e2 e3 → e1 * e2 + e3) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
-            x * y + x
           ∎
 
       -- exercise 5.8.c
@@ -1328,53 +1244,15 @@ module _ where
 
       mul-rdistr : (x y z : Int) → (x + y) * z ≡ (x * z) + (y * z)
       mul-rdistr x y z =
-        let
-          (x₊ , x₋) = asNatDiff x
-          (y₊ , y₋) = asNatDiff y
-          (z₊ , z₋) = asNatDiff z
-        in
-          begin
-            (x + y) * z
-          ≡⟨ ap (λ e → (x + y) * e) (inverse (Nat-minus-asNatDiff z)) ⟩
-            ((x₊ +ℕ y₊) -ℕ (x₋ +ℕ y₋)) * (z₊ -ℕ z₋)
-          ≡⟨ Nat-minus-mul (x₊ +ℕ y₊) (x₋ +ℕ y₋) z₊ z₋ ⟩
-            (((x₊ +ℕ y₊) *ℕ z₊) +ℕ ((x₋ +ℕ y₋) *ℕ z₋)) -ℕ
-            (((x₊ +ℕ y₊) *ℕ z₋) +ℕ ((x₋ +ℕ y₋) *ℕ z₊))
-          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
-              (NatCommSemiring.mul-rdistr x₊ y₊ z₊)
-              (NatCommSemiring.mul-rdistr x₋ y₋ z₋)
-              (NatCommSemiring.mul-rdistr x₊ y₊ z₋)
-              (NatCommSemiring.mul-rdistr x₋ y₋ z₊)
-          ⟩
-            ((x₊ *ℕ z₊ +ℕ y₊ *ℕ z₊) +ℕ (x₋ *ℕ z₋ +ℕ y₋ *ℕ z₋)) -ℕ
-            ((x₊ *ℕ z₋ +ℕ y₊ *ℕ z₋) +ℕ (x₋ *ℕ z₊ +ℕ y₋ *ℕ z₊))
-          ≡⟨ (
-            let
-              swapMiddle : (a b c d : Nat) → (a +ℕ b) +ℕ (c +ℕ d) ≡ (a +ℕ c) +ℕ (b +ℕ d)
-              swapMiddle a b c d =
-                let
-                  unassoc-lhs : (a +ℕ b) +ℕ (c +ℕ d) ≡ a +ℕ b +ℕ c +ℕ d
-                  unassoc-lhs = NatCommSemiring.add-unassoc (a +ℕ b) c d
-                  permute : a +ℕ b +ℕ c +ℕ d ≡ a +ℕ c +ℕ b +ℕ d
-                  permute = ap (λ e → e +ℕ d) (NatCommSemiring.add-add-rcomm a b c)
-                  unassoc-rhs : (a +ℕ c) +ℕ (b +ℕ d) ≡ a +ℕ c +ℕ b +ℕ d
-                  unassoc-rhs = NatCommSemiring.add-unassoc (a +ℕ c) b d
-                in unassoc-lhs · permute · (inverse unassoc-rhs)
-            in
-              ap2 (λ e1 e2 → e1 -ℕ e2)
-                (swapMiddle (x₊ *ℕ z₊) (y₊ *ℕ z₊) (x₋ *ℕ z₋) (y₋ *ℕ z₋))
-                (swapMiddle (x₊ *ℕ z₋) (y₊ *ℕ z₋) (x₋ *ℕ z₊) (y₋ *ℕ z₊))
-          ) ⟩
-            ((x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) +ℕ (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋)) -ℕ
-            ((x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊) +ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊))
-          ≡⟨← (Nat-minus-add (x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊) (y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊)) ⟩
-            ((x₊ *ℕ z₊ +ℕ x₋ *ℕ z₋) -ℕ (x₊ *ℕ z₋ +ℕ x₋ *ℕ z₊)) +
-            ((y₊ *ℕ z₊ +ℕ y₋ *ℕ z₋) -ℕ (y₊ *ℕ z₋ +ℕ y₋ *ℕ z₊))
-          ≡⟨← (ap2 (λ e1 e2 → e1 + e2) (Nat-minus-mul x₊ x₋ z₊ z₋) (Nat-minus-mul y₊ y₋ z₊ z₋)) ⟩
-            ((x₊ -ℕ x₋) * (z₊ -ℕ z₋)) + ((y₊ -ℕ y₋) * (z₊ -ℕ z₋))
-          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 * e2) + (e3 * e4)) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff z) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff z) ⟩
-            (x * z) + (y * z)
-          ∎
+        begin
+          (x + y) * z
+        ≡⟨ mul-comm (x + y) z ⟩
+          z * (x + y)
+        ≡⟨ mul-ldistr z x y ⟩
+          (z * x) + (z * y)
+        ≡⟨ ap2 (λ e1 e2 → e1 + e2) (mul-comm z x) (mul-comm z y) ⟩
+          (x * z) + (y * z)
+        ∎
 
       -- exercise 5.8.d
       mul-assoc : (x y z : Int) → (x * y) * z ≡ x * (y * z)
@@ -1444,29 +1322,4 @@ module _ where
             (x₊ -ℕ x₋) * ((y₊ -ℕ y₋) * (z₊ -ℕ z₋))
           ≡⟨ ap3 (λ e1 e2 e3 → e1 * (e2 * e3)) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff z) ⟩
             x * (y * z)
-          ∎
-
-      mul-comm : (x y : Int) → x * y ≡ y * x
-      mul-comm x y =
-        let
-          (x₊ , x₋) = asNatDiff x
-          (y₊ , y₋) = asNatDiff y
-        in
-          begin
-            x * y
-          ≡⟨← (ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff x) (Nat-minus-asNatDiff y)) ⟩
-            (x₊ -ℕ x₋) * (y₊ -ℕ y₋)
-          ≡⟨ Nat-minus-mul x₊ x₋ y₊ y₋ ⟩
-            ((x₊ *ℕ y₊) +ℕ (x₋ *ℕ y₋)) -ℕ ((x₊ *ℕ y₋) +ℕ (x₋ *ℕ y₊))
-          ≡⟨ ap4 (λ e1 e2 e3 e4 → (e1 +ℕ e2) -ℕ (e3 +ℕ e4))
-               (NatCommSemiring.mul-comm x₊ y₊) (NatCommSemiring.mul-comm x₋ y₋)
-               (NatCommSemiring.mul-comm x₊ y₋) (NatCommSemiring.mul-comm x₋ y₊)
-          ⟩
-            ((y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ (y₋ *ℕ x₊ +ℕ y₊ *ℕ x₋))
-          ≡⟨ ap (λ e → (y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ e) (NatCommSemiring.add-comm (y₋ *ℕ x₊) (y₊ *ℕ x₋)) ⟩
-            ((y₊ *ℕ x₊ +ℕ y₋ *ℕ x₋) -ℕ (y₊ *ℕ x₋ +ℕ y₋ *ℕ x₊))
-          ≡⟨← (Nat-minus-mul y₊ y₋ x₊ x₋) ⟩
-            (y₊ -ℕ y₋) * (x₊ -ℕ x₋)
-          ≡⟨ ap2 (λ e1 e2 → e1 * e2) (Nat-minus-asNatDiff y) (Nat-minus-asNatDiff x) ⟩
-            y * x
           ∎
