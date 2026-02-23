@@ -875,67 +875,17 @@ module _ where
       B : (x : A) → Set
 
     inv-is-equiv : {x y : A} → Is-equiv (λ (p : x ≡ y) → inverse p)
-    inv-is-equiv {x} {y} = ((inverse , (λ { refl → refl })), (inverse , (λ { refl → refl })))
+    inv-is-equiv {x} {y} = ((inverse , (λ { refl → refl })), (inverse , (λ where refl → refl )))
 
     prepend-path-is-equiv : {x y z : A} → (p : x ≡ y) → Is-equiv (λ (q : y ≡ z) → p · q)
-    prepend-path-is-equiv {A} {x} {y} {z} p = ((inverseMap , section-eq), (inverseMap , retract-eq))
-      where
-        inverseMap : (x ≡ z) → (y ≡ z)
-        inverseMap r = p ⁻¹ · r
-
-        section-eq : (_·_ p) ∘ inverseMap ~ id
-        section-eq q = begin
-          p · (p ⁻¹ · q) ≡⟨ ·-unassoc p (p ⁻¹) q ⟩
-          p · p ⁻¹ · q   ≡⟨ ap (λ e → e · q) (·-rinv p) ⟩
-          refl · q       ≡⟨⟩
-          q              ∎
-
-        retract-eq : inverseMap ∘ (_·_ p) ~ id
-        retract-eq q = begin
-          p ⁻¹ · (p · q) ≡⟨ ·-unassoc (p ⁻¹) p q ⟩
-          p ⁻¹ · p · q   ≡⟨ ap (λ e → e · q) (·-linv p) ⟩
-          refl · q       ≡⟨⟩
-          q              ∎
+    prepend-path-is-equiv refl = id-is-equiv
 
     concat-swap-is-equiv : {x y z : A} → (q : y ≡ z) → Is-equiv (λ (p : x ≡ y) → p · q)
-    concat-swap-is-equiv {A} {x} {y} {z} q = ((inverseMap , section-eq), (inverseMap , retract-eq))
-      where
-        inverseMap : (x ≡ z) → (x ≡ y)
-        inverseMap r = r · q ⁻¹
-
-        section-eq : (λ p → p · q) ∘ inverseMap ~ id
-        section-eq refl = begin
-          refl · (q ⁻¹) · q   ≡⟨⟩
-          q ⁻¹ · q            ≡⟨ ·-linv q ⟩
-          refl                ∎
-
-        retract-eq : inverseMap ∘ (λ p → p · q) ~ id
-        retract-eq refl = begin
-          refl · q · q ⁻¹   ≡⟨⟩
-          q · q ⁻¹          ≡⟨ ·-rinv q ⟩
-          refl              ∎
+    concat-swap-is-equiv refl =
+      has-inverse-equiv (id , (λ where refl → refl) , (λ where refl → refl))
 
     tr-is-equiv : (B : A → Set) → {x y : A} → (p : x ≡ y) → Is-equiv (tr B p)
-    tr-is-equiv B {x} {y} p = ((inverseMap , section-eq), (inverseMap , retract-eq))
-      where
-        inverseMap : B y → B x
-        inverseMap = tr B (p ⁻¹)
-
-        section-eq : (tr B p) ∘ inverseMap ~ id
-        section-eq by = begin
-          (tr B p ∘ inverseMap) by      ≡⟨⟩
-          tr B p (tr B (p ⁻¹) by)       ≡⟨← tr-concat (p ⁻¹) _ _ ⟩
-          tr B (p ⁻¹ · p) by            ≡⟨ ap (λ e → tr B e by) (·-linv p) ⟩
-          tr B refl by                  ≡⟨⟩
-          id by                         ∎
-
-        retract-eq : inverseMap ∘ (tr B p) ~ id
-        retract-eq by = begin
-          (inverseMap ∘ (tr B p)) by    ≡⟨⟩
-          tr B (p ⁻¹) (tr B p by)       ≡⟨← tr-concat p _ _ ⟩
-          tr B (p · p ⁻¹) by            ≡⟨ ap (λ e → tr B e by) (·-rinv p) ⟩
-          tr B refl by                  ≡⟨⟩
-          id by                         ∎
+    tr-is-equiv B refl = id-is-equiv
 
   -- exercise 9.2
   module _ where
