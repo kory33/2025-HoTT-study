@@ -334,6 +334,15 @@ module _ where
          ; true true   → Unit-is-prop })
       (λ x y → Σ.snd (Eq-Bool.Bool-≡-iff-Eq-Bool x y))
 
+  Bool-is-set-by-decEq : Is-set Bool
+  Bool-is-set-by-decEq = has-decidable-equality-then-is-set Bool-has-decidable-eq
+    where
+      Bool-has-decidable-eq : Has-decidable-eq Bool
+      Bool-has-decidable-eq false false = left refl
+      Bool-has-decidable-eq false true = right (λ ())
+      Bool-has-decidable-eq true false = right (λ ())
+      Bool-has-decidable-eq true true = left refl
+
   -- exercise 12.6 (will be useful in 12.2)
   module _ where
     conditionally-sk-type-then-is-sk-type : {A : Set} → {k : TruncLevel} → (A → Is-trunc (succ-Trunc k) A) → Is-trunc (succ-Trunc k) A
