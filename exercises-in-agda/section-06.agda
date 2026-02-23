@@ -118,9 +118,9 @@ module _ where
     sum-eq-zero-iff-both-zero m n = (forward m n , (λ { (refl , refl) → refl }))
       where
       forward : (m n : Nat) → (m + n ≡ zero) → ((m ≡ zero) × (n ≡ zero))
-      forward zero zero eq = refl , refl
-      forward (succ m) zero eq = absurd (zero-neq-succ m (inverse eq))
-      forward m (succ n) eq = absurd (zero-neq-succ (m + n) (inverse eq))
+      forward zero zero _ = refl , refl
+      forward (succ m) zero ()
+      forward m (succ n) ()
 
     product-eq-zero-biimpl-some-zero : (m n : Nat) → (m * n ≡ zero) ↔ ((m ≡ zero) +₀ (n ≡ zero))
     product-eq-zero-biimpl-some-zero m n = (forward m n , (λ { (left refl) → mul-lzero n ; (right refl) → mul-rzero m }))
@@ -144,8 +144,8 @@ module _ where
     product-eq-one-iff-both-one m n = (forward m n , (λ { (refl , refl) → refl }))
       where
       forward : (m n : Nat) → (m * n ≡ one) → ((m ≡ one) × (n ≡ one))
-      forward zero zero eq = absurd (zero-neq-succ zero eq)
-      forward (succ m) zero eq = absurd (zero-neq-succ zero eq)
+      forward zero zero ()
+      forward (succ m) zero ()
       forward zero (succ n) eq = absurd (zero-neq-succ zero (inverse (mul-lzero (succ n)) · eq))
       forward (succ zero) (succ zero) _ = refl , refl
       forward (succ (succ m)) (succ n) eq =
@@ -186,30 +186,25 @@ module _ where
     self-neq-add-succ : (m n : Nat) → ¬ (m ≡ m + succ n)
     self-neq-add-succ m n eq =
       let
-        eq1 = begin
-          zero + m     ≡⟨ add-comm zero m ⟩
-          m + zero     ≡⟨⟩
-          m            ≡⟨ eq ⟩
-          m + succ n   ≡⟨ add-comm m (succ n) ⟩
-          succ n + m   ∎
-        eq2 = Σ.snd (add-inj zero (succ n) m) eq1
+        eq1 : m + zero ≡ m + succ n
+        eq1 = add-runit m · eq
+
+        eq2 : zero ≡ succ n
+        eq2 = Σ.snd (add-inj-left zero (succ n) m) eq1
       in
-        absurd (zero-neq-succ _ eq2)
+        absurd (zero-neq-succ n eq2)
 
     self-succ-neq-mul-succ-succ : (m n : Nat) → ¬ (succ m ≡ succ m * succ (succ n))
     self-succ-neq-mul-succ-succ m n eq =
       let
         eq1 = begin
-          one * succ m              ≡⟨ mul-succ-left zero (succ m) ⟩
-          zero * succ m + succ m    ≡⟨ ap (λ e → e + succ m) (mul-lzero (succ m)) ⟩
-          zero + succ m             ≡⟨ add-lunit (succ m) ⟩
-          succ m                    ≡⟨ eq ⟩
-          succ m * succ (succ n)    ≡⟨ mul-comm (succ m) _ ⟩
-          succ (succ n) * succ m    ∎
+          one * succ m            ≡⟨ mul-lunit (succ m) ⟩
+          succ m                  ≡⟨ eq ⟩
+          succ m * succ (succ n)  ≡⟨ mul-comm (succ m) _ ⟩
+          succ (succ n) * succ m  ∎
         eq2 = Σ.snd (mul-inj one (succ (succ n)) m) eq1
-        eq3 = Σ.snd (succ-inj zero (succ n)) eq2
       in
-        absurd (zero-neq-succ _ eq3)
+        absurd (zero-neq-succ n (succ-eq-then-eq zero (succ n) eq2))
 
   Eq-Bool : (x y : Bool) → Set
   Eq-Bool false false = Unit
@@ -228,23 +223,17 @@ module _ where
     Eq-Bool-refl true = unit
 
     Bool-≡-iff-Eq-Bool : (x y : Bool) → ((x ≡ y) ↔ Eq-Bool x y)
-    Bool-≡-iff-Eq-Bool x y = (forward x y , backward x y)
-      where
-      forward : (x y : Bool) → (x ≡ y) → Eq-Bool x y
-      forward x y refl = Eq-Bool-refl x
-
-      backward : (x y : Bool) → Eq-Bool x y → (x ≡ y)
-      backward false false _ = refl
-      backward false true bot = EmptyBasic.absurd bot
-      backward true false bot = EmptyBasic.absurd bot
-      backward true true _ = refl
+    Bool-≡-iff-Eq-Bool false false = ((λ _ → unit) , (λ _ → refl))
+    Bool-≡-iff-Eq-Bool false true = ((λ ()) , (λ ()))
+    Bool-≡-iff-Eq-Bool true false = ((λ ()) , (λ ()))
+    Bool-≡-iff-Eq-Bool true true = ((λ _ → unit) , (λ _ → refl))
 
     self-neq-neg-bool : (x : Bool) → ¬ (x ≡ negBool x)
-    self-neq-neg-bool false eq = Σ.fst (Bool-≡-iff-Eq-Bool false true) eq
-    self-neq-neg-bool true eq = Σ.fst (Bool-≡-iff-Eq-Bool true false) eq
+    self-neq-neg-bool false ()
+    self-neq-neg-bool true ()
 
     false-neq-true : ¬ (false ≡ true)
-    false-neq-true eq = self-neq-neg-bool false eq
+    false-neq-true ()
 
   Leq-Nat : (x y : Nat) → Set
   Leq-Nat zero y = Unit
