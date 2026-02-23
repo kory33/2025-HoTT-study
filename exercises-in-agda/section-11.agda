@@ -1056,7 +1056,7 @@ module _ where
         glueFibers g (totalization (fib-triangle h H) (x , (a , p)))       ≡⟨⟩
         glueFibers g (x , fib-triangle h H x (a , p))                      ≡⟨⟩
         glueFibers g (x , (h a , ((H ⁻¹ₕₜₚ) a) · p))                       ≡⟨⟩
-        h a                                                                       ≡⟨⟩
+        h a                                                                ≡⟨⟩
         h (glueFibers f (x , (a , p)))                                     ≡⟨⟩
         (h ∘ glueFibers f) (x , (a , p))                                   ∎
 

@@ -182,16 +182,16 @@ module _ where
 
     -- exercise 8.7.a
     Copr-≡-biimpl-Eq-Copr : {A B : Set} → {x y : A +₀ B} → (x ≡ y) ↔ (Eq-Copr x y)
-    Copr-≡-biimpl-Eq-Copr {A} {B} {x} {y} = (forward x y , backward x y)
+    Copr-≡-biimpl-Eq-Copr {A} {B} = (forward , backward)
       where
-        forward : (x y : A +₀ B) → (x ≡ y) → (Eq-Copr x y)
-        forward x y refl = Eq-Copr-refl x
+        forward : {x y : A +₀ B} → (x ≡ y) → (Eq-Copr x y)
+        forward {x} refl = Eq-Copr-refl x
 
-        backward : (x y : A +₀ B) → (Eq-Copr x y) → (x ≡ y)
-        backward (left a1) (left a2) eq = ap left eq
-        backward (left a1) (right b2) ()
-        backward (right b1) (left a2) ()
-        backward (right b1) (right b2) eq = ap right eq
+        backward : {x y : A +₀ B} → (Eq-Copr x y) → (x ≡ y)
+        backward {x = left a1} {y = left a2} eq = ap left eq
+        backward {x = left a1} {y = right b2} ()
+        backward {x = right b1} {y = left a2} ()
+        backward {x = right b1} {y = right b2} eq = ap right eq
 
     eq-copr-eq : {A B : Set} → {x y : A +₀ B} → (x ≡ y) → (Eq-Copr x y)
     eq-copr-eq eq = Σ.fst (Copr-≡-biimpl-Eq-Copr) eq
@@ -200,10 +200,10 @@ module _ where
     obseq-then-eq eq = Σ.snd (Copr-≡-biimpl-Eq-Copr) eq
 
     +₀-left-inj : {A : Set} → {B : Set} → {x y : A} → (left {A} {B} x ≡ left y) → (x ≡ y)
-    +₀-left-inj eq = Σ.fst (Copr-≡-biimpl-Eq-Copr) eq
+    +₀-left-inj eq = eq-copr-eq eq
 
     +₀-right-inj : {A : Set} → {B : Set} → {x y : B} → (right {A} {B} x ≡ right y) → (x ≡ y)
-    +₀-right-inj eq = Σ.fst (Copr-≡-biimpl-Eq-Copr) eq
+    +₀-right-inj eq = eq-copr-eq eq
 
     -- exercise 8.7.b
     +₀-deceq-biimpl-both-deceq : {A B : Set} → Has-decidable-eq (A +₀ B) ↔ ((Has-decidable-eq A) × (Has-decidable-eq B))
@@ -239,10 +239,10 @@ module _ where
           }
 
     left-neq-right : {A : Set} → {B : Set} → {x : A} → {y : B} → ¬ (left x ≡ right y)
-    left-neq-right lxry = Σ.fst Copr-≡-biimpl-Eq-Copr lxry
+    left-neq-right ()
 
     right-neq-left : {A : Set} → {B : Set} → {x : A} → {y : B} → ¬ (right y ≡ left x)
-    right-neq-left rylx = left-neq-right (inverse rylx)
+    right-neq-left ()
 
   module _ where
     open Eq-Copr
