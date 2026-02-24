@@ -420,12 +420,12 @@ module _ where
     retraction-preserves-contr retr b-contr
 
   -- exercise 10.3.b
-  dom-of-equiv-is-contr-then-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr A → Is-contr B
-  dom-of-equiv-is-contr-then-cod-is-contr {A} {B} {f} f-eqv a-contr =
+  is-contr-preserved-by-equiv : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr A → Is-contr B
+  is-contr-preserved-by-equiv {A} {B} {f} f-eqv a-contr =
     cod-of-equiv-is-contr-then-dom-is-contr (≃-inverse-map-is-equiv f-eqv) a-contr
 
   dom-of-equiv-is-contr-iff-cod-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → (Is-contr A ↔ Is-contr B)
-  dom-of-equiv-is-contr-iff-cod-is-contr f-eqv = (dom-of-equiv-is-contr-then-cod-is-contr f-eqv , cod-of-equiv-is-contr-then-dom-is-contr f-eqv)
+  dom-of-equiv-is-contr-iff-cod-is-contr f-eqv = (is-contr-preserved-by-equiv f-eqv , cod-of-equiv-is-contr-then-dom-is-contr f-eqv)
 
   open Equivalence.Symbolic
   equiv-then-contr-iff-contr : {A B : Set} → (A ≃ B) → (Is-contr A ↔ Is-contr B)
@@ -450,7 +450,7 @@ module _ where
   dom-is-contr-then-is-equiv-iff-cod-is-contr : {A B : Set} → {f : A → B} → Is-contr A → Is-equiv f ↔ Is-contr B
   dom-is-contr-then-is-equiv-iff-cod-is-contr {A} {B} {f} a-contr =
     (
-      (λ f-eqv → dom-of-equiv-is-contr-then-cod-is-contr f-eqv a-contr) ,
+      (λ f-eqv → is-contr-preserved-by-equiv f-eqv a-contr) ,
       (λ b-contr → any-map-between-contr-types-is-equiv a-contr b-contr f)
     )
 
@@ -545,7 +545,7 @@ module _ where
       let
         fib-pr₁-is-contr : Is-contr (fib (pr₁-of B) a)
         fib-pr₁-is-contr = is-equiv-then-is-contr-fn eqv a
-      in dom-of-equiv-is-contr-then-cod-is-contr (tr-from-fib-pr₁-is-equiv a) fib-pr₁-is-contr
+      in is-contr-preserved-by-equiv (tr-from-fib-pr₁-is-equiv a) fib-pr₁-is-contr
 
     -- exercise 10.7.b, (ii) → (i)
     contractible-family-then-pr₁-is-equiv : {A : Set} → {B : A → Set} → Is-contr-fam B → Is-equiv (pr₁-of B)

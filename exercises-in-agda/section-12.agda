@@ -62,8 +62,11 @@ module _ where
     ii→i : ii → i
     ii→i = iv→i ∘ iii→iv ∘ ii→iii
 
+    i→iii : i → iii
+    i→iii = ii→iii ∘ i→ii
+
     i↔iii : i ↔ iii
-    i↔iii = (ii→iii ∘ i→ii , iv→i ∘ iii→iv)
+    i↔iii = (i→iii , iv→i ∘ iii→iv)
 
   is-prop-then-any-two-eq : {A : Set} → Is-prop A → (x y : A) → (x ≡ y)
   is-prop-then-any-two-eq is-prop x y =
@@ -476,7 +479,100 @@ module _ where
         (is-emb-then-is-inj (succ-mul-is-emb d))
         n
 
-  -- TODO: exercise 12.4
+  module _ where
+    copr-of-inhabited-is-not-prop : {A B : Set} → (a : A) → (b : B) → ¬ Is-prop (A +₀ B)
+    copr-of-inhabited-is-not-prop a b is-prop =
+      let (left-right-neq , _) = left-right-eq-equiv-empty _ _
+      in left-right-neq (Is-prop-characterisation.i→ii is-prop (left a) (right b))
+
+    -- exercise 12.4.a
+    copr-of-contr-types-is-not-contr : {A B : Set} → Is-contr A → Is-contr B → ¬ Is-contr (A +₀ B)
+    copr-of-contr-types-is-not-contr (a , _) (b , _) is-contr =
+      copr-of-inhabited-is-not-prop a b (k-type-is-succ-k-type is-contr)
+
+    _⊕₀_ : Set → Set → Set
+    P ⊕₀ Q = (P × (¬ Q)) +₀ (Q × (¬ P))
+    infixl 30 _⊕₀_
+
+    -- exercise 12.4.b
+    is-contr-prop-copr-iff-xdisj : {P Q : Set} → Is-prop P → Is-prop Q → Is-contr (P +₀ Q) ↔ (P ⊕₀ Q)
+    is-contr-prop-copr-iff-xdisj {P} {Q} P-is-prop Q-is-prop =
+      (forward , backward)
+      where
+        forward : Is-contr (P +₀ Q) → (P ⊕₀ Q)
+        forward contrPQ@((left p) , contr-to-lp) =
+          left (p , λ q →
+            copr-of-contr-types-is-not-contr
+              (Is-prop-characterisation.i→iii P-is-prop p)
+              (Is-prop-characterisation.i→iii Q-is-prop q)
+              contrPQ
+          )
+        forward contrPQ@((right q) , contr-to-rq) =
+          right (q , λ p →
+            copr-of-contr-types-is-not-contr
+              (Is-prop-characterisation.i→iii P-is-prop p)
+              (Is-prop-characterisation.i→iii Q-is-prop q)
+              contrPQ
+          )
+
+        backward : (P ⊕₀ Q) → Is-contr (P +₀ Q)
+        backward (left (p , nq)) =
+          is-contr-preserved-by-equiv
+            (Σ.snd (left-is-equiv-iff-right-type-is-empty P Q) nq)
+            (Is-prop-characterisation.i→iii P-is-prop p)
+        backward (right (q , np)) =
+          is-contr-preserved-by-equiv
+            (Σ.snd (right-is-equiv-iff-left-type-is-empty P Q) np)
+            (Is-prop-characterisation.i→iii Q-is-prop q)
+
+    -- exercise 12.4.c
+    copr-of-props-is-prop-iff-one-implies-neg-of-other : {P Q : Set} → Is-prop P → Is-prop Q →
+                                                         Is-prop (P +₀ Q) ↔ (P → ¬ Q)
+    copr-of-props-is-prop-iff-one-implies-neg-of-other {P} {Q} P-is-prop Q-is-prop =
+      ( (λ prP+Q p q → copr-of-inhabited-is-not-prop p q prP+Q)
+      , (λ p-then-nq → Is-prop-characterisation.ii→i (λ where
+          (left p) (left p') → ap left (Is-prop-characterisation.i→ii P-is-prop p p')
+          (left p) (right q) → absurd (p-then-nq p q)
+          (right q) (left p) → absurd (p-then-nq p q)
+          (right q) (right q') → ap right (Is-prop-characterisation.i→ii Q-is-prop q q')
+      )))
+
+    -- exercise 12.4.d
+    copr-of-ssk-types-is-ssk-type : {A B : Set} → {k : TruncLevel} →
+          Is-trunc (succ-Trunc (succ-Trunc k)) A → Is-trunc (succ-Trunc (succ-Trunc k)) B →
+          Is-trunc (succ-Trunc (succ-Trunc k)) (A +₀ B)
+    copr-of-ssk-types-is-ssk-type {A} {B} {k} A-is-ssk B-is-ssk = indunction-on-copr
+      where
+        indunction-on-copr : Is-trunc (succ-Trunc (succ-Trunc k)) (A +₀ B)
+        indunction-on-copr (left a) (left a') p q =
+          let
+            α : (left {A} {B} a ≡ left a') ≃ (a ≡ a')
+            α = ≃-inverse (build-tpe-equiv (left-is-emb A B a a'))
+            (f , f-is-equiv) = α
+            fp≡fq-is-k-type : Is-trunc k (f p ≡ f q)
+            fp≡fq-is-k-type = A-is-ssk a a' (f p) (f q)
+            fp≡fq-≃-p≡q : (f p ≡ f q) ≃ (p ≡ q)
+            fp≡fq-≃-p≡q = ≃-inverse (build-tpe-equiv (is-equiv-then-is-emb f-is-equiv p q))
+          in equiv-to-k-type-then-is-k-type fp≡fq-≃-p≡q fp≡fq-is-k-type
+        indunction-on-copr (right b) (right b') p q =
+          let
+            β : (right {A} {B} b ≡ right b') ≃ (b ≡ b')
+            β = ≃-inverse (build-tpe-equiv (right-is-emb A B b b'))
+            (g , g-is-equiv) = β
+            gp≡gq-is-k-type : Is-trunc k (g p ≡ g q)
+            gp≡gq-is-k-type = B-is-ssk b b' (g p) (g q)
+            gp≡gq-≃-p≡q : (g p ≡ g q) ≃ (p ≡ q)
+            gp≡gq-≃-p≡q = ≃-inverse (build-tpe-equiv (is-equiv-then-is-emb g-is-equiv p q))
+          in equiv-to-k-type-then-is-k-type gp≡gq-≃-p≡q gp≡gq-is-k-type
+        indunction-on-copr (left a) (right b) p = absurd (Σ.fst (left-right-eq-equiv-empty a b) p)
+        indunction-on-copr (right b) (left a) p = absurd (Σ.fst (right-left-eq-equiv-empty a b) p)
+
+    Int-is-set : Is-set Int
+    Int-is-set =
+      copr-of-ssk-types-is-ssk-type Nat-is-set (
+        copr-of-ssk-types-is-ssk-type
+          (k-type-is-succ-k-type (k-type-is-succ-k-type Unit-is-contr))
+          Nat-is-set)
 
   -- exercise 12.5
   module _ where
