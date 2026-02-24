@@ -63,6 +63,20 @@ module _ where
   leftMap : {A B : Set} → (f : A → B) → (C : B → Set) → Σ A (λ a → C (f a)) → Σ B C
   leftMap f C (x , c) = (f x , c)
 
+  -- side lemma not mentioned in the text:
+  --   theorem 9.3.4 and theorem 11.1.3 give a clean proof that
+  --   identity type of pairs is equivalent to pairs of identity types
+  open Equivalence-Reasoning
+  prod-eq-≃-eq-prod : {A B : Set} → {a1 a2 : A} → {b1 b2 : B} →
+        ((a1 , b1) ≡ (a2 , b2)) ≃ ((a1 ≡ a2) × (b1 ≡ b2))
+  prod-eq-≃-eq-prod {A} {B} {a1} {a2} {b1} {b2} =
+    begin-≃
+      ((a1 , b1) ≡ (a2 , b2))                        ≃⟨ pair-eq-≃-Eq-Σ ⟩
+      (Eq-Σ (a1 , b1) (a2 , b2))                     ≃⟨⟩
+      (Σ (a1 ≡ a2) (λ α → tr (λ a → B) α b1 ≡ b2))   ≃⟨ pointwise-equiv-then-tot-equiv (λ { refl → ≃-refl }) ⟩
+      (Σ (a1 ≡ a2) (λ α → b1 ≡ b2))                  ≃⟨⟩
+      ((a1 ≡ a2) × (b1 ≡ b2))                        ∎-≃
+
   -- lemma 11.1.4
   leftMap-by-equiv-is-equiv : {A B : Set} → {f : A → B} → Is-equiv f → {C : B → Set} → Is-equiv (leftMap f C)
   leftMap-by-equiv-is-equiv {A} {B} {f} f-is-eqv {C} =

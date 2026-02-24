@@ -3,6 +3,8 @@ open import Function.Base using (case_of_)
 module _ where
   open import section-11 public
 
+  open Σ-Basic
+
   open Homotopy
   open Homotopy.Symbolic
   open ≡-Basic
@@ -394,9 +396,12 @@ module _ where
         Is-trunc k (Σ B (fib f))           ↔⟨ equiv-then-k-type-iff-k-type (≃-comm (fiber-decomposition f)) ⟩
         Is-trunc k A                       ∎-↔
 
+  prod-of-k-types-is-k-type : {A B : Set} → {k : TruncLevel} → Is-trunc k A → Is-trunc k B → Is-trunc k (A × B)
+  prod-of-k-types-is-k-type {A} {B} {k} A-is-k-trunc B-is-k-trunc =
+    Σ.fst (family-is-k-trunc-iff-tot-is-k-trunc A-is-k-trunc) (λ x → B-is-k-trunc)
+
   product-of-props-is-prop : {A B : Set} → Is-prop A → Is-prop B → Is-prop (A × B)
-  product-of-props-is-prop A-is-prop B-is-prop =
-    Σ.fst (family-is-k-trunc-iff-tot-is-k-trunc A-is-prop) (λ x → B-is-prop)
+  product-of-props-is-prop = prod-of-k-types-is-k-type
 
   -- exercise 12.2
   underlying-type-of-reflexive-antisymmetric-rel-is-set : {A : Set} → (R : A → A → Set) →
@@ -479,6 +484,7 @@ module _ where
         (is-emb-then-is-inj (succ-mul-is-emb d))
         n
 
+  -- exercise 12.4
   module _ where
     copr-of-inhabited-is-not-prop : {A B : Set} → (a : A) → (b : B) → ¬ Is-prop (A +₀ B)
     copr-of-inhabited-is-not-prop a b is-prop =
@@ -616,7 +622,54 @@ module _ where
         backward∘forward~id : (z@(a , q) : fib (δ {A}) (x , y)) → backward (forward-on-fib-snd q) ≡ z
         backward∘forward~id (a , q) = right-inverse' a q
 
-  -- TODO: exercise 12.7
+  -- exercise 12.7
+  module _ where
+    -- exercise 12.7.i→ii
+    other-inhabited-then-trunc-then-prod-is-trunc : {A B : Set} → {k : TruncLevel} →
+          (f : B → Is-trunc (succ-Trunc k) A) →
+          (g : A → Is-trunc (succ-Trunc k) B) →
+          Is-trunc (succ-Trunc k) (A × B)
+    other-inhabited-then-trunc-then-prod-is-trunc {A} {B} {k} f g x@(a1 , b1) y =
+      prod-of-k-types-is-k-type (f b1) (g a1) x y
+
+    -- exercise 12.7.ii→i (first half)
+    prod-is-trunc-then-linhabited-then-rtrunc : {A B : Set} → {k : TruncLevel} →
+          Is-trunc (succ-Trunc k) (A × B) → (a : A) → Is-trunc (succ-Trunc k) B
+    prod-is-trunc-then-linhabited-then-rtrunc {A} {B} { -2-Trunc } AB-is-prop a x y =
+      let (ax≡ay , contraction) = AB-is-prop (a , x) (a , y)
+      in (ap Σ.snd ax≡ay , λ { refl → ap (ap Σ.snd) (contraction refl) })
+    prod-is-trunc-then-linhabited-then-rtrunc {A} {B} { succ-Trunc k } AB-is-sk-trunc a x y =
+      let trunc-ax≡ay = AB-is-sk-trunc (a , x) (a , y)
+          trunc-a≡a-×-x≡y = equiv-to-k-type-then-is-k-type prod-eq-≃-eq-prod trunc-ax≡ay
+      in prod-is-trunc-then-linhabited-then-rtrunc {k = k} trunc-a≡a-×-x≡y refl
+
+    prod-is-trunc-then-rinhabited-then-ltrunc : {A B : Set} → {k : TruncLevel} →
+          Is-trunc (succ-Trunc k) (A × B) → (b : B) → Is-trunc (succ-Trunc k) A
+    prod-is-trunc-then-rinhabited-then-ltrunc {A} {B} { -2-Trunc } AB-is-prop b x y =
+      let (bx≡by , contraction) = AB-is-prop (x , b) (y , b)
+      in (ap Σ.fst bx≡by , λ { refl → ap (ap Σ.fst) (contraction refl) })
+    prod-is-trunc-then-rinhabited-then-ltrunc {A} {B} { succ-Trunc k } AB-is-sk-trunc b x y =
+      let trunc-bx≡by = AB-is-sk-trunc (x , b) (y , b)
+          trunc-x≡y-×-b≡b = equiv-to-k-type-then-is-k-type prod-eq-≃-eq-prod trunc-bx≡by
+      in prod-is-trunc-then-rinhabited-then-ltrunc {k = k} trunc-x≡y-×-b≡b refl
+
+    other-inhabited-then-trunc-iff-prod-is-trunc : {A B : Set} → {k : TruncLevel} →
+          ((B → Is-trunc (succ-Trunc k) A) × (A → Is-trunc (succ-Trunc k) B)) ↔ Is-trunc (succ-Trunc k) (A × B)
+    other-inhabited-then-trunc-iff-prod-is-trunc {A} {B} {k} =
+      ( (λ { (f , g) → other-inhabited-then-trunc-then-prod-is-trunc f g })
+      , (λ AB-is-sk-trunc →
+        ( prod-is-trunc-then-rinhabited-then-ltrunc AB-is-sk-trunc
+        , prod-is-trunc-then-linhabited-then-rtrunc AB-is-sk-trunc)))
+
+    inhabited-then-trunc-iff-prod-is-trunc : {A B : Set} → {k : TruncLevel} →
+          (a : A) → (b : B) → (Is-trunc k A × Is-trunc k B) ↔ Is-trunc k (A × B)
+    inhabited-then-trunc-iff-prod-is-trunc {A} {B} { -2-Trunc } _ _ =
+      (uncurry both-contr-then-product-is-contr , product-is-contr-then-both-contr)
+    inhabited-then-trunc-iff-prod-is-trunc {A} {B} { succ-Trunc k } a b =
+      trans-biimpl
+        ((λ { (trA , trB) → (const trA , const trB) }) , (λ { (f , g) → (f b , g a) }))
+        other-inhabited-then-trunc-iff-prod-is-trunc
+
   -- TODO: exercise 12.8
   -- TODO: exercise 12.9
   -- TODO: exercise 12.10
