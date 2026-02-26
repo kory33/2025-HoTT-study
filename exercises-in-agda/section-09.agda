@@ -508,21 +508,23 @@ module _ where
   module BiInvertibleMaps where
     -- definition 9.2.1
     module _ where
+      -- "g is a section of f"
       Is-sect-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
       Is-sect-of f g = f ∘ g ~ id
 
       Sect : {A B : Set} → (f : A → B) → Set
       Sect {A} {B} f = Σ (B → A) (Is-sect-of f)
 
+      -- "g is a retraction of f"
       Is-retraction-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
       Is-retraction-of f g = g ∘ f ~ id
 
       Retr : {A B : Set} → (f : A → B) → Set
       Retr {A} {B} f = Σ (B → A) (Is-retraction-of f)
 
-      -- "A is a retract of B"
+      -- "B is a retract of A"
       Is-retract-of : (A B : Set) → Set
-      Is-retract-of A B = Σ (A → B) (λ f → Retr f)
+      Is-retract-of A B = Σ (B → A) (λ f → Retr f)
 
       Is-equiv : {A B : Set} → (f : A → B) → Set
       Is-equiv {A} {B} f = Sect f × Retr f
@@ -569,6 +571,7 @@ module _ where
     ≃-trans : {A B C : Set} → A ≃ B → B ≃ C → A ≃ C
     ≃-trans (f , f-eqv) (g , g-eqv) = (g ∘ f , comp-equivs-is-equiv g-eqv f-eqv)
 
+    -- "g is an inverse of f"
     Is-inverse-of : {A B : Set} → (f : A → B) → (g : B → A) → Set
     Is-inverse-of {A} {B} f g = Is-sect-of f g × Is-retraction-of f g
 

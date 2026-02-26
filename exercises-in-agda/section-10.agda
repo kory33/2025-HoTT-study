@@ -397,7 +397,7 @@ module _ where
       a          ∎
     )
 
-  retract-of-contr-is-contr : {A B : Set} → Is-retract-of A B → Is-contr B → Is-contr A
+  retract-of-contr-is-contr : {A B : Set} → Is-retract-of B A → Is-contr B → Is-contr A
   retract-of-contr-is-contr {A} {B} (f , retrf) contr = retraction-preserves-contr retrf contr
 
   -- exercise 10.3.a

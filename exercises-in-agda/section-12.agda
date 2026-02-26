@@ -670,6 +670,12 @@ module _ where
         ((λ { (trA , trB) → (const trA , const trB) }) , (λ { (f , g) → (f b , g a) }))
         other-inhabited-then-trunc-iff-prod-is-trunc
 
+  -- exercise 12.8
+  module _ where
+    identity-is-retract-of-section-transported : {A B : Set} → {i : A → B} → {r : B → A} → Is-sect-of r i → (x y : A) → Is-retract-of (x ≡ y) (i x ≡ i y)
+    identity-is-retract-of-section-transported {A} {B} {i} {r} sect x y =
+      {!   !}
+
   -- TODO: exercise 12.8
   -- TODO: exercise 12.9
   -- TODO: exercise 12.10

@@ -980,8 +980,8 @@ module _ where
     open Equivalence.Symbolic
 
     fibers-retract-then-total-space-retracts : {A : Set} → {B C : A → Set} →
-                                               (retrs : (x : A) → Is-retract-of (B x) (C x)) →
-                                               Is-retract-of (Σ A B) (Σ A C)
+                                               (retrs : (x : A) → Is-retract-of (C x) (B x)) →
+                                               Is-retract-of (Σ A C) (Σ A B)
     fibers-retract-then-total-space-retracts {A} {B} {C} retrs =
       let
         fns : (x : A) → B x → C x
@@ -1004,7 +1004,7 @@ module _ where
 
     -- exercise 11.8.d
     retracts-of-identities-is-equiv-to-identities : {A : Set} → (a : A) → {B : A → Set} →
-                                                    (retrs : (x : A) → Is-retract-of (B x) (a ≡ x)) →
+                                                    (retrs : (x : A) → Is-retract-of (a ≡ x) (B x)) →
                                                     (x : A) → (let (_ , r , _) = retrs x in Is-equiv r)
     retracts-of-identities-is-equiv-to-identities {A} a {B} retrs x =
       fundamental-thm-of-identity-types.ii→i-at-fn

@@ -71,7 +71,10 @@ Used for **named HoTT predicates** — type-valued propositions about types or f
 | Pattern | Examples |
 |---------|----------|
 | `Is-{property}` | `Is-contr`, `Is-prop`, `Is-set`, `Is-equiv`, `Is-emb`, `Is-inj`, `Is-decidable`, `Is-trunc` |
-| `Is-{compound}` | `Is-contr-fn`, `Is-coh-invertible`, `Is-decidable-family`, `Is-retract-of`, `Is-trunc-map` |
+| `Is-{compound}` | `Is-contr-fn`, `Is-coh-invertible`, `Is-decidable-family`, `Is-trunc-map` |
+| `Is-{property}-of` | `Is-retract-of`, `Is-section-of` |
+
+For the last pattern (`Is-{property}-of`), the subject of the predicate should appear as the second argument, e.g. `Is-retract-of A B` means "B is a retract of A", and `Is-section-of f g` means "g is a section of f", so that the partially-applied `Is-retract-of A` can be read as an unary predicate on the second argument ("- is a retract of A").
 
 ### `Has-{property}` (Capital `H`)
 Used for asserting that a type **possesses** a particular structure:
