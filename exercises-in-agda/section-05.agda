@@ -125,6 +125,21 @@ module _ where
               ap (g ∘ f) p ≡ ap g (ap f p)
     ap-comp g f refl = refl
 
+    ap-ap2-is-ap2-comp : {A B C D : Set} → (f : C → D) → (g : A → B → C) →
+                         {x₁ x₂ : A} → (p : x₁ ≡ x₂) → {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+                         ap f (ap2 g p q) ≡ ap2 (λ c d → f (g c d)) p q
+    ap-ap2-is-ap2-comp f g refl refl = refl
+
+    ap2≡apfst·apsnd : {A B C : Set} → (f : A → B → C) →
+                      {x₁ x₂ : A} → (p : x₁ ≡ x₂) → {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+                      ap2 f p q ≡ ap (λ a → f a y₁) p · ap (λ b → f x₂ b) q
+    ap2≡apfst·apsnd f refl refl = refl
+
+    ap2≡apsnd·apfst : {A B C : Set} → (f : A → B → C) →
+                      {x₁ x₂ : A} → (p : x₁ ≡ x₂) → {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+                      ap2 f p q ≡ ap (λ b → f x₁ b) q · ap (λ a → f a y₂) p
+    ap2≡apsnd·apfst f refl refl = refl
+
     -- definition 5.3.2
     ap-refl : {A B : Set} → (f : A → B) → (x : A) → ap f {x} refl ≡ refl
     ap-refl f x = refl
@@ -137,6 +152,11 @@ module _ where
                 (p : x ≡ y) → (q : y ≡ z) →
                 ap f (p · q) ≡ ap f p · ap f q
     ap-concat f refl q = refl
+
+    ap-concat3-distr : {A B : Set} → (f : A → B) → {w x y z : A} →
+                       (p : w ≡ x) → (q : x ≡ y) → (r : y ≡ z) →
+                       ap f (p · q · r) ≡ ap f p · ap f q · ap f r
+    ap-concat3-distr f refl refl r = refl
 
     ap-inv-concat-ap-refl : {A B : Set} → {x y : A} → (f : A → B) → (p : x ≡ y) →
                             ap f (p ⁻¹) · ap f p ≡ refl

@@ -1332,6 +1332,10 @@ module _ where
         (< fr +₀ gr > , λ { (left a) → ap left (fR a) ; (right b) → ap right (gR b) })
       )
 
+    both-≃-then-copr-≃ : {A A' B B' : Set} → (A ≃ A') → (B ≃ B') → (A +₀ B) ≃ (A' +₀ B')
+    both-≃-then-copr-≃ (aa' , aa'-eqv) (bb' , bb'-eqv) =
+      (< aa' +₀ bb' > , +₀-equiv aa'-eqv bb'-eqv)
+
   -- exercise 9.7
   module _ where
     <_×₀_> : {A B A' B' : Set} → (A → A') → (B → B') → (A × B) → (A' × B')
