@@ -854,12 +854,16 @@ module _ where
                         ap tuple-++ (ap2 split-at len-xs1≡len-xs2 ++eq)
                               ≡⟨ ap-ap2-is-ap2-comp tuple-++ split-at _ _ ⟩
                         ap2 concat-split len-xs1≡len-xs2 ++eq
-                              ≡⟨ ap2≡apsnd·apfst concat-split len-xs1≡len-xs2 ++eq ⟩
-                        ap (concat-split (length xs1)) ++eq · ap (λ n → concat-split n (tuple-++ xs2ys2)) len-xs1≡len-xs2
-                              ≡⟨ lemma''' concat-split~id len-xs1≡len-xs2 ++eq ⟩
-                        concat-split~id (length xs1) (tuple-++ xs1ys1) · ap id ++eq · (concat-split~id (length xs2) (tuple-++ xs2ys2)) ⁻¹
-                              ≡⟨ ap (λ p → concat-split~id (length xs1) (tuple-++ xs1ys1) · p · _) (ap-id ++eq) ⟩
-                        concat-split~id (length xs1) (tuple-++ xs1ys1) · ++eq · (concat-split~id (length xs2) (tuple-++ xs2ys2)) ⁻¹
+                              ≡⟨ compute-ap2-to-homotope-ap concat-split~id len-xs1≡len-xs2 ++eq ⟩
+                        homotope-ap (uncurry concat-split) (uncurry (const id)) (uncurry concat-split~id) (ap2 pair len-xs1≡len-xs2 ++eq)
+                              ≡⟨⟩
+                        ( concat-split~id (length xs1) (tuple-++ xs1ys1)
+                        · (ap (uncurry (const id)) (ap2 pair len-xs1≡len-xs2 ++eq))
+                        · concat-split~id (length xs2) (tuple-++ xs2ys2) ⁻¹)
+                              ≡⟨ ap (λ p → concat-split~id (length xs1) (tuple-++ xs1ys1) · p · _) (ap-const-id-≡-snd _ _) ⟩
+                        ( concat-split~id (length xs1) (tuple-++ xs1ys1)
+                        · ++eq
+                        · (concat-split~id (length xs2) (tuple-++ xs2ys2)) ⁻¹)
                               ∎
 
                     compute-ap-++-α : ap tuple-++ α ≡ ++eq
@@ -886,24 +890,6 @@ module _ where
                               ∎
                 in left (α , inverse (con-cancel-right _ _ _ compute-ap-++-α))
                 where
-                  -- TODO: What... is this?
-                  --         Is H a homotopy between totalizations of f and g?
-                  --         If so, can we slightly generalize this lemma to look like
-                  --         a total-space analogue of homotope-ap-refl-eq-refl or homotope-ap-homotopy?
-                  --         In particular, the LHS looks like ap2 f q p, so is ap2 just a transport from the total space
-                  --         and is this lemma just a special case of homotope-ap-homotopy?
-                  lemma''' : {A B C : Set} → {f : A → B → C} → {g : B → C} → (H : (a : A) → f a ~ g) →
-                             {a1 a2 : A} → (p : a1 ≡ a2) → {b1 b2 : B} → (q : b1 ≡ b2) →
-                             ap (λ b' → f a1 b') q · ap (λ a' → f a' b2) p ≡ H a1 b1 · ap g q · ((H a2 b2) ⁻¹)
-                  lemma''' {_} {_} {_} {f} {g} H {a1} refl {b1} refl =
-                    begin
-                      ap (f a1) refl · ap (λ a → f a b1) refl  ≡⟨⟩
-                      refl                                     ≡⟨← ·-rinv (H a1 b1) ⟩
-                      H a1 b1 · ((H a1 b1) ⁻¹)                 ≡⟨⟩
-                      H a1 b1 · (refl · (H a1 b1) ⁻¹)          ≡⟨ ·-unassoc (H a1 b1) _ _ ⟩
-                      H a1 b1 · refl · ((H a1 b1) ⁻¹)          ≡⟨⟩
-                      H a1 b1 · ap g refl · ((H a1 b1) ⁻¹)     ∎
-
                   reassoc-lemma1 : {A : Set} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : w ≡ z) →
                                    p ⁻¹ · (p · q · r ⁻¹) · r ≡ q
                   reassoc-lemma1 refl refl refl = refl

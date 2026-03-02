@@ -140,6 +140,17 @@ module _ where
                       ap2 f p q ≡ ap (λ b → f x₁ b) q · ap (λ a → f a y₂) p
     ap2≡apsnd·apfst f refl refl = refl
 
+    open Σ-Basic
+
+    ap2-≡-ap-uncurry : {A B C : Set} → (f : A → B → C) →
+                       {x₁ x₂ : A} → (p : x₁ ≡ x₂) → {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+                       ap2 f p q ≡ ap (uncurry f) (ap2 pair p q)
+    ap2-≡-ap-uncurry f refl refl = refl
+
+    ap-const-id-≡-snd : {A B : Set} → {x1 x2 : A} → {y1 y2 : B} → (p : x1 ≡ x2) → (q : y1 ≡ y2) →
+                        ap (uncurry (const id)) (ap2 pair p q) ≡ q
+    ap-const-id-≡-snd refl refl = refl
+
     -- definition 5.3.2
     ap-refl : {A B : Set} → (f : A → B) → (x : A) → ap f {x} refl ≡ refl
     ap-refl f x = refl

@@ -567,6 +567,18 @@ module _ where
         refl                     ≡⟨← homotope-ap-refl-eq-refl H ⟩
         homotope-ap f g H refl   ∎
 
+    open Σ-Basic
+
+    -- Not mentioned in the book, but we have a version for ap2 as well (note that (uncurry H) : (uncurry f) ~ (uncurry g)).
+    -- Intuitively this is because (ap2-≡-ap-uncurry f p q : ap2 f p q ≡ ap (uncurry f) (ap2 pair p q)) holds,
+    --   which says that ap2 is an ap on the product space.
+    compute-ap2-to-homotope-ap : {A B C : Set} → {f g : A → B → C} → (H : (x : A) → f x ~ g x) →
+                                 {a1 a2 : A} → (p : a1 ≡ a2) → {b1 b2 : B} → (q : b1 ≡ b2) →
+                                 ap2 f p q ≡ homotope-ap (uncurry f) (uncurry g) (uncurry H) (ap2 pair p q)
+    compute-ap2-to-homotope-ap {_} {_} {_} {f} {g} H {a1} {a2} p {b1} {b2} q =
+      ap2-≡-ap-uncurry f p q ·
+      homotope-ap-homotopy {g = uncurry g} (a1 , b1) (a2 , b2) (uncurry H) (ap2 pair p q)
+
     -- We will show: Is-equiv (ap f) ⇒ Is-equiv (homotope-ap f g H) ⇒ Is-equiv (ap g).
     -- The middle type is Is-equiv (λ p → H x · ap g p · ((H y) ⁻¹)),
     -- so we'll prove two lemmas to "unwrap" surrounding equalities (H x and (H y) ⁻¹).
