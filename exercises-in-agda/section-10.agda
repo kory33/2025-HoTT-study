@@ -359,8 +359,8 @@ module _ where
           rwhisker f H ∎-htpy
     in (G' , K)
 
-  has-inverse-then-is-coh-invertible : {A B : Set} → (f : A → B) → Has-inverse f → Is-coh-invertible f
-  has-inverse-then-is-coh-invertible {A} {B} f (g , G , H) =
+  has-inverse-then-is-coh-invertible : {A B : Set} → {f : A → B} → Has-inverse f → Is-coh-invertible f
+  has-inverse-then-is-coh-invertible {A} {B} {f} (g , G , H) =
     let (G' , K) = improve-section-of-inverse-to-be-coherent f (g , G , H) in ((g , G' , H) , K)
 
   -- theorem 10.4.6
@@ -368,7 +368,7 @@ module _ where
   is-equiv-then-is-contr-fn {A} {B} {f} is-eqv =
     let
       has-inv     = equiv-has-inverse is-eqv
-      is-coh-inv  = has-inverse-then-is-coh-invertible f has-inv
+      is-coh-inv  = has-inverse-then-is-coh-invertible has-inv
       is-contr-fn = coh-invertible-then-contr-fn f is-coh-inv
     in is-contr-fn
 
