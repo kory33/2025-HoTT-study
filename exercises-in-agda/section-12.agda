@@ -732,14 +732,24 @@ module _ where
     list-drop {A} (succ n) nil = nil
     list-drop {A} (succ n) (cons x xs) = list-drop n xs
 
-    -- TODO: Is it better (for simplicity of proofs) to define this as
-    --         Σ (List A × Nat) (λ (xs , n) → n < succ (length xs)) ?
+    Is-split-point-pair : {A : Set} → (List A × Nat) → Set
+    Is-split-point-pair {A} (lst , idx) = idx < succ (length lst)
+
+    Lt-Nat-is-prop : (n m : Nat) → Is-prop (n < m)
+    Lt-Nat-is-prop zero zero = Empty-is-prop
+    Lt-Nat-is-prop zero (succ m) = Unit-is-prop
+    Lt-Nat-is-prop (succ n) zero = Empty-is-prop
+    Lt-Nat-is-prop (succ n) (succ m) = Lt-Nat-is-prop n m
+
+    Is-split-point-pair-is-subtype : {A : Set} → Is-subtype (Is-split-point-pair {A})
+    Is-split-point-pair-is-subtype {A} (lst , idx) = Lt-Nat-is-prop idx (succ (length lst))
+
     List-with-split-point : Set → Set
-    List-with-split-point A = Σ (List A) (λ xs → classical-Fin (succ (length xs)))
+    List-with-split-point A = Σ (List A × Nat) Is-split-point-pair
 
     ++-×-lenfst : {A : Set} → (List A × List A) → List-with-split-point A
     ++-×-lenfst xsys@(xs , ys) =
-      (tuple-++ xsys , (length xs , fst-len-<-slen-++ xs ys))
+      ((tuple-++ xsys , length xs) , fst-len-<-slen-++ xs ys)
       where
         fst-len-<-slen-++ : {A : Set} → (xs ys : List A) → length xs < succ (length (tuple-++ (xs , ys)))
         fst-len-<-slen-++ nil ys = zero-lt-succ (length ys)
@@ -757,16 +767,35 @@ module _ where
         , ++-×-lenfst∘split~id
         , split∘++-×-lenfst~id)
       where
+
+
         split : List-with-split-point A → (List A × List A)
-        split (lst , (idx , _)) = (list-take idx lst , list-drop idx lst)
+        split ((lst , idx) , _) = (list-take idx lst , list-drop idx lst)
 
         ++-×-lenfst∘split~id : (l : List-with-split-point A) → ++-×-lenfst (split l) ≡ l
-        ++-×-lenfst∘split~id (xs ,          (zero , zero<slxs)) =
-          {!   !}
-        ++-×-lenfst∘split~id (nil ,         (succ n , n<0))     =
+        ++-×-lenfst∘split~id ((xs ,          zero) , zero<slxs) =
+          subtype-and-fst-eq-then-pair-eq Is-split-point-pair-is-subtype refl
+        ++-×-lenfst∘split~id ((nil ,         succ n) , n<0)     =
           absurd (not-lt-zero n n<0)
-        ++-×-lenfst∘split~id ((cons x xs) , (succ n , n<sslxs)) =
-          {!   !}
+        ++-×-lenfst∘split~id (((cons x xs) , succ n) , sn<sslxs) =
+          subtype-and-fst-eq-then-pair-eq Is-split-point-pair-is-subtype
+            ( begin
+                Σ.fst (++-×-lenfst (split ((cons x xs , succ n) , sn<sslxs)))
+                      ≡⟨⟩
+                Σ.fst (++-×-lenfst (list-take (succ n) (cons x xs) , list-drop (succ n) (cons x xs)))
+                      ≡⟨⟩
+                (tuple-++ (list-take (succ n) (cons x xs) , list-drop (succ n) (cons x xs)) , length (list-take (succ n) (cons x xs)))
+                      ≡⟨⟩
+                (tuple-++ (cons x (list-take n xs) , list-drop n xs) , length (cons x (list-take n xs)))
+                      ≡⟨⟩
+                (cons x (tuple-++ (list-take n xs , list-drop n xs)) , succ (length (list-take n xs)))
+                      ≡⟨ ap2 (λ l k → (cons x l , succ k))
+                             {!   !}
+                             {!   !} ⟩
+                (cons x xs , succ n)
+                      ≡⟨⟩
+                Σ.fst (((cons x xs , succ n) , sn<sslxs) typed List-with-split-point A)                 ∎
+              )
 
         take-concat-eq : {A : Set} → (xs ys : List A) → list-take (length xs) (tuple-++ (xs , ys)) ≡ xs
         take-concat-eq nil ys = refl
@@ -819,11 +848,16 @@ module _ where
 
                     ++-×-lenfst-eq : ++-×-lenfst xs1ys1 ≡ ++-×-lenfst xs2ys2
                     ++-×-lenfst-eq =
-                      eq-pair (++-×-lenfst xs1ys1) (++-×-lenfst xs2ys2)
-                              (p1 · p2 ⁻¹ , {!   !})
+                      {!   !}
+                        ({!   !} typed ((tuple-++ xs1ys1 , length xs1) ≡ (tuple-++ xs2ys2 , length xs2)))
+
+                      -- eq-pair (++-×-lenfst xs1ys1) (++-×-lenfst xs2ys2)
+                      --         (ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2 , {!   !})
                               -- The hole is typed
-                              --   tr (λ xs → classical-Fin (succ (length xs))) (p1 · p2 ⁻¹) (length xs1 , fst-len-<-slen-++ xs1 ys1)
-                              --       ≡ (length xs2 , fst-len-<-slen-++ xs2 ys2).
+                              --   tr (λ xsn → Σ.snd xsn < succ (length (Σ.fst xsn)))
+                              --      (ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2)
+                              --      (fst-len-<-slen-++ xs1 ys1)
+                              --      ≡ fst-len-<-slen-++ xs2 ys2.
                               -- This is an equality in a subtype of Nat (since < is a proposition by induction),
                               -- and this equality follows from len-xs1≡len-xs2 solely by subtype-ness (Corollary 12.2.4).
 
@@ -877,8 +911,8 @@ module _ where
                         ap tuple-++ α                 ≡⟨ {!   !} ⟩
                                                       -- intuitively inverse of ap-comp, but we only have
                                                       -- homotopy between the composition and tuple-++ so...?
-                        ap Σ.fst (ap ++-×-lenfst α)   ≡⟨ ap (ap Σ.fst) compute-ap-++-×-lenfst-α ⟩
-                        ap Σ.fst ++-×-lenfst-eq       ≡⟨ {!   !} ⟩
+                        ap (Σ.fst ∘ Σ.fst) (ap ++-×-lenfst α)   ≡⟨ ap (ap (Σ.fst ∘ Σ.fst)) compute-ap-++-×-lenfst-α ⟩
+                        ap (Σ.fst ∘ Σ.fst) ++-×-lenfst-eq       ≡⟨ {!   !} ⟩
                                                       -- should be true but why?
                         p1 · p2 ⁻¹
                               ∎
