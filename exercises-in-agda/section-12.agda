@@ -885,7 +885,19 @@ module _ where
     tuple-++-is-0-trunc : {A : Set} → Is-trunc-map (succ-Trunc (succ-Trunc -2-Trunc)) (tuple-++ {A})
     tuple-++-is-0-trunc {A} zs = has-decidable-equality-then-is-set (fib-tuple-++-has-deceq zs)
 
-  -- TODO: exercise 12.10
+  -- exercise 12.10
+  module _ where
+    is-sk-trunc-iff-const-is-k-trunc : {A : Set} → {k : TruncLevel} → Is-trunc (succ-Trunc k) A ↔ ((x : A) → Is-trunc-map k (const {Unit} x))
+    is-sk-trunc-iff-const-is-k-trunc {A} {k} =
+      begin-↔
+        Is-trunc (succ-Trunc k) A                                               ↔⟨⟩
+        ((x : A) → (y : A) → Is-trunc k (x ≡ y))                                ↔⟨← depfn-biimpl (λ x → depfn-biimpl (λ y →
+                                                                                      equiv-then-k-type-iff-k-type
+                                                                                        (Σ-lunit {B = λ _ → x ≡ y}))) ⟩
+        ((x : A) → (y : A) → Is-trunc k (Σ Unit (λ _ → x ≡ y)))                 ↔⟨⟩
+        ((x : A) → (y : A) → Is-trunc k (Σ Unit (λ a → const {Unit} x a ≡ y)))  ↔⟨⟩
+        ((x : A) → Is-trunc-map k (const {Unit} x))                             ∎-↔
+
   -- TODO: exercise 12.11
   -- TODO: exercise 12.12
   -- TODO: exercise 12.13
