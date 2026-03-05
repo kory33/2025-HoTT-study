@@ -837,12 +837,12 @@ module _ where
                     ++-×-lenfst-eq = eq-pair _ _ ( ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2
                                                  , is-prop-then-any-two-eq (Lt-Nat-is-prop (length xs2) _) _ _)
 
-                    ((ap-++-×-lenfst-sect , S) , _) = is-equiv-then-is-emb ++-×-lenfst-is-eqv-opaque xs1ys1 xs2ys2
+                    ((ap-++-×-lenfst-sect , S) , _) = ++-×-lenfst-is-emb xs1ys1 xs2ys2
 
                     α : xs1ys1 ≡ xs2ys2
                     α = ap-++-×-lenfst-sect ++-×-lenfst-eq
 
-                    compute-ap-++-×-lenfst-α : ap ++-×-lenfst α ≡ ++-×-lenfst-eq
+                    compute-ap-++-×-lenfst-α : (ap ++-×-lenfst) α ≡ ++-×-lenfst-eq
                     compute-ap-++-×-lenfst-α = S ++-×-lenfst-eq
 
                     compute-ap-++-α : ap tuple-++ α ≡ p1 · p2 ⁻¹
@@ -856,10 +856,10 @@ module _ where
                 in left (α , (con-cancel-right _ _ _ compute-ap-++-α) ⁻¹)
                 where
                   opaque
-                    -- Agda seems to reduce (is-equiv-then-is-emb ++-×-lenfst-is-eqv) too agressively and fails to terminate,
-                    -- so we need at least one of them declared as opaque.
-                    ++-×-lenfst-is-eqv-opaque : {A : Set} → Is-equiv (++-×-lenfst {A})
-                    ++-×-lenfst-is-eqv-opaque = ++-×-lenfst-is-eqv
+                    -- Agda seems to reduce (++-×-lenfst-is-emb xs1ys1 xs2ys2) too aggressively and fails to terminate
+                    -- (at least in a reasonable amount of time), so we just mark this definition opaque
+                    ++-×-lenfst-is-emb : {A : Set} → Is-emb (++-×-lenfst {A})
+                    ++-×-lenfst-is-emb = is-equiv-then-is-emb ++-×-lenfst-is-eqv
 
                   -- These two functions are not definitionally equal, but pointwise they are.
                   tuple-++~fstfst∘++-×-lenfst : {A : Set} → tuple-++ {A} ~ ((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)
@@ -873,7 +873,7 @@ module _ where
                       ap tuple-++ β · refl                                     ≡⟨⟩
                       ap tuple-++ β · tuple-++~fstfst∘++-×-lenfst (xs2 , ys2)  ≡⟨ nat-htpy tuple-++~fstfst∘++-×-lenfst β ⟩
                       tuple-++~fstfst∘++-×-lenfst (xs1 , ys1) · ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β
-                                                                               ≡⟨⟩ -- because the homotopy is refl pointwise
+                                                                               ≡⟨⟩ -- because the homotopy is refl at each point
                       refl · ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β            ≡⟨⟩
                       ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β                   ≡⟨ ap-comp (Σ.fst ∘ Σ.fst) ++-×-lenfst β ⟩
                       ap (Σ.fst ∘ Σ.fst) (ap ++-×-lenfst β)                    ≡⟨ ap-comp Σ.fst Σ.fst (ap ++-×-lenfst β) ⟩
