@@ -833,35 +833,17 @@ module _ where
         eq-fib-++-is-decidable
           with (Nat-has-decidable-eq (length xs1) (length xs2))
         ... | left len-xs1≡len-xs2  =
-                let ((++-×-lenfst-inv , S , R) , coherence) = has-inverse-then-is-coh-invertible (equiv-has-inverse (++-×-lenfst-is-eqv {A}))
-
-                    ++-×-lenfst-eq : ++-×-lenfst xs1ys1 ≡ ++-×-lenfst xs2ys2
+                let ++-×-lenfst-eq : ++-×-lenfst xs1ys1 ≡ ++-×-lenfst xs2ys2
                     ++-×-lenfst-eq = eq-pair _ _ ( ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2
                                                  , is-prop-then-any-two-eq (Lt-Nat-is-prop (length xs2) _) _ _)
 
-                    α : xs1ys1 ≡ xs2ys2
-                    α = (R xs1ys1 ⁻¹) · ap ++-×-lenfst-inv ++-×-lenfst-eq · R xs2ys2
+                    ((ap-++-×-lenfst-sect , S) , _) = is-equiv-then-is-emb ++-×-lenfst-is-eqv-opaque xs1ys1 xs2ys2
 
-                    -- This is essentially to compute ap ++-×-lenfst α:
-                    --   working out this calculation with α and ++-×-lenfst seems to confuse Agda's unifier,
-                    --   so we prove this higher equality generally and then apply it to our specific case.
-                    ap-by-equiv-coherence : {X Y : Set} → {f : X → Y} → {g : Y → X} →
-                                            (S : f ∘ g ~ id) → (R : g ∘ f ~ id) → (coherence : lwhisker S f ~ rwhisker f R) →
-                                            {x y : X} → (p : f x ≡ f y) →
-                                            ap f ((R x ⁻¹) · ap g p · R y) ≡ p
-                    ap-by-equiv-coherence {X} {Y} {f} {g} S R coherence {x} {y} p =
-                      begin
-                        ap f ((R x ⁻¹) · ap g p · R y)                         ≡⟨ ap-concat3-distr f (R x ⁻¹) (ap g p) (R y) ⟩
-                        ap f (R x ⁻¹) · ap f (ap g p) · ap f (R y)             ≡⟨ ap2 (λ q r → q · r · (ap f (R y))) (ap-inv f (R x)) (ap-comp f g p ⁻¹) ⟩
-                        ap f (R x) ⁻¹ · ap (f ∘ g) p · ap f (R y)              ≡⟨← ap2 (λ q r → (q ⁻¹) · ap (f ∘ g) p · r) (coherence x) (coherence y) ⟩
-                        (S (f x)) ⁻¹ · ap (f ∘ g) p · (S (f y))                ≡⟨← ap (λ q → (S (f x)) ⁻¹ · ap (f ∘ g) p · q) (inv-inv (S (f y))) ⟩
-                        (S ⁻¹ₕₜₚ) (f x) · ap (f ∘ g) p · ((S ⁻¹ₕₜₚ) (f y)) ⁻¹  ≡⟨⟩
-                        homotope-ap id (f ∘ g) (S ⁻¹ₕₜₚ) p                     ≡⟨← homotope-ap-homotopy (f x) (f y) (S ⁻¹ₕₜₚ) p ⟩
-                        ap id p                                                ≡⟨ ap-id p ⟩
-                        p                                                      ∎
+                    α : xs1ys1 ≡ xs2ys2
+                    α = ap-++-×-lenfst-sect ++-×-lenfst-eq
 
                     compute-ap-++-×-lenfst-α : ap ++-×-lenfst α ≡ ++-×-lenfst-eq
-                    compute-ap-++-×-lenfst-α = ap-by-equiv-coherence S R coherence ++-×-lenfst-eq
+                    compute-ap-++-×-lenfst-α = S ++-×-lenfst-eq
 
                     compute-ap-++-α : ap tuple-++ α ≡ p1 · p2 ⁻¹
                     compute-ap-++-α =
@@ -873,6 +855,12 @@ module _ where
                         p1 · p2 ⁻¹                                        ∎
                 in left (α , (con-cancel-right _ _ _ compute-ap-++-α) ⁻¹)
                 where
+                  opaque
+                    -- Agda seems to reduce (is-equiv-then-is-emb ++-×-lenfst-is-eqv) too agressively and fails to terminate,
+                    -- so we need at least one of them declared as opaque.
+                    ++-×-lenfst-is-eqv-opaque : {A : Set} → Is-equiv (++-×-lenfst {A})
+                    ++-×-lenfst-is-eqv-opaque = ++-×-lenfst-is-eqv
+
                   -- These two functions are not definitionally equal, but pointwise they are.
                   tuple-++~fstfst∘++-×-lenfst : {A : Set} → tuple-++ {A} ~ ((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)
                   tuple-++~fstfst∘++-×-lenfst (_ , _) = refl
@@ -889,12 +877,7 @@ module _ where
                       refl · ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β            ≡⟨⟩
                       ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β                   ≡⟨ ap-comp (Σ.fst ∘ Σ.fst) ++-×-lenfst β ⟩
                       ap (Σ.fst ∘ Σ.fst) (ap ++-×-lenfst β)                    ≡⟨ ap-comp Σ.fst Σ.fst (ap ++-×-lenfst β) ⟩
-                      ap Σ.fst (ap Σ.fst (ap ++-×-lenfst β))
-                                                    ∎
-
-                  reassoc-lemma1 : {A : Set} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : w ≡ z) →
-                                   p ⁻¹ · (p · q · r ⁻¹) · r ≡ q
-                  reassoc-lemma1 refl refl refl = refl
+                      ap Σ.fst (ap Σ.fst (ap ++-×-lenfst β))                   ∎
 
         ... | right len-xs1≠len-xs2 =
                 right (λ where (xs1ys1≡xs2ys2 , _) → (len-xs1≠len-xs2 (ap (length ∘ Σ.fst) xs1ys1≡xs2ys2)))
