@@ -147,6 +147,10 @@ module _ where
                        ap2 f p q ≡ ap (uncurry f) (ap2 pair p q)
     ap2-≡-ap-uncurry f refl refl = refl
 
+    ap-fst-ap2-pair : {A B : Set} → {x₁ x₂ : A} → (p : x₁ ≡ x₂) → {y₁ y₂ : B} → (q : y₁ ≡ y₂) →
+                      ap Σ.fst (ap2 pair p q) ≡ p
+    ap-fst-ap2-pair refl refl = refl
+
     ap-const-id-≡-snd : {A B : Set} → {x1 x2 : A} → {y1 y2 : B} → (p : x1 ≡ x2) → (q : y1 ≡ y2) →
                         ap (uncurry (const id)) (ap2 pair p q) ≡ q
     ap-const-id-≡-snd refl refl = refl

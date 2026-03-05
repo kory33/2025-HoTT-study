@@ -824,7 +824,7 @@ module _ where
 
   -- definition 9.3.1
   Eq-Σ : {A : Set} → {B : A → Set} → (Σ A B) → (Σ A B) → Set
-  Eq-Σ {A} {B} (a1 , b1) (a2 , b2) = Σ (a1 ≡ a2) (λ α → tr B α b1 ≡ b2)
+  Eq-Σ {A} {B} s t = Σ (Σ.fst s ≡ Σ.fst t) (λ α → tr B α (Σ.snd s) ≡ (Σ.snd t))
 
   module _ where
     open ≡-Reasoning
@@ -859,6 +859,11 @@ module _ where
     open Equivalence.Symbolic
     pair-eq-≃-Eq-Σ : {A : Set} → {B : A → Set} → {s t : Σ A B} → (s ≡ t) ≃ Eq-Σ s t
     pair-eq-≃-Eq-Σ {A} {B} {s} {t} = (pair-eq-Eq-Σ , pair-eq-Eq-Σ-is-equiv)
+
+    ap-fst-eq-pair : {A : Set} → {B : A → Set} → {s t : Σ A B} → (e : Eq-Σ s t) →
+                     ap Σ.fst (eq-pair s t e) ≡ Σ.fst e
+    ap-fst-eq-pair {s = (a1 , b1)} {t = (a2 , b2)} (refl , refl) = refl
+
 
   open ≡-Basic
   open ≡-Reasoning
