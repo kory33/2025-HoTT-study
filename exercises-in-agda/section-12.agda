@@ -747,17 +747,16 @@ module _ where
     List-with-split-point : Set → Set
     List-with-split-point A = Σ (List A × Nat) Is-split-point-pair
 
+    fst-len-<-slen-++ : {A : Set} → (xs ys : List A) → length xs < succ (length (tuple-++ (xs , ys)))
+    fst-len-<-slen-++ nil ys = zero-lt-succ (length ys)
+    fst-len-<-slen-++ (cons x xs) ys =
+      fst-len-<-slen-++ xs ys -- : length xs < succ (length (tuple-++ (xs , ys)))
+                              -- = succ (length xs) < succ (succ (length (tuple-++ (xs , ys))))
+                              -- = length (cons x xs) < succ (length (cons x (tuple-++ (xs , ys))))
+                              -- = length (cons x xs) < succ (length (tuple-++ ((cons x xs) , ys)))
+
     ++-×-lenfst : {A : Set} → (List A × List A) → List-with-split-point A
-    ++-×-lenfst xsys@(xs , ys) =
-      ((tuple-++ xsys , length xs) , fst-len-<-slen-++ xs ys)
-      where
-        fst-len-<-slen-++ : {A : Set} → (xs ys : List A) → length xs < succ (length (tuple-++ (xs , ys)))
-        fst-len-<-slen-++ nil ys = zero-lt-succ (length ys)
-        fst-len-<-slen-++ (cons x xs) ys =
-          fst-len-<-slen-++ xs ys -- : length xs < succ (length (tuple-++ (xs , ys)))
-                                  -- = succ (length xs) < succ (succ (length (tuple-++ (xs , ys))))
-                                  -- = length (cons x xs) < succ (length (cons x (tuple-++ (xs , ys))))
-                                  -- = length (cons x xs) < succ (length (tuple-++ ((cons x xs) , ys)))
+    ++-×-lenfst xsys@(xs , ys) = ((tuple-++ xsys , length xs) , fst-len-<-slen-++ xs ys)
 
     -- "splitting at the split point" is (obviously) the inverse map of ++-×-lenfst
     ++-×-lenfst-is-eqv : {A : Set} → Is-equiv (++-×-lenfst {A})
@@ -767,35 +766,41 @@ module _ where
         , ++-×-lenfst∘split~id
         , split∘++-×-lenfst~id)
       where
+        split-at : {A : Set} → Nat → List A → (List A × List A)
+        split-at n xs = (list-take n xs , list-drop n xs)
 
+        split : {A : Set} → List-with-split-point A → (List A × List A)
+        split ((lst , idx) , _) = split-at idx lst
 
-        split : List-with-split-point A → (List A × List A)
-        split ((lst , idx) , _) = (list-take idx lst , list-drop idx lst)
+        length-take-spp : {A : Set} → (lst : List A) → (idx : Nat) → Is-split-point-pair (lst , idx) →
+                          length (list-take idx lst) ≡ idx
+        length-take-spp lst zero _ = refl
+        length-take-spp nil (succ n) n<0 = absurd (not-lt-zero n n<0)
+        length-take-spp (cons x xs) (succ n) sn<slxs = ap succ (length-take-spp xs n sn<slxs)
 
-        ++-×-lenfst∘split~id : (l : List-with-split-point A) → ++-×-lenfst (split l) ≡ l
-        ++-×-lenfst∘split~id ((xs ,          zero) , zero<slxs) =
-          subtype-and-fst-eq-then-pair-eq Is-split-point-pair-is-subtype refl
-        ++-×-lenfst∘split~id ((nil ,         succ n) , n<0)     =
-          absurd (not-lt-zero n n<0)
-        ++-×-lenfst∘split~id (((cons x xs) , succ n) , sn<sslxs) =
+        ++-split-at-eq : {A : Set} → (n : Nat) → (xs : List A) → tuple-++ (split-at n xs) ≡ xs
+        ++-split-at-eq zero xs = refl
+        ++-split-at-eq (succ n) nil = refl
+        ++-split-at-eq (succ n) (cons x xs) =
+          begin
+            tuple-++ (split-at (succ n) (cons x xs))                                      ≡⟨⟩
+            tuple-++ (list-take (succ n) (cons x xs) , list-drop (succ n) (cons x xs))    ≡⟨⟩
+            tuple-++ (cons x (list-take n xs) , list-drop n xs)                           ≡⟨⟩
+            cons x (tuple-++ (list-take n xs , list-drop n xs))                           ≡⟨⟩
+            cons x (tuple-++ (split-at n xs))                                             ≡⟨ ap (cons x) (++-split-at-eq n xs) ⟩
+            cons x xs                                                                     ∎
+
+        ++-×-lenfst∘split~id : {A : Set} → (l : List-with-split-point A) → ++-×-lenfst (split l) ≡ l
+        ++-×-lenfst∘split~id {A} ((lst , idx) , is-spp) =
           subtype-and-fst-eq-then-pair-eq Is-split-point-pair-is-subtype
             ( begin
-                Σ.fst (++-×-lenfst (split ((cons x xs , succ n) , sn<sslxs)))
-                      ≡⟨⟩
-                Σ.fst (++-×-lenfst (list-take (succ n) (cons x xs) , list-drop (succ n) (cons x xs)))
-                      ≡⟨⟩
-                (tuple-++ (list-take (succ n) (cons x xs) , list-drop (succ n) (cons x xs)) , length (list-take (succ n) (cons x xs)))
-                      ≡⟨⟩
-                (tuple-++ (cons x (list-take n xs) , list-drop n xs) , length (cons x (list-take n xs)))
-                      ≡⟨⟩
-                (cons x (tuple-++ (list-take n xs , list-drop n xs)) , succ (length (list-take n xs)))
-                      ≡⟨ ap2 (λ l k → (cons x l , succ k))
-                             {!   !}
-                             {!   !} ⟩
-                (cons x xs , succ n)
-                      ≡⟨⟩
-                Σ.fst (((cons x xs , succ n) , sn<sslxs) typed List-with-split-point A)                 ∎
-              )
+                Σ.fst (++-×-lenfst (split ((lst , idx) , is-spp)))                ≡⟨⟩
+                Σ.fst (++-×-lenfst (split-at idx lst))                            ≡⟨⟩
+                (tuple-++ (split-at idx lst) , length (list-take idx lst))        ≡⟨ ap2 pair
+                                                                                         (++-split-at-eq idx lst)
+                                                                                         (length-take-spp lst idx is-spp) ⟩
+                (lst , idx)                                                       ≡⟨⟩
+                Σ.fst (((lst , idx) , is-spp) typed (List-with-split-point A))    ∎)
 
         take-concat-eq : {A : Set} → (xs ys : List A) → list-take (length xs) (tuple-++ (xs , ys)) ≡ xs
         take-concat-eq nil ys = refl
@@ -815,24 +820,8 @@ module _ where
             list-drop (length xs) (tuple-++ (xs , ys))                    ≡⟨ drop-concat-eq xs ys ⟩
             ys                                                            ∎
 
-        split∘++-×-lenfst~id : (xsys : List A × List A) → split (++-×-lenfst xsys) ≡ xsys
+        split∘++-×-lenfst~id : {A : Set} → (xsys : List A × List A) → split (++-×-lenfst xsys) ≡ xsys
         split∘++-×-lenfst~id (xs , ys) = ap2 pair (take-concat-eq xs ys) (drop-concat-eq xs ys)
-
-    -- concat-split : {A : Set} → Nat → List A → List A
-    -- concat-split {A} n xs = tuple-++ (split-at n xs)
-
-    -- concat-split~id : {A : Set} → (n : Nat) → concat-split {A} n ~ id
-    -- concat-split~id {A} zero xs = refl
-    -- concat-split~id {A} (succ n) nil = refl
-    -- concat-split~id {A} (succ n) (cons x xs) =
-    --   begin
-    --     concat-split (succ n) (cons x xs)                                             ≡⟨⟩
-    --     tuple-++ (split-at (succ n) (cons x xs))                                      ≡⟨⟩
-    --     tuple-++ (list-take (succ n) (cons x xs) , list-drop (succ n) (cons x xs))    ≡⟨⟩
-    --     tuple-++ (cons x (list-take n xs) , list-drop n xs)                           ≡⟨⟩
-    --     cons x (tuple-++ (list-take n xs , list-drop n xs))                           ≡⟨⟩
-    --     cons x (tuple-++ (split-at n xs))                                             ≡⟨ ap (cons x) (concat-split~id n xs) ⟩
-    --     cons x xs                                                                     ∎
 
     fib-tuple-++-has-deceq : {A : Set} → (zs : List A) → Has-decidable-eq (fib tuple-++ zs)
     fib-tuple-++-has-deceq {A} zs (xs1ys1@(xs1 , ys1) , p1) (xs2ys2@(xs2 , ys2) , p2) =
@@ -846,20 +835,13 @@ module _ where
         ... | left len-xs1≡len-xs2  =
                 let ((++-×-lenfst-inv , S , R) , coherence) = has-inverse-then-is-coh-invertible (equiv-has-inverse (++-×-lenfst-is-eqv {A}))
 
-                    ++-×-lenfst-eq : ++-×-lenfst xs1ys1 ≡ ++-×-lenfst xs2ys2
-                    ++-×-lenfst-eq =
-                      {!   !}
-                        ({!   !} typed ((tuple-++ xs1ys1 , length xs1) ≡ (tuple-++ xs2ys2 , length xs2)))
+                    ++-×-lenfst-Eq-Σ : Eq-Σ (++-×-lenfst xs1ys1) (++-×-lenfst xs2ys2)
+                    ++-×-lenfst-Eq-Σ =
+                      ( ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2
+                      , is-prop-then-any-two-eq (Lt-Nat-is-prop (length xs2) _) _ _)
 
-                      -- eq-pair (++-×-lenfst xs1ys1) (++-×-lenfst xs2ys2)
-                      --         (ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2 , {!   !})
-                              -- The hole is typed
-                              --   tr (λ xsn → Σ.snd xsn < succ (length (Σ.fst xsn)))
-                              --      (ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2)
-                              --      (fst-len-<-slen-++ xs1 ys1)
-                              --      ≡ fst-len-<-slen-++ xs2 ys2.
-                              -- This is an equality in a subtype of Nat (since < is a proposition by induction),
-                              -- and this equality follows from len-xs1≡len-xs2 solely by subtype-ness (Corollary 12.2.4).
+                    ++-×-lenfst-eq : ++-×-lenfst xs1ys1 ≡ ++-×-lenfst xs2ys2
+                    ++-×-lenfst-eq = eq-pair _ _ ++-×-lenfst-Eq-Σ
 
                     α : xs1ys1 ≡ xs2ys2
                     α = (R xs1ys1 ⁻¹) · ap ++-×-lenfst-inv ++-×-lenfst-eq · R xs2ys2
@@ -908,16 +890,33 @@ module _ where
                     compute-ap-++-α : ap tuple-++ α ≡ p1 · p2 ⁻¹
                     compute-ap-++-α =
                       begin
-                        ap tuple-++ α                 ≡⟨ {!   !} ⟩
-                                                      -- intuitively inverse of ap-comp, but we only have
-                                                      -- homotopy between the composition and tuple-++ so...?
-                        ap (Σ.fst ∘ Σ.fst) (ap ++-×-lenfst α)   ≡⟨ ap (ap (Σ.fst ∘ Σ.fst)) compute-ap-++-×-lenfst-α ⟩
-                        ap (Σ.fst ∘ Σ.fst) ++-×-lenfst-eq       ≡⟨ {!   !} ⟩
-                                                      -- should be true but why?
-                        p1 · p2 ⁻¹
-                              ∎
+                        ap tuple-++ α                                    ≡⟨ ap-tuple-++-vs-ap-fst-ap-fst α ⟩
+                        ap Σ.fst (ap Σ.fst (ap ++-×-lenfst α))           ≡⟨ ap (ap Σ.fst) (ap (ap Σ.fst) compute-ap-++-×-lenfst-α) ⟩
+                        ap Σ.fst (ap Σ.fst ++-×-lenfst-eq)               ≡⟨ ap (ap Σ.fst) (ap-fst-eq-pair ++-×-lenfst-Eq-Σ) ⟩
+                        ap Σ.fst (Σ.fst ++-×-lenfst-Eq-Σ)                ≡⟨⟩
+                        ap Σ.fst (ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2) ≡⟨ ap-fst-ap2-pair (p1 · p2 ⁻¹) len-xs1≡len-xs2 ⟩
+                        p1 · p2 ⁻¹                                       ∎
                 in left (α , (con-cancel-right _ _ _ compute-ap-++-α) ⁻¹)
                 where
+                  -- These two functions are not definitionally equal, but pointwise they are.
+                  tuple-++~fstfst∘++-×-lenfst : {A : Set} → tuple-++ {A} ~ ((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)
+                  tuple-++~fstfst∘++-×-lenfst (_ , _) = refl
+
+                  ap-tuple-++-vs-ap-fst-ap-fst : {A : Set} → {xs1 xs2 ys1 ys2 : List A} → (β : (xs1 , ys1) ≡ (xs2 , ys2)) →
+                                                 ap tuple-++ β ≡ ap Σ.fst (ap Σ.fst (ap ++-×-lenfst β))
+                  ap-tuple-++-vs-ap-fst-ap-fst {A} {xs1} {xs2} {ys1} {ys2} β =
+                    begin
+                      ap tuple-++ β                                            ≡⟨← ·-runit _ ⟩
+                      ap tuple-++ β · refl                                     ≡⟨⟩
+                      ap tuple-++ β · tuple-++~fstfst∘++-×-lenfst (xs2 , ys2)  ≡⟨ nat-htpy tuple-++~fstfst∘++-×-lenfst β ⟩
+                      tuple-++~fstfst∘++-×-lenfst (xs1 , ys1) · ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β
+                                                                               ≡⟨⟩ -- because the homotopy is refl pointwise
+                      refl · ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β            ≡⟨⟩
+                      ap (((Σ.fst ∘ Σ.fst) ∘ ++-×-lenfst)) β                   ≡⟨ ap-comp (Σ.fst ∘ Σ.fst) ++-×-lenfst β ⟩
+                      ap (Σ.fst ∘ Σ.fst) (ap ++-×-lenfst β)                    ≡⟨ ap-comp Σ.fst Σ.fst (ap ++-×-lenfst β) ⟩
+                      ap Σ.fst (ap Σ.fst (ap ++-×-lenfst β))
+                                                    ∎
+
                   reassoc-lemma1 : {A : Set} → {x y z w : A} → (p : x ≡ y) → (q : y ≡ z) → (r : w ≡ z) →
                                    p ⁻¹ · (p · q · r ⁻¹) · r ≡ q
                   reassoc-lemma1 refl refl refl = refl
