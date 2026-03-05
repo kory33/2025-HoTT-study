@@ -25,7 +25,7 @@ RUN chmod +x /tmp/install-agda-toolchain.sh \
     && rm -f /tmp/install-agda-toolchain.sh /tmp/agda-toolchain.env
 
 # Install Codex
-RUN wget https://github.com/openai/codex/releases/download/rust-v0.104.0/codex-x86_64-unknown-linux-musl.tar.gz -O /tmp/codex.tar.gz && \
+RUN wget https://github.com/openai/codex/releases/download/rust-v0.111.0/codex-x86_64-unknown-linux-musl.tar.gz -O /tmp/codex.tar.gz && \
   tar -xvf /tmp/codex.tar.gz -C /usr/local/bin/ && \
   rm /tmp/codex.tar.gz && \
   mv /usr/local/bin/codex-x86_64-unknown-linux-musl /usr/local/bin/codex && \
