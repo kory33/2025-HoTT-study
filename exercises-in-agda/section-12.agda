@@ -835,13 +835,9 @@ module _ where
         ... | left len-xs1≡len-xs2  =
                 let ((++-×-lenfst-inv , S , R) , coherence) = has-inverse-then-is-coh-invertible (equiv-has-inverse (++-×-lenfst-is-eqv {A}))
 
-                    ++-×-lenfst-Eq-Σ : Eq-Σ (++-×-lenfst xs1ys1) (++-×-lenfst xs2ys2)
-                    ++-×-lenfst-Eq-Σ =
-                      ( ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2
-                      , is-prop-then-any-two-eq (Lt-Nat-is-prop (length xs2) _) _ _)
-
                     ++-×-lenfst-eq : ++-×-lenfst xs1ys1 ≡ ++-×-lenfst xs2ys2
-                    ++-×-lenfst-eq = eq-pair _ _ ++-×-lenfst-Eq-Σ
+                    ++-×-lenfst-eq = eq-pair _ _ ( ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2
+                                                 , is-prop-then-any-two-eq (Lt-Nat-is-prop (length xs2) _) _ _)
 
                     α : xs1ys1 ≡ xs2ys2
                     α = (R xs1ys1 ⁻¹) · ap ++-×-lenfst-inv ++-×-lenfst-eq · R xs2ys2
@@ -849,11 +845,11 @@ module _ where
                     -- This is essentially to compute ap ++-×-lenfst α:
                     --   working out this calculation with α and ++-×-lenfst seems to confuse Agda's unifier,
                     --   so we prove this higher equality generally and then apply it to our specific case.
-                    compute-ap-from-coh-invertible : {X Y : Set} → {f : X → Y} → {g : Y → X} →
-                                                     (S : f ∘ g ~ id) → (R : g ∘ f ~ id) → (coherence : lwhisker S f ~ rwhisker f R) →
-                                                     {x y : X} → (p : f x ≡ f y) →
-                                                     ap f ((R x ⁻¹) · ap g p · R y) ≡ p
-                    compute-ap-from-coh-invertible {X} {Y} {f} {g} S R coherence {x} {y} p =
+                    ap-by-equiv-coherence : {X Y : Set} → {f : X → Y} → {g : Y → X} →
+                                            (S : f ∘ g ~ id) → (R : g ∘ f ~ id) → (coherence : lwhisker S f ~ rwhisker f R) →
+                                            {x y : X} → (p : f x ≡ f y) →
+                                            ap f ((R x ⁻¹) · ap g p · R y) ≡ p
+                    ap-by-equiv-coherence {X} {Y} {f} {g} S R coherence {x} {y} p =
                       begin
                         ap f ((R x ⁻¹) · ap g p · R y)                         ≡⟨ ap-concat3-distr f (R x ⁻¹) (ap g p) (R y) ⟩
                         ap f (R x ⁻¹) · ap f (ap g p) · ap f (R y)             ≡⟨ ap2 (λ q r → q · r · (ap f (R y))) (ap-inv f (R x)) (ap-comp f g p ⁻¹) ⟩
@@ -865,17 +861,16 @@ module _ where
                         p                                                      ∎
 
                     compute-ap-++-×-lenfst-α : ap ++-×-lenfst α ≡ ++-×-lenfst-eq
-                    compute-ap-++-×-lenfst-α = compute-ap-from-coh-invertible S R coherence ++-×-lenfst-eq
+                    compute-ap-++-×-lenfst-α = ap-by-equiv-coherence S R coherence ++-×-lenfst-eq
 
                     compute-ap-++-α : ap tuple-++ α ≡ p1 · p2 ⁻¹
                     compute-ap-++-α =
                       begin
-                        ap tuple-++ α                                    ≡⟨ ap-tuple-++-vs-ap-fst-ap-fst α ⟩
-                        ap Σ.fst (ap Σ.fst (ap ++-×-lenfst α))           ≡⟨ ap (ap Σ.fst) (ap (ap Σ.fst) compute-ap-++-×-lenfst-α) ⟩
-                        ap Σ.fst (ap Σ.fst ++-×-lenfst-eq)               ≡⟨ ap (ap Σ.fst) (ap-fst-eq-pair ++-×-lenfst-Eq-Σ) ⟩
-                        ap Σ.fst (Σ.fst ++-×-lenfst-Eq-Σ)                ≡⟨⟩
-                        ap Σ.fst (ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2) ≡⟨ ap-fst-ap2-pair (p1 · p2 ⁻¹) len-xs1≡len-xs2 ⟩
-                        p1 · p2 ⁻¹                                       ∎
+                        ap tuple-++ α                                     ≡⟨ ap-tuple-++-vs-ap-fst-ap-fst α ⟩
+                        ap Σ.fst (ap Σ.fst (ap ++-×-lenfst α))            ≡⟨ ap (ap Σ.fst) (ap (ap Σ.fst) compute-ap-++-×-lenfst-α) ⟩
+                        ap Σ.fst (ap Σ.fst ++-×-lenfst-eq)                ≡⟨ ap (ap Σ.fst) (ap-fst-eq-pair _) ⟩
+                        ap Σ.fst (ap2 pair (p1 · p2 ⁻¹) len-xs1≡len-xs2)  ≡⟨ ap-fst-ap2-pair (p1 · p2 ⁻¹) len-xs1≡len-xs2 ⟩
+                        p1 · p2 ⁻¹                                        ∎
                 in left (α , (con-cancel-right _ _ _ compute-ap-++-α) ⁻¹)
                 where
                   -- These two functions are not definitionally equal, but pointwise they are.
