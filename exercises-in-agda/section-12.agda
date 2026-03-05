@@ -846,46 +846,26 @@ module _ where
                     α : xs1ys1 ≡ xs2ys2
                     α = (R xs1ys1 ⁻¹) · ap ++-×-lenfst-inv ++-×-lenfst-eq · R xs2ys2
 
-                    compute-ap-++-×-lenfst-α : ap ++-×-lenfst α ≡ ++-×-lenfst-eq
-                    compute-ap-++-×-lenfst-α =
+                    -- This is essentially to compute ap ++-×-lenfst α:
+                    --   working out this calculation with α and ++-×-lenfst seems to confuse Agda's unifier,
+                    --   so we prove this higher equality generally and then apply it to our specific case.
+                    compute-ap-from-coh-invertible : {X Y : Set} → {f : X → Y} → {g : Y → X} →
+                                                     (S : f ∘ g ~ id) → (R : g ∘ f ~ id) → (coherence : lwhisker S f ~ rwhisker f R) →
+                                                     {x y : X} → (p : f x ≡ f y) →
+                                                     ap f ((R x ⁻¹) · ap g p · R y) ≡ p
+                    compute-ap-from-coh-invertible {X} {Y} {f} {g} S R coherence {x} {y} p =
                       begin
-                        ap ++-×-lenfst α
-                                          ≡⟨ ap-concat3-distr ++-×-lenfst (R xs1ys1 ⁻¹) (ap ++-×-lenfst-inv ++-×-lenfst-eq) (R xs2ys2) ⟩
-                        ( ap ++-×-lenfst (R xs1ys1 ⁻¹)
-                        · ap ++-×-lenfst (ap ++-×-lenfst-inv ++-×-lenfst-eq)
-                        · ap ++-×-lenfst (R xs2ys2))
-                                          ≡⟨ ap2 (λ p q → p · q · (ap ++-×-lenfst (R xs2ys2)))
-                                                 (ap-inv ++-×-lenfst (R xs1ys1))
-                                                 (ap-comp ++-×-lenfst ++-×-lenfst-inv ++-×-lenfst-eq ⁻¹) ⟩
-                        ( ap ++-×-lenfst (R xs1ys1) ⁻¹
-                        · ap (++-×-lenfst ∘ ++-×-lenfst-inv) ++-×-lenfst-eq
-                        · ap ++-×-lenfst (R xs2ys2))
-                                          ≡⟨⟩
-                        ( (rwhisker ++-×-lenfst R xs1ys1) ⁻¹
-                        · ap (++-×-lenfst ∘ ++-×-lenfst-inv) ++-×-lenfst-eq
-                        · (rwhisker ++-×-lenfst R xs2ys2))
-                                          ≡⟨← ap2 (λ p q → (p ⁻¹) · ap (++-×-lenfst ∘ ++-×-lenfst-inv) ++-×-lenfst-eq · q)
-                                                  (coherence xs1ys1)
-                                                  (coherence xs2ys2) ⟩
-                        ( ((lwhisker S ++-×-lenfst) xs1ys1) ⁻¹
-                        · ap (++-×-lenfst ∘ ++-×-lenfst-inv) ++-×-lenfst-eq
-                        · (lwhisker S ++-×-lenfst) xs2ys2)
-                                          ≡⟨⟩
-                        ( (S (++-×-lenfst xs1ys1)) ⁻¹
-                        · ap (++-×-lenfst ∘ ++-×-lenfst-inv) ++-×-lenfst-eq
-                        · (S (++-×-lenfst xs2ys2)))
-                                          ≡⟨← ap (λ p → (S (++-×-lenfst xs1ys1)) ⁻¹ · ap (++-×-lenfst ∘ ++-×-lenfst-inv) ++-×-lenfst-eq · p)
-                                                 (inv-inv (S (++-×-lenfst xs2ys2))) ⟩
-                        ( ((S ⁻¹ₕₜₚ) (++-×-lenfst xs1ys1))
-                        · ap (++-×-lenfst ∘ ++-×-lenfst-inv) ++-×-lenfst-eq
-                        · ((S ⁻¹ₕₜₚ) (++-×-lenfst xs2ys2)) ⁻¹)
-                                          ≡⟨⟩
-                        homotope-ap id _ (S ⁻¹ₕₜₚ) ++-×-lenfst-eq
-                                          ≡⟨← homotope-ap-homotopy _ _ (S ⁻¹ₕₜₚ) ++-×-lenfst-eq ⟩
-                        ap id ++-×-lenfst-eq
-                                          ≡⟨ ap-id _ ⟩
-                        ++-×-lenfst-eq
-                                          ∎
+                        ap f ((R x ⁻¹) · ap g p · R y)                         ≡⟨ ap-concat3-distr f (R x ⁻¹) (ap g p) (R y) ⟩
+                        ap f (R x ⁻¹) · ap f (ap g p) · ap f (R y)             ≡⟨ ap2 (λ q r → q · r · (ap f (R y))) (ap-inv f (R x)) (ap-comp f g p ⁻¹) ⟩
+                        ap f (R x) ⁻¹ · ap (f ∘ g) p · ap f (R y)              ≡⟨← ap2 (λ q r → (q ⁻¹) · ap (f ∘ g) p · r) (coherence x) (coherence y) ⟩
+                        (S (f x)) ⁻¹ · ap (f ∘ g) p · (S (f y))                ≡⟨← ap (λ q → (S (f x)) ⁻¹ · ap (f ∘ g) p · q) (inv-inv (S (f y))) ⟩
+                        (S ⁻¹ₕₜₚ) (f x) · ap (f ∘ g) p · ((S ⁻¹ₕₜₚ) (f y)) ⁻¹  ≡⟨⟩
+                        homotope-ap id (f ∘ g) (S ⁻¹ₕₜₚ) p                     ≡⟨← homotope-ap-homotopy (f x) (f y) (S ⁻¹ₕₜₚ) p ⟩
+                        ap id p                                                ≡⟨ ap-id p ⟩
+                        p                                                      ∎
+
+                    compute-ap-++-×-lenfst-α : ap ++-×-lenfst α ≡ ++-×-lenfst-eq
+                    compute-ap-++-×-lenfst-α = compute-ap-from-coh-invertible S R coherence ++-×-lenfst-eq
 
                     compute-ap-++-α : ap tuple-++ α ≡ p1 · p2 ⁻¹
                     compute-ap-++-α =
