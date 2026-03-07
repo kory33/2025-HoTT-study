@@ -130,7 +130,7 @@ Arithmetic and algebraic laws follow the pattern
 
 ### `{A}-then-{B}` for implications (A → B)
 - `is-contr-then-is-prop`, `is-equiv-then-is-emb`, `contr-fn-then-equiv`, `has-decidable-equality-then-is-set`
-- Long chains are fine: `is-emb-then-homotope-ap-is-equiv`
+- Long chains are fine: `latter-is-emb-then-comp-is-emb-iff-former-is-emb`
 
 ### `{A}-iff-{B}` for proposition-level biimplications (A ↔ B)
 - Use `-iff-` only when both sides are proposition-valued statements.

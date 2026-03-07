@@ -574,113 +574,11 @@ module _ where
       where reassoc : {A : Set} → {x y : A} → (p : x ≡ y) → p ⁻¹ · refl · p ≡ refl
             reassoc refl = refl
 
-    homotope-ap : {A B : Set} → (f g : A → B) → (H : f ~ g) → {x y : A} → (x ≡ y) → (f x ≡ f y)
-    homotope-ap {A} {B} f g H {x} {y} p = H x · ap g p · ((H y) ⁻¹)
-
-    homotope-ap-refl-eq-refl : {A B : Set} → {f g : A → B} → (H : f ~ g) → {x : A} → homotope-ap f g H {x} {x} refl ≡ refl
-    homotope-ap-refl-eq-refl {A} {B} {f} {g} H {x} =
-      begin
-        homotope-ap f g H {x} {x} refl   ≡⟨⟩
-        H x · ap g refl · ((H x) ⁻¹)     ≡⟨⟩
-        H x · refl · ((H x) ⁻¹)          ≡⟨ ·-assoc (H x) _ _ ⟩
-        H x · (refl · ((H x) ⁻¹))        ≡⟨⟩
-        H x · ((H x) ⁻¹)                 ≡⟨ ·-rinv (H x) ⟩
-        refl                             ∎
-
-    homotope-ap-homotopy : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) → (ap f {x} {y}) ~ (homotope-ap f g H)
-    homotope-ap-homotopy {A} {B} {f} {g} x y H refl =
-      begin
-        ap f refl                ≡⟨⟩
-        refl                     ≡⟨← homotope-ap-refl-eq-refl H ⟩
-        homotope-ap f g H refl   ∎
-
-    open Σ-Basic
-
-    -- Not mentioned in the book, but we have a version for ap2 as well (note that (uncurry H) : (uncurry f) ~ (uncurry g)).
-    -- Intuitively this is because (ap2-≡-ap-uncurry f p q : ap2 f p q ≡ ap (uncurry f) (ap2 pair p q)) holds,
-    --   which says that ap2 is an ap on the product space.
-    compute-ap2-to-homotope-ap : {A B C : Set} → {f g : A → B → C} → (H : (x : A) → f x ~ g x) →
-                                 {a1 a2 : A} → (p : a1 ≡ a2) → {b1 b2 : B} → (q : b1 ≡ b2) →
-                                 ap2 f p q ≡ homotope-ap (uncurry f) (uncurry g) (uncurry H) (ap2 pair p q)
-    compute-ap2-to-homotope-ap {_} {_} {_} {f} {g} H {a1} {a2} p {b1} {b2} q =
-      ap2-≡-ap-uncurry f p q ·
-      homotope-ap-homotopy {g = uncurry g} (a1 , b1) (a2 , b2) (uncurry H) (ap2 pair p q)
-
-    -- We will show: Is-equiv (ap f) ⇒ Is-equiv (homotope-ap f g H) ⇒ Is-equiv (ap g).
-    -- The middle type is Is-equiv (λ p → H x · ap g p · ((H y) ⁻¹)),
-    -- so we'll prove two lemmas to "unwrap" surrounding equalities (H x and (H y) ⁻¹).
-
-    is-emb-then-homotope-ap-is-equiv : {A B : Set} → {f g : A → B} → (H : f ~ g) → Is-emb f → (x y : A) → Is-equiv (homotope-ap f g H {x} {y})
-    is-emb-then-homotope-ap-is-equiv {A} {B} {f} {g} H f-emb x y =
-      is-equiv-preserved-by-homotopy
-        (homotope-ap-homotopy x y H)
-        (f-emb x y)
-
-    is-equiv-preserved-by-·-left : {A B : Set} → {x y : A} → {x' y' : B} →
-                                   {path-fn : x ≡ y → x' ≡ y'} → {z : B} → (p : z ≡ x') →
-                                   Is-equiv path-fn → Is-equiv (λ q → p · path-fn q)
-    is-equiv-preserved-by-·-left {A} {B} {x} {y} {f} {path-fn} {z} refl path-fn-eqv = path-fn-eqv
-
-    is-equiv-preserved-by-·-right : {A B : Set} → {x y : A} → {x' y' : B} →
-                                    {path-fn : x ≡ y → x' ≡ y'} → {z : B} → (p : y' ≡ z) →
-                                    Is-equiv path-fn → Is-equiv (λ q → path-fn q · p)
-    is-equiv-preserved-by-·-right {A} {B} {x} {y} {f} {g} {path-fn} {z} refl ((s , S) , (r , R)) =
-      (
-        (s , λ x'≡y' → begin
-          ((λ q → path-fn q · refl) ∘ s) x'≡y'     ≡⟨⟩
-          path-fn (s x'≡y') · refl                 ≡⟨ ·-runit _ ⟩
-          path-fn (s x'≡y')                        ≡⟨ S _ ⟩
-          x'≡y'                                    ∎
-        ),
-        (r , λ x'≡y' → begin
-          (r ∘ (λ q → path-fn q · refl)) x'≡y'     ≡⟨⟩
-          r (path-fn x'≡y' · refl)                 ≡⟨ ap r (·-runit _) ⟩
-          r (path-fn x'≡y')                        ≡⟨ R _ ⟩
-          x'≡y'                                    ∎
-        )
-      )
-
-    homotope-ap-is-equiv-then-ap-target-is-equiv : {A B : Set} → {f g : A → B} → (x y : A) → (H : f ~ g) →
-                                                   Is-equiv (homotope-ap f g H {x} {y}) → Is-equiv (ap g {x} {y})
-    homotope-ap-is-equiv-then-ap-target-is-equiv {A} {B} {f} {g} x y H is-equiv-homotope-ap =
-      let
-        is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy : Is-equiv (λ p → ((H x) ⁻¹) · (H x · ap g p · ((H y) ⁻¹) · H y))
-        is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy =
-          is-equiv-preserved-by-·-left ((H x) ⁻¹) (
-            is-equiv-preserved-by-·-right (H y) is-equiv-homotope-ap
-          )
-
-        Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg : (λ p → ((H x) ⁻¹) · (H x · ap g p · ((H y) ⁻¹) · H y)) ~ ap g
-        Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg =
-          (λ { refl → begin
-            H x ⁻¹ · (H x · ap g refl · H y ⁻¹ · H y)   ≡⟨⟩
-            H x ⁻¹ · (H x · refl · H y ⁻¹ · H y)        ≡⟨ ap (λ c → H x ⁻¹ · (c · H y ⁻¹ · H y)) (·-runit _) ⟩
-            H x ⁻¹ · (H x · H y ⁻¹ · H y)               ≡⟨ ap (λ c → H x ⁻¹ · c) (·-assoc (H x) _ _) ⟩
-            H x ⁻¹ · (H x · (H y ⁻¹ · H y))             ≡⟨ ap (λ c → H x ⁻¹ · (H x · c)) (·-linv (H y)) ⟩
-            H x ⁻¹ · (H x · refl)                       ≡⟨ ap (λ c → H x ⁻¹ · c) (·-runit _) ⟩
-            H x ⁻¹ · H x                                ≡⟨ ·-linv (H x) ⟩
-            refl                                        ≡⟨⟩
-            ap g refl                                   ∎
-          })
-      in is-equiv-preserved-by-homotopy Hx⁻¹·Hx·apg·Hy⁻¹·Hy~apg is-equiv-Hx⁻¹·Hx·apg·Hy⁻¹·Hy
-
     is-emb-preserved-by-homotopy : {A B : Set} → {f g : A → B} → (H : f ~ g) → (Is-emb f → Is-emb g)
     is-emb-preserved-by-homotopy {A} {B} {f} {g} H f-emb x y =
-      homotope-ap-is-equiv-then-ap-target-is-equiv x y H
-        (is-emb-then-homotope-ap-is-equiv H f-emb x y)
-
-    open Homotopy.HomotopyGroupoidSymbolic
-    homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv : {A B : Set} → {f g : A → B} → (H : f ~ g) → {x y : A} →
-                                                         Is-equiv (homotope-ap f g H {x} {y}) →
-                                                         Is-equiv (homotope-ap g f (H ⁻¹ₕₜₚ) {x} {y})
-    homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv {A} {B} {f} {g} H {x} {y} is-equiv-homotope-ap =
-      let
-        ap-g-is-eqv : Is-equiv (ap g {x} {y})
-        ap-g-is-eqv = homotope-ap-is-equiv-then-ap-target-is-equiv x y H is-equiv-homotope-ap
-
-        ap-g~homotope-ap-Hinv : ap g {x} {y} ~ homotope-ap g f (H ⁻¹ₕₜₚ)
-        ap-g~homotope-ap-Hinv = homotope-ap-homotopy x y (H ⁻¹ₕₜₚ)
-      in is-equiv-preserved-by-homotopy ap-g~homotope-ap-Hinv ap-g-is-eqv
+      is-equiv-preserved-by-homotopy
+        (homotope-applied-ap H x y)
+        (comp-equivs-is-equiv (homotope-applied-is-equiv H x y) (f-emb x y))
 
   -- exercise 11.4
   module _ where
@@ -696,26 +594,11 @@ module _ where
     latter-is-emb-then-comp-is-emb-iff-former-is-emb {A} {B} {X} h {g} {f} H g-emb =
       (
         (λ f-emb x y →
-          let
-            (apg⁻¹ , apg⁻¹-S , apg⁻¹-R) = equiv-has-inverse (g-emb (h x) (h y))
-
-            -- We expect, morally, that apg⁻¹ ∘ ap f ~ ap h and that the LHS to be an equivalence.
-            -- The issue is that the LHS in the expression above is ill-typed, so we instead assert:
-            homotopy : apg⁻¹ ∘ (homotope-ap (g ∘ h) f (H ⁻¹ₕₜₚ)) ~ ap h
-            homotopy =
-              (λ { refl → begin
-                (apg⁻¹ ∘ (homotope-ap (g ∘ h) f (H ⁻¹ₕₜₚ))) refl   ≡⟨⟩
-                apg⁻¹ (homotope-ap (g ∘ h) f (H ⁻¹ₕₜₚ) refl)       ≡⟨ ap apg⁻¹ (homotope-ap-refl-eq-refl (H ⁻¹ₕₜₚ)) ⟩
-                apg⁻¹ refl                                         ≡⟨⟩
-                apg⁻¹ (ap g refl)                                  ≡⟨ apg⁻¹-R refl ⟩
-                refl                                               ∎
-              })
-            apg⁻¹-is-eqv = has-inverse-equiv (ap g , apg⁻¹-R , apg⁻¹-S)
-            homotope-ap-H⁻¹-is-eqv =
-              homotope-ap-is-equiv-then-homotope-ap-inv-is-equiv H (
-                is-emb-then-homotope-ap-is-equiv H f-emb x y
-              )
-          in is-equiv-preserved-by-homotopy homotopy (comp-equivs-is-equiv apg⁻¹-is-eqv homotope-ap-H⁻¹-is-eqv)
+          latter-and-comp-are-equivs-then-former-is-equiv
+            (ap h {x} {y})
+            (ap-comp g h)
+            (g-emb (h x) (h y))
+            (is-emb-preserved-by-homotopy H f-emb x y)
         ) ,
         (λ h-emb → is-emb-preserved-by-homotopy (H ⁻¹ₕₜₚ) (comp-embs-is-emb g-emb h-emb))
       )
