@@ -952,25 +952,37 @@ module _ where
       -- we have that K ∘ ap f is k-trunc iff ap h is. We remove the postcomposition by K and we are done.
       begin-↔
         Is-trunc-map (succ-Trunc k) f                        ↔⟨ map-is-sk-trunc-iff-ap-is-k-trunc ⟩
-        ((x y : A) → Is-trunc-map k (ap f {x} {y}))          ↔⟨ depfn-biimpl-2 k-trunc-ap-biimpl ⟩
+        ((x y : A) → Is-trunc-map k (ap f {x} {y}))          ↔⟨ depfn-biimpl-2 (λ (x y : A) → begin-↔
+          Is-trunc-map k (ap f {x} {y})                        ↔⟨ postcomp-by-equiv-is-k-trunc-iff-original-is
+                                                                    (ap f) (homotope-applied-is-equiv H x y) ⟩
+          Is-trunc-map k (homotope-applied H x y ∘ ap f)       ↔⟨ latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc
+                                                                    {g = ap g {h x} {h y}}
+                                                                    (apg-is-k-trunc x y) (ap h) (triangle-htpy x y) ⟩
+          Is-trunc-map k (ap h)                                ∎-↔) ⟩
         ((x y : A) → Is-trunc-map k (ap h {x} {y}))          ↔⟨← map-is-sk-trunc-iff-ap-is-k-trunc ⟩
         Is-trunc-map (succ-Trunc k) h                        ∎-↔
       where
-        k-trunc-ap-biimpl : (x y : A) → Is-trunc-map k (ap f {x} {y}) ↔ Is-trunc-map k (ap h {x} {y})
-        k-trunc-ap-biimpl x y =
-          let apg-is-k-trunc : Is-trunc-map k (ap g {h x} {h y})
-              apg-is-k-trunc = Σ.fst map-is-sk-trunc-iff-ap-is-k-trunc g-is-sk-trunc (h x) (h y)
+        apg-is-k-trunc : (x y : A) → Is-trunc-map k (ap g {h x} {h y})
+        apg-is-k-trunc x y = Σ.fst map-is-sk-trunc-iff-ap-is-k-trunc g-is-sk-trunc (h x) (h y)
 
-              triangle-htpy : (homotope-applied H x y ∘ ap f) ~ (ap g ∘ ap h)
-              triangle-htpy = homotope-applied-ap H x y ·ₕₜₚ ap-comp g h
-          in begin-↔
-            Is-trunc-map k (ap f)                           ↔⟨ postcomp-by-equiv-is-k-trunc-iff-original-is
-                                                                 (ap f) (homotope-applied-is-equiv H x y) ⟩
-            Is-trunc-map k (homotope-applied H x y ∘ ap f)  ↔⟨ latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc
-                                                                 {g = ap g {h x} {h y}}
-                                                                 apg-is-k-trunc (ap h) triangle-htpy ⟩
-            Is-trunc-map k (ap h)                           ∎-↔
+        triangle-htpy : (x y : A) → (homotope-applied H x y ∘ ap f) ~ (ap g ∘ ap h)
+        triangle-htpy x y = homotope-applied-ap H x y ·ₕₜₚ ap-comp g h
 
-  -- TODO: exercise 12.12
+  -- exercise 12.12
+  module _ where
+    is-family-of-k-trunc-iff-tot-is-k-trunc :
+          {A : Set} → {B C : A → Set} → (f : (x : A) → B x → C x)
+          {k : TruncLevel} → ((x : A) → Is-trunc-map k (f x)) ↔ Is-trunc-map k (totalization f)
+    is-family-of-k-trunc-iff-tot-is-k-trunc {A} {B} {C} f {k} =
+      -- note: this proof is just a proof of theorem 11.1.3 generalized to arbitrary truncation levels
+      begin-↔
+        ((x : A) → Is-trunc-map k (f x))                                    ↔⟨⟩
+        ((x : A) → (c : C x) → Is-trunc k (fib (f x) c))                    ↔⟨← depfn-biimpl-2 (λ x c →
+                                                                                  equiv-then-k-type-iff-k-type
+                                                                                    (fib-tot-pt-equiv-fib-pr₁-pr₂ f (x , c))) ⟩
+        ((x : A) → (c : C x) → Is-trunc k (fib (totalization f) (x , c)))   ↔⟨ uncurry-biimpl ⟩
+        ((t : Σ A C) → Is-trunc k (fib (totalization f) t))                 ↔⟨⟩
+        Is-trunc-map k (totalization f)                                     ∎-↔
+
   -- TODO: exercise 12.13
   -- TODO: exercise 12.14
