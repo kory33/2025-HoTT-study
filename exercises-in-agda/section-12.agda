@@ -327,6 +327,33 @@ module _ where
           (≃-comm (forward-lemma (f x) x y p))
           (f-is-sk-trunc (f y) (x , p) (y , refl))
 
+  precomp-to-depfn : {X A : Set} → (f : X → A) → {B : A → Set} → ((a : A) → B a) → ((x : X) → B (f x))
+  precomp-to-depfn f g x = g (f x)
+
+  unprecomp-split-epi-from-depfn : {B C : Set} → (e : B → C) → Sect e → {P : C → Set} →
+                                   ((b : B) → P (e b)) → ((c : C) → P c)
+  unprecomp-split-epi-from-depfn {B} {C} e (s , S) {P} t c = tr P (S c) (t (s c))
+
+  postcomp-by-emb-preserves-fibers : {A B C : Set} → (f : A → B) → {m : B → C} → Is-emb m →
+                                     (b : B) → fib f b ≃ fib (m ∘ f) (m b)
+  postcomp-by-emb-preserves-fibers {A} {B} {C} f {m} m-emb b =
+    -- Goal: Σ A (λ a → f a = b) ≃ Σ A (λ a → m (f a) = m b)
+    pointwise-equiv-then-tot-equiv (λ a →
+      -- Goal: (f a = b) ≃ (m (f a) = m b)
+      build-tpe-equiv (m-emb (f a) b))
+
+  postcomp-by-equiv-is-k-trunc-iff-original-is :
+        {A B C : Set} → {k : TruncLevel} → (f : A → B) → {e : B → C} → Is-equiv e →
+        Is-trunc-map k f ↔ Is-trunc-map k (e ∘ f)
+  postcomp-by-equiv-is-k-trunc-iff-original-is {A} {B} {C} {k} f {e} e-eqv@(S , _) =
+    begin-↔
+      Is-trunc-map k f                            ↔⟨⟩
+      ((b : B) → Is-trunc k (fib f b))            ↔⟨ depfn-biimpl (λ b → equiv-then-k-type-iff-k-type
+                                                       (postcomp-by-emb-preserves-fibers f (is-equiv-then-is-emb e-eqv) b)) ⟩
+      ((b : B) → Is-trunc k (fib (e ∘ f) (e b)))  ↔⟨← (precomp-to-depfn e , unprecomp-split-epi-from-depfn e S) ⟩
+      ((c : C) → Is-trunc k (fib (e ∘ f) c))      ↔⟨⟩
+      Is-trunc-map k (e ∘ f)                      ∎-↔
+
   -- exercise 12.1
   Bool-is-set : Is-set Bool
   Bool-is-set =
@@ -898,7 +925,77 @@ module _ where
         ((x : A) → (y : A) → Is-trunc k (Σ Unit (λ a → const {Unit} x a ≡ y)))  ↔⟨⟩
         ((x : A) → Is-trunc-map k (const {Unit} x))                             ∎-↔
 
-  -- TODO: exercise 12.11
+  -- exercise 12.11
+  module _ where
+    open HomotopyGroupoidSymbolic
+
+    homotope-applied : {A B : Set} → {f g : A → B} → (H : f ~ g) → (x y : A) → (f x ≡ f y) → (g x ≡ g y)
+    homotope-applied H x y p = (H x) ⁻¹ · p · (H y)
+
+    homotope-applied-is-equiv :
+          {A B : Set} → {f g : A → B} → (H : f ~ g) → (x y : A) → Is-equiv (homotope-applied H x y)
+    homotope-applied-is-equiv H x y =
+      has-inverse-equiv
+        ( homotope-applied (H ⁻¹ₕₜₚ) x y
+        , (λ p → forward-reassociation p (H x) (H y))
+        , (λ q → backward-reassociation q (H x) (H y)) )
+      where
+        forward-reassociation : {A : Set} → {fx fy gx gy : A} → (p : gx ≡ gy) → (hx : fx ≡ gx) → (hy : fy ≡ gy) →
+                                (hx ⁻¹) · ((hx ⁻¹) ⁻¹ · p · (hy ⁻¹)) · hy ≡ p
+        forward-reassociation refl refl refl = refl
+
+        backward-reassociation : {A : Set} → {fx fy gx gy : A} → (q : fx ≡ fy) → (hx : fx ≡ gx) → (hy : fy ≡ gy) →
+                                 ((hx ⁻¹) ⁻¹) · (hx ⁻¹ · q · hy) · (hy ⁻¹) ≡ q
+        backward-reassociation refl refl refl = refl
+
+    homotope-applied-ap : {A B : Set} → {f g : A → B} → (H : f ~ g) → (x y : A) →
+                          homotope-applied H x y ∘ ap f ~ ap g
+    homotope-applied-ap H x y refl = reassoc (H x)
+      where reassoc : {A : Set} → {x y : A} → (p : x ≡ y) → p ⁻¹ · refl · p ≡ refl
+            reassoc refl = refl
+
+    latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc :
+          {A B X : Set} → {k : TruncLevel} → {g : B → X} → Is-trunc-map k g →
+          (h : A → B) → {f : A → X} → (H : f ~ g ∘ h) →
+          Is-trunc-map k f ↔ Is-trunc-map k h
+    latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc {k = -2-Trunc} g-is--2-trunc h {f} H =
+      begin-↔
+        Is-trunc-map -2-Trunc f                 ↔⟨← is-equiv-iff-is-contr-fn ⟩
+        Is-equiv f                              ↔⟨ latter-is-equiv-then-comp-is-equiv-iff-former-is-equiv h H (contr-fn-then-equiv g-is--2-trunc) ⟩
+        Is-equiv h                              ↔⟨ is-equiv-iff-is-contr-fn ⟩
+        Is-trunc-map -2-Trunc h                 ∎-↔
+    latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc {A} {B} {k = succ-Trunc k} {g = g} g-is-sk-trunc h {f} H =
+      -- Idea:
+      --   (a1 ≡ a2)  --(ap h)--> (h a1 ≡ h a2)
+      --       │                        │
+      --       │ ap f                   │ ap g
+      --       │                        │
+      --       v                        v
+      -- (f a1 ≡ f a2) -(K)-> (g (h a1) ≡ g (h a2))
+      --
+      -- where the bottom arrow is an equivalence, and by IH and the fact that g is (k+1)-trunc,
+      -- we have that K ∘ ap f is k-trunc iff ap h is. We remove the postcomposition by K and we are done.
+      begin-↔
+        Is-trunc-map (succ-Trunc k) f                        ↔⟨ map-is-sk-trunc-iff-ap-is-k-trunc ⟩
+        ((x y : A) → Is-trunc-map k (ap f {x} {y}))          ↔⟨ depfn-biimpl-2 k-trunc-ap-biimpl ⟩
+        ((x y : A) → Is-trunc-map k (ap h {x} {y}))          ↔⟨← map-is-sk-trunc-iff-ap-is-k-trunc ⟩
+        Is-trunc-map (succ-Trunc k) h                        ∎-↔
+      where
+        k-trunc-ap-biimpl : (x y : A) → Is-trunc-map k (ap f {x} {y}) ↔ Is-trunc-map k (ap h {x} {y})
+        k-trunc-ap-biimpl x y =
+          let apg-is-k-trunc : Is-trunc-map k (ap g {h x} {h y})
+              apg-is-k-trunc = Σ.fst map-is-sk-trunc-iff-ap-is-k-trunc g-is-sk-trunc (h x) (h y)
+
+              triangle-htpy : (homotope-applied H x y ∘ ap f) ~ (ap g ∘ ap h)
+              triangle-htpy = homotope-applied-ap H x y ·ₕₜₚ ap-comp g h
+          in begin-↔
+            Is-trunc-map k (ap f)                           ↔⟨ postcomp-by-equiv-is-k-trunc-iff-original-is
+                                                                 (ap f) (homotope-applied-is-equiv H x y) ⟩
+            Is-trunc-map k (homotope-applied H x y ∘ ap f)  ↔⟨ latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc
+                                                                 {g = ap g {h x} {h y}}
+                                                                 apg-is-k-trunc (ap h) triangle-htpy ⟩
+            Is-trunc-map k (ap h)                           ∎-↔
+
   -- TODO: exercise 12.12
   -- TODO: exercise 12.13
   -- TODO: exercise 12.14
