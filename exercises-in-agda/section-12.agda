@@ -929,31 +929,6 @@ module _ where
   module _ where
     open HomotopyGroupoidSymbolic
 
-    homotope-applied : {A B : Set} → {f g : A → B} → (H : f ~ g) → (x y : A) → (f x ≡ f y) → (g x ≡ g y)
-    homotope-applied H x y p = (H x) ⁻¹ · p · (H y)
-
-    homotope-applied-is-equiv :
-          {A B : Set} → {f g : A → B} → (H : f ~ g) → (x y : A) → Is-equiv (homotope-applied H x y)
-    homotope-applied-is-equiv H x y =
-      has-inverse-equiv
-        ( homotope-applied (H ⁻¹ₕₜₚ) x y
-        , (λ p → forward-reassociation p (H x) (H y))
-        , (λ q → backward-reassociation q (H x) (H y)) )
-      where
-        forward-reassociation : {A : Set} → {fx fy gx gy : A} → (p : gx ≡ gy) → (hx : fx ≡ gx) → (hy : fy ≡ gy) →
-                                (hx ⁻¹) · ((hx ⁻¹) ⁻¹ · p · (hy ⁻¹)) · hy ≡ p
-        forward-reassociation refl refl refl = refl
-
-        backward-reassociation : {A : Set} → {fx fy gx gy : A} → (q : fx ≡ fy) → (hx : fx ≡ gx) → (hy : fy ≡ gy) →
-                                 ((hx ⁻¹) ⁻¹) · (hx ⁻¹ · q · hy) · (hy ⁻¹) ≡ q
-        backward-reassociation refl refl refl = refl
-
-    homotope-applied-ap : {A B : Set} → {f g : A → B} → (H : f ~ g) → (x y : A) →
-                          homotope-applied H x y ∘ ap f ~ ap g
-    homotope-applied-ap H x y refl = reassoc (H x)
-      where reassoc : {A : Set} → {x y : A} → (p : x ≡ y) → p ⁻¹ · refl · p ≡ refl
-            reassoc refl = refl
-
     latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc :
           {A B X : Set} → {k : TruncLevel} → {g : B → X} → Is-trunc-map k g →
           (h : A → B) → {f : A → X} → (H : f ~ g ∘ h) →
