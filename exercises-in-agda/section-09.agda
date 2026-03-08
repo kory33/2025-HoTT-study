@@ -842,10 +842,10 @@ module _ where
     eq-pair {A} {B} (a1 , b1) (a2 , b2) (refl , refl) = refl
 
     -- theorem 9.3.4
-    pair-eq-Eq-Σ-is-equiv : {A : Set} → {B : A → Set} → {s t : Σ A B} → Is-equiv (pair-eq-Eq-Σ {A} {B} {s} {t})
-    pair-eq-Eq-Σ-is-equiv {A} {B} {s@(a1 , b1)} {t} =
-      has-inverse-equiv
-        (eq-pair s t , S , R)
+    eq-pair-is-inverse-of-pair-eq-Eq-Σ :
+          {A : Set} → {B : A → Set} → {s t : Σ A B} →
+          Is-inverse-of (pair-eq-Eq-Σ {A} {B} {s} {t}) (eq-pair s t)
+    eq-pair-is-inverse-of-pair-eq-Eq-Σ {A} {B} {s@(a1 , b1)} {t} = (S , R)
       where
         S : Is-sect-of pair-eq-Eq-Σ (eq-pair s t)
         S = by-inductions t
@@ -855,6 +855,18 @@ module _ where
 
         R : Is-retraction-of pair-eq-Eq-Σ (eq-pair s t)
         R refl = refl
+
+    pair-eq-Eq-Σ-is-equiv : {A : Set} → {B : A → Set} → {s t : Σ A B} → Is-equiv (pair-eq-Eq-Σ {A} {B} {s} {t})
+    pair-eq-Eq-Σ-is-equiv {s = s} {t = t} =
+      has-inverse-equiv
+        (eq-pair s t , eq-pair-is-inverse-of-pair-eq-Eq-Σ {s = s} {t = t})
+
+    eq-pair-is-equiv : {A : Set} → {B : A → Set} → {s t : Σ A B} → Is-equiv (eq-pair s t)
+    eq-pair-is-equiv {A} {B} {s} {t} =
+      let
+        (S , R) = eq-pair-is-inverse-of-pair-eq-Eq-Σ {A} {B} {s} {t}
+      in
+        has-inverse-equiv (pair-eq-Eq-Σ , R , S)
 
     open Equivalence.Symbolic
     pair-eq-≃-Eq-Σ : {A : Set} → {B : A → Set} → {s t : Σ A B} → (s ≡ t) ≃ Eq-Σ s t

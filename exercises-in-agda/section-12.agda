@@ -271,6 +271,13 @@ module _ where
   k-type-is-succ-k-type {A} { -2-Trunc } A-is-contr = is-contr-then-is-prop A-is-contr
   k-type-is-succ-k-type {A} { (succ-Trunc k) } A-is-sk-trunc x y = k-type-is-succ-k-type (A-is-sk-trunc x y)
 
+  is-contr-then-is-k-type : {A : Set} → {k : TruncLevel} → Is-contr A → Is-trunc k A
+  is-contr-then-is-k-type {A} { -2-Trunc } contr = contr
+  is-contr-then-is-k-type {A} { (succ-Trunc k) } contr = k-type-is-succ-k-type (is-contr-then-is-k-type contr)
+
+  equiv-then-is-k-trunc-map : {A B : Set} → {k : TruncLevel} → {f : A → B} → Is-equiv f → Is-trunc-map k f
+  equiv-then-is-k-trunc-map f-is-equiv b = is-contr-then-is-k-type (is-equiv-then-is-contr-fn f-is-equiv b)
+
   -- corollary 12.4.4
   identity-type-of-k-type-is-k-type : {A : Set} → {k : TruncLevel} → Is-trunc k A → (x y : A) → Is-trunc k (x ≡ y)
   identity-type-of-k-type-is-k-type {A} {k} = k-type-is-succ-k-type
@@ -968,6 +975,18 @@ module _ where
         triangle-htpy : (x y : A) → (homotope-applied H x y ∘ ap f) ~ (ap g ∘ ap h)
         triangle-htpy x y = homotope-applied-ap H x y ·ₕₜₚ ap-comp g h
 
+    homotopy-preserves-truncatedness : {A B : Set} → {k : TruncLevel} → {f g : A → B} → (H : f ~ g) →
+                                       Is-trunc-map k f → Is-trunc-map k g
+    homotopy-preserves-truncatedness {A} {B} {k} {f} {g} H f-is-k-trunc =
+      Σ.fst (latter-is-k-trunc-then-comp-is-k-trunc-iff-first-is-k-trunc
+              {k = k} {g = id} (equiv-then-is-k-trunc-map id-is-equiv) g H)
+            f-is-k-trunc
+
+    homotopic-then-k-trunc-iff-k-trunc : {A B : Set} → {k : TruncLevel} → {f g : A → B} → (H : f ~ g) →
+                                         Is-trunc-map k f ↔ Is-trunc-map k g
+    homotopic-then-k-trunc-iff-k-trunc H =
+      (homotopy-preserves-truncatedness H , homotopy-preserves-truncatedness (H ⁻¹ₕₜₚ))
+
   -- exercise 12.12
   module _ where
     is-family-of-k-trunc-iff-tot-is-k-trunc :
@@ -1024,7 +1043,28 @@ module _ where
         is-equiv-then-is-contr-fn
           (base-is-contr-then-pair-with-base-is-equiv (a , recenter-contraction-at a a-is-contr))
     sk-trunc-then-fiber-incl-is-k-trunc {A} { succ-Trunc k } a-is-sk-trunc B a =
-      {!   !}
+      let motive-equivalence =
+            begin-↔
+              Is-trunc-map (succ-Trunc k) (fiber-incl B a)                      ↔⟨ map-is-sk-trunc-iff-ap-is-k-trunc ⟩
+              ((b1 b2 : B a) → Is-trunc-map k (ap (fiber-incl B a) {b1} {b2}))  ↔⟨ depfn-biimpl-2 (λ (b1 b2 : B a) → begin-↔
+                Is-trunc-map k (ap (fiber-incl B a) {b1} {b2})                      ↔⟨ homotopic-then-k-trunc-iff-k-trunc (ap-fiber-incl-factorization b1 b2) ⟩
+                Is-trunc-map k ( eq-pair (a , b1) (a , b2)
+                               ∘ fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)  ↔⟨← postcomp-by-equiv-is-k-trunc-iff-original-is
+                                                                                          (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)
+                                                                                          (eq-pair-is-equiv {s = (a , b1)} {t = (a , b2)}) ⟩
+                Is-trunc-map k (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)   ∎-↔) ⟩
+              ((b1 b2 : B a) → Is-trunc-map k (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl))
+                                                                                ∎-↔
+      in (Σ.snd motive-equivalence) fiber-incl-to-Eq-Σ-is-k-trunc
+      where
+        ap-fiber-incl-factorization : (b1 b2 : B a) →
+              ap (fiber-incl B a) {b1} {b2} ~ (eq-pair (a , b1) (a , b2) ∘ fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)
+        ap-fiber-incl-factorization b1 .b1 refl = refl
+
+        fiber-incl-to-Eq-Σ-is-k-trunc : (b1 b2 : B a) → Is-trunc-map k (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)
+        fiber-incl-to-Eq-Σ-is-k-trunc b1 b2 =
+          sk-trunc-then-fiber-incl-is-k-trunc (a-is-sk-trunc a a)
+            (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl
 
   -- exercise 12.14
   module _ where
