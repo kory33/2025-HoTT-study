@@ -1047,24 +1047,25 @@ module _ where
             begin-↔
               Is-trunc-map (succ-Trunc k) (fiber-incl B a)                      ↔⟨ map-is-sk-trunc-iff-ap-is-k-trunc ⟩
               ((b1 b2 : B a) → Is-trunc-map k (ap (fiber-incl B a) {b1} {b2}))  ↔⟨ depfn-biimpl-2 (λ (b1 b2 : B a) → begin-↔
-                Is-trunc-map k (ap (fiber-incl B a) {b1} {b2})                      ↔⟨ homotopic-then-k-trunc-iff-k-trunc (ap-fiber-incl-factorization b1 b2) ⟩
-                Is-trunc-map k ( eq-pair (a , b1) (a , b2)
-                               ∘ fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)  ↔⟨← postcomp-by-equiv-is-k-trunc-iff-original-is
-                                                                                          (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)
-                                                                                          (eq-pair-is-equiv {s = (a , b1)} {t = (a , b2)}) ⟩
-                Is-trunc-map k (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)   ∎-↔) ⟩
-              ((b1 b2 : B a) → Is-trunc-map k (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl))
+                Is-trunc-map k (ap (fiber-incl B a) {b1} {b2})                                    ↔⟨ homotopic-then-k-trunc-iff-k-trunc (ap-fiber-incl-factorization b1 b2) ⟩
+                Is-trunc-map k ( eq-pair (a , b1) (a , b2) ∘ fiber-incl (Eq-over-tr b1 b2) refl)  ↔⟨← postcomp-by-equiv-is-k-trunc-iff-original-is
+                                                                                                        (fiber-incl (Eq-over-tr b1 b2) refl)
+                                                                                                        (eq-pair-is-equiv {s = (a , b1)} {t = (a , b2)}) ⟩
+                Is-trunc-map k (fiber-incl (Eq-over-tr b1 b2) refl)                               ∎-↔) ⟩
+              ((b1 b2 : B a) → Is-trunc-map k (fiber-incl (Eq-over-tr b1 b2) refl))
                                                                                 ∎-↔
       in (Σ.snd motive-equivalence) fiber-incl-to-Eq-Σ-is-k-trunc
       where
+        Eq-over-tr : {a : A} → (b1 b2 : B a) → (α : a ≡ a) → Set
+        Eq-over-tr {a} b1 b2 α = tr B α b1 ≡ b2
+
         ap-fiber-incl-factorization : (b1 b2 : B a) →
-              ap (fiber-incl B a) {b1} {b2} ~ (eq-pair (a , b1) (a , b2) ∘ fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)
+              ap (fiber-incl B a) {b1} {b2} ~ (eq-pair (a , b1) (a , b2) ∘ fiber-incl (Eq-over-tr b1 b2) refl)
         ap-fiber-incl-factorization b1 .b1 refl = refl
 
-        fiber-incl-to-Eq-Σ-is-k-trunc : (b1 b2 : B a) → Is-trunc-map k (fiber-incl (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl)
+        fiber-incl-to-Eq-Σ-is-k-trunc : (b1 b2 : B a) → Is-trunc-map k (fiber-incl (Eq-over-tr b1 b2) refl)
         fiber-incl-to-Eq-Σ-is-k-trunc b1 b2 =
-          sk-trunc-then-fiber-incl-is-k-trunc (a-is-sk-trunc a a)
-            (λ (α : a ≡ a) → tr B α b1 ≡ b2) refl
+          sk-trunc-then-fiber-incl-is-k-trunc (a-is-sk-trunc a a) (Eq-over-tr b1 b2) refl
 
   -- exercise 12.14
   module _ where
