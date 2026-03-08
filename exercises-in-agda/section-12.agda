@@ -992,7 +992,10 @@ module _ where
         (λ _ → id-is-equiv)
         (λ _ → e-eqv))
 
-    fib-of-unit-inclusion-≃-identity : {A : Set} → (x y : A) → (fib (λ u → (x , u)) (y , unit)) ≃ (x ≡ y)
+    fiber-incl : {A : Set} → (B : A → Set) → (a : A) → B a → Σ A B
+    fiber-incl {A} B a b = (a , b)
+
+    fib-of-unit-inclusion-≃-identity : {A : Set} → (x y : A) → (fib (fiber-incl (λ _ → Unit) x) (y , unit)) ≃ (x ≡ y)
     fib-of-unit-inclusion-≃-identity {A} x y =
       begin-≃
         fib (λ u → (x , u)) (y , unit)          ≃⟨⟩
@@ -1003,20 +1006,24 @@ module _ where
         (x ≡ y)                                 ∎-≃
 
     fiber-incl-is-k-trunc-then-sk-trunc : {A : Set} → {k : TruncLevel} →
-          ((B : A → Set) → (a : A) → Is-trunc-map k (λ (y : B a) → ((a , y) typed (Σ A B)))) →
+          ((B : A → Set) → (a : A) → Is-trunc-map k (fiber-incl B a)) →
           Is-trunc (succ-Trunc k) A
     fiber-incl-is-k-trunc-then-sk-trunc {A} {k} assumption x y =
-      -- goal is (Is-trunc k (x ≡ y)), and
-      -- since the assumption gives (Is-trunc k (fib (λ u → (x , u)) (y , unit))),
-      -- fib-of-unit-inclusion-≃-identity is exactly what we need.
+      -- Goal is (Is-trunc k (x ≡ y)), so fib-of-unit-inclusion-≃-identity is exactly what we need
       equiv-to-k-type-then-is-k-type
         (fib-of-unit-inclusion-≃-identity x y)
         (assumption (λ _ → Unit) x (y , unit))
 
     sk-trunc-then-fiber-incl-is-k-trunc : {A : Set} → {k : TruncLevel} → Is-trunc (succ-Trunc k) A →
           (B : A → Set) → (a : A) →
-          Is-trunc-map k (λ (y : B a) → ((a , y) typed (Σ A B)))
-    sk-trunc-then-fiber-incl-is-k-trunc {A} {k} a-is-sk-trunc B a =
+          Is-trunc-map k (fiber-incl B a)
+    sk-trunc-then-fiber-incl-is-k-trunc {A} { -2-Trunc } a-is-prop B a =
+      let a-is-contr : Is-contr A
+          a-is-contr = Is-prop-characterisation.i→iii a-is-prop a
+      in
+        is-equiv-then-is-contr-fn
+          (base-is-contr-then-pair-with-base-is-equiv (a , recenter-contraction-at a a-is-contr))
+    sk-trunc-then-fiber-incl-is-k-trunc {A} { succ-Trunc k } a-is-sk-trunc B a =
       {!   !}
 
   -- exercise 12.14
