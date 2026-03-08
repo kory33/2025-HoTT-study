@@ -414,6 +414,9 @@ module _ where
   contr-iff-const-unit-is-equiv : {A : Set} → Is-contr A ↔ Is-equiv (λ (a : A) → const unit a)
   contr-iff-const-unit-is-equiv = (contr-then-const-unit-is-equiv , const-unit-is-equiv-then-contr)
 
+  contr-then-≃-Unit : {A : Set} → Is-contr A → A ≃ Unit
+  contr-then-≃-Unit ac = build-tpe-equiv (contr-then-const-unit-is-equiv ac)
+
   -- exercise 10.3.b
   cod-of-equiv-is-contr-then-dom-is-contr : {A B : Set} → {f : A → B} → Is-equiv f → Is-contr B → Is-contr A
   cod-of-equiv-is-contr-then-dom-is-contr {A} {B} {f} (_ , retr) b-contr =

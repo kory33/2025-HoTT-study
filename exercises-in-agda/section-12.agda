@@ -986,11 +986,32 @@ module _ where
 
   -- exercise 12.13
   module _ where
+    prod-rmap-equiv : {A B C : Set} → B ≃ C → (A × B) ≃ (A × C)
+    prod-rmap-equiv {A} {B} {C} (e , e-eqv) =
+      build-tpe-equiv (conditionally-equivs-then-×₀-equiv
+        (λ _ → id-is-equiv)
+        (λ _ → e-eqv))
+
+    fib-of-unit-inclusion-≃-identity : {A : Set} → (x y : A) → (fib (λ u → (x , u)) (y , unit)) ≃ (x ≡ y)
+    fib-of-unit-inclusion-≃-identity {A} x y =
+      begin-≃
+        fib (λ u → (x , u)) (y , unit)          ≃⟨⟩
+        (Σ Unit (λ u → (x , u) ≡ (y , unit)))   ≃⟨ Σ-lunit ⟩
+        ((x , unit) ≡ (y , unit))               ≃⟨ prod-eq-≃-eq-prod ⟩
+        ((x ≡ y) × (unit ≡ unit))               ≃⟨ prod-rmap-equiv (contr-then-≃-Unit (Unit-is-prop unit unit)) ⟩
+        ((x ≡ y) × Unit)                        ≃⟨ ×-runit ⟩
+        (x ≡ y)                                 ∎-≃
+
     fiber-incl-is-k-trunc-then-sk-trunc : {A : Set} → {k : TruncLevel} →
           ((B : A → Set) → (a : A) → Is-trunc-map k (λ (y : B a) → ((a , y) typed (Σ A B)))) →
           Is-trunc (succ-Trunc k) A
-    fiber-incl-is-k-trunc-then-sk-trunc {A} {k} assumption =
-      {!   !}
+    fiber-incl-is-k-trunc-then-sk-trunc {A} {k} assumption x y =
+      -- goal is (Is-trunc k (x ≡ y)), and
+      -- since the assumption gives (Is-trunc k (fib (λ u → (x , u)) (y , unit))),
+      -- fib-of-unit-inclusion-≃-identity is exactly what we need.
+      equiv-to-k-type-then-is-k-type
+        (fib-of-unit-inclusion-≃-identity x y)
+        (assumption (λ _ → Unit) x (y , unit))
 
     sk-trunc-then-fiber-incl-is-k-trunc : {A : Set} → {k : TruncLevel} → Is-trunc (succ-Trunc k) A →
           (B : A → Set) → (a : A) →
