@@ -984,5 +984,32 @@ module _ where
         ((t : Σ A C) → Is-trunc k (fib (totalization f) t))                 ↔⟨⟩
         Is-trunc-map k (totalization f)                                     ∎-↔
 
-  -- TODO: exercise 12.13
-  -- TODO: exercise 12.14
+  -- exercise 12.13
+  module _ where
+    fiber-incl-is-k-trunc-then-sk-trunc : {A : Set} → {k : TruncLevel} →
+          ((B : A → Set) → (a : A) → Is-trunc-map k (λ (y : B a) → ((a , y) typed (Σ A B)))) →
+          Is-trunc (succ-Trunc k) A
+    fiber-incl-is-k-trunc-then-sk-trunc {A} {k} assumption =
+      {!   !}
+
+    sk-trunc-then-fiber-incl-is-k-trunc : {A : Set} → {k : TruncLevel} → Is-trunc (succ-Trunc k) A →
+          (B : A → Set) → (a : A) →
+          Is-trunc-map k (λ (y : B a) → ((a , y) typed (Σ A B)))
+    sk-trunc-then-fiber-incl-is-k-trunc {A} {k} a-is-sk-trunc B a =
+      {!   !}
+
+  -- exercise 12.14
+  module _ where
+    Is-isolated : {A : Set} → (a : A) → Set
+    Is-isolated {A} a = (x : A) → ((a ≡ x) +₀ (a ≢ x))
+
+    -- exercise 12.14.a
+    is-isolated-iff-picking-map-has-dec-fibers : {A : Set} → (a : A) → Is-isolated a ↔ ((x : A) → Is-decidable (fib (const {Unit} a) x))
+    is-isolated-iff-picking-map-has-dec-fibers {A} a = {!   !}
+
+    -- exercise 12.14.b
+    is-isolated-then-identity-is-prop : {A : Set} → (a : A) → Is-isolated a → (x : A) → Is-prop (a ≡ x)
+    is-isolated-then-identity-is-prop {A} a is-isolated x = {!   !}
+
+    is-isolated-then-picking-map-is-emb : {A : Set} → (a : A) → Is-isolated a → Is-emb (const {Unit} a)
+    is-isolated-then-picking-map-is-emb {A} a is-isolated = {!   !}
