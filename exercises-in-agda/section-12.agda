@@ -115,6 +115,9 @@ module _ where
   dom-of-equiv-is-prop-iff-cod-is-prop {A} {B} {f} equiv =
     (is-prop-preserved-by-equiv equiv , is-prop-pulled-back-by-equiv equiv)
 
+  equiv-then-is-prop-iff-is-prop : {A B : Set} → (A ≃ B) → Is-prop A ↔ Is-prop B
+  equiv-then-is-prop-iff-is-prop (f , f-eqv) = dom-of-equiv-is-prop-iff-cod-is-prop f-eqv
+
   open ↔-Reasoning
 
   -- theorem 12.2.3
@@ -250,6 +253,9 @@ module _ where
   data TruncLevel : Set where
     -2-Trunc : TruncLevel
     succ-Trunc : TruncLevel → TruncLevel
+
+  -1-Trunc : TruncLevel
+  -1-Trunc = succ-Trunc -2-Trunc
 
   TruncLevel-from-Nat : Nat → TruncLevel
   TruncLevel-from-Nat zero     = succ-Trunc (succ-Trunc -2-Trunc)
@@ -1073,12 +1079,39 @@ module _ where
     Is-isolated {A} a = (x : A) → ((a ≡ x) +₀ (a ≢ x))
 
     -- exercise 12.14.a
-    is-isolated-iff-picking-map-has-dec-fibers : {A : Set} → (a : A) → Is-isolated a ↔ ((x : A) → Is-decidable (fib (const {Unit} a) x))
-    is-isolated-iff-picking-map-has-dec-fibers {A} a = {!   !}
+    is-isolated-iff-picking-map-has-dec-fibers : {A : Set} → (a : A) →
+                                                 Is-isolated a ↔ ((x : A) → Is-decidable (fib (const {Unit} a) x))
+    is-isolated-iff-picking-map-has-dec-fibers {A} a =
+      begin-↔
+        Is-isolated a                                                   ↔⟨⟩
+        ((x : A) → Is-decidable (a ≡ x))                                ↔⟨← depfn-biimpl (λ x →
+                                                                              Is-decidable.biimpl-then-decidability-biimpl
+                                                                                (≃-then-biimpl Σ-lunit)) ⟩
+        ((x : A) → Is-decidable (Σ Unit (λ _ → a ≡ x)))                 ↔⟨⟩
+        ((x : A) → Is-decidable (Σ Unit (λ u → const {Unit} a u ≡ x)))  ↔⟨⟩
+        ((x : A) → Is-decidable (fib (const {Unit} a) x))               ∎-↔
 
     -- exercise 12.14.b
     is-isolated-then-identity-is-prop : {A : Set} → (a : A) → Is-isolated a → (x : A) → Is-prop (a ≡ x)
     is-isolated-then-identity-is-prop {A} a is-isolated x = {!   !}
 
+    is-emb-iff--1-trunc : {A B : Set} → (f : A → B) → Is-emb f ↔ Is-trunc-map (-1-Trunc) f
+    is-emb-iff--1-trunc {A} {B} f =
+      begin-↔
+        Is-emb f                                              ↔⟨⟩
+        ((x y : A) → Is-equiv (ap f {x} {y}))                 ↔⟨ depfn-biimpl-2 (λ (x y : A) → is-equiv-iff-is-contr-fn) ⟩
+        ((x y : A) → Is-trunc-map (-2-Trunc) (ap f {x} {y}))  ↔⟨← map-is-sk-trunc-iff-ap-is-k-trunc ⟩
+        Is-trunc-map (-1-Trunc) f                             ∎-↔
+
     is-isolated-then-picking-map-is-emb : {A : Set} → (a : A) → Is-isolated a → Is-emb (const {Unit} a)
-    is-isolated-then-picking-map-is-emb {A} a is-isolated = {!   !}
+    is-isolated-then-picking-map-is-emb {A} a is-isolated =
+      let
+        motive-equiv : Is-emb (const {Unit} a) ↔ ((x : A) → Is-prop (a ≡ x))
+        motive-equiv = begin-↔
+          Is-emb (const {Unit} a)                                      ↔⟨ is-emb-iff--1-trunc (const a) ⟩
+          Is-trunc-map (-1-Trunc) (const {Unit} a)                     ↔⟨⟩
+          ((x : A) → Is-trunc (-1-Trunc) (fib (const {Unit} a) x))     ↔⟨⟩
+          ((x : A) → Is-prop (fib (const {Unit} a) x))                 ↔⟨⟩
+          ((x : A) → Is-prop (Σ Unit (λ _ → a ≡ x)))                   ↔⟨ depfn-biimpl (λ x → equiv-then-is-prop-iff-is-prop Σ-lunit) ⟩
+          ((x : A) → Is-prop (a ≡ x))                                  ∎-↔
+      in (Σ.snd motive-equiv) (is-isolated-then-identity-is-prop a is-isolated)
