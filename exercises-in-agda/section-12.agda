@@ -1093,7 +1093,39 @@ module _ where
 
     -- exercise 12.14.b
     is-isolated-then-identity-is-prop : {A : Set} → (a : A) → Is-isolated a → (x : A) → Is-prop (a ≡ x)
-    is-isolated-then-identity-is-prop {A} a is-isolated x = {!   !}
+    is-isolated-then-identity-is-prop {A} a a-isolation x =
+      -- We essentially redo the proof of has-decidable-equality-then-is-set
+      --   but with a fixed endpoint (so we invoke fundamental thm of identity types directly).
+      -- Intuitively Σ A Equals-a is the singleton based at (a : A), and Equals-a is a family of propositions,
+      --   so once we show Is-contr (Σ A Equals-a) we are done by the fundamental theorem of identity types.
+      is-prop-pulled-back-by-equiv
+        (fundamental-thm-of-identity-types.ii→i-at-fn ΣAEqa-is-contr path-to-Eq-a x)
+        (Eq-a-is-subtype-over-A x)
+      where
+        Equals-a : A → Set
+        Equals-a x with a-isolation x
+        ...        | left p      = Unit
+        ...        | right ¬p    = Empty
+
+        Eq-a-is-subtype-over-A : Is-subtype Equals-a
+        Eq-a-is-subtype-over-A x with a-isolation x
+        ...                      | left p      = Unit-is-prop
+        ...                      | right ¬p    = Empty-is-prop
+
+        path-to-Eq-a : (x : A) → (a ≡ x) → Equals-a x
+        path-to-Eq-a .a refl with a-isolation a
+        ...                  | left p   = unit
+        ...                  | right ¬p = absurd (¬p refl)
+
+        Eq-a-to-path : (x : A) → Equals-a x → a ≡ x
+        Eq-a-to-path x with a-isolation x
+        ...            | left a≡x   = λ _ → a≡x
+        ...            | right a≢x  = λ ()
+
+        ΣAEqa-is-contr : Is-contr (Σ A Equals-a)
+        ΣAEqa-is-contr =
+          ( (a , path-to-Eq-a a refl)
+          , λ { (x , p) → subtype-and-fst-eq-then-pair-eq Eq-a-is-subtype-over-A (Eq-a-to-path x p) })
 
     is-emb-iff--1-trunc : {A B : Set} → (f : A → B) → Is-emb f ↔ Is-trunc-map (-1-Trunc) f
     is-emb-iff--1-trunc {A} {B} f =
